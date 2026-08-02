@@ -1,0 +1,67 @@
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and local tooling
+Virtual Environments/
+.venv/
+venv/
+env/
+.agent/*
+!.agent/README.md
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# Generated project data and media
+data/
+input/
+media/
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.tif
+*.tiff
+
+# Resolve databases, project exports, and runtime artifacts
+resolve_workspace/**/*.db
+resolve_workspace/**/*.sqlite
+resolve_workspace/**/*.sqlite3
+resolve_workspace/**/*.drp
+resolve_workspace/**/*.cache
+*.db
+*.sqlite
+*.sqlite3
+*.drp
+*.log
+*.tmp
+*.bak
+*.cache
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
