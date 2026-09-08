@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build Major Step 3B.6D contained source-geometry/visibility rollout plan."""
+"""Build Major Step 3B.6D contained source-geometry rollout plan."""
 from __future__ import annotations
 
 import argparse
@@ -10,11 +10,22 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-VERSION = "prepare_caption_source_geometry_contained_rollout_step_3B_6D_v1_0"
+VERSION = "prepare_caption_source_geometry_contained_rollout_step_3B_6D_v1_1_center_size_only"
 SCHEMA = "video_cloner_caption_source_geometry_contained_rollout_plan"
 SCHEMA_VERSION = "1.0"
 EXPECTED_V3_COUNT = 116
 EXPECTED_TARGET_CUES = ("sub_007", "sub_013", "sub_110", "sub_114")
+EXPECTED_TARGET_IDENTITY = {
+    "sub_007": ("While", 196, 199),
+    "sub_013": ("out", 224, 230),
+    "sub_110": ("looks", 862, 868),
+    "sub_114": ("AND", 888, 894),
+}
+ALLOWED_OPERATION_PROPERTIES = ("Center", "Size")
+KNOWN_EXCLUDED_SOURCE_PROPERTIES = ("Blend",)
+EXPECTED_EXCLUDED_BLEND_BY_CUE = {"sub_007": 2, "sub_013": 2, "sub_110": 2, "sub_114": 0}
+ACCEPTED_PROBE_TASK_ID = "DZSQH7AUHJT_STEP_3B_6C_IDEMPOTENCY_EVIDENCE_REGENERATION_V1"
+ACCEPTED_PROBE_RUN_ID = "20260802T132415124Z_adb873fd4d154b25a99fd4efce8b6e7f"
 
 
 def load_json(path: Path) -> Dict[str, Any]:
@@ -53,6 +64,23 @@ def finite(value: Any, default: Optional[float] = None) -> Optional[float]:
 
 def normalize_text(value: Any) -> str:
     return " ".join(str(value or "").strip().split())
+
+
+def select_contained_rollout_operations(
+    rows: Sequence[Dict[str, Any]],
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[str]]:
+    executable: List[Dict[str, Any]] = []
+    excluded: List[Dict[str, Any]] = []
+    unknown: List[str] = []
+    for row in rows:
+        input_name = str(row.get("input") or "")
+        if input_name in ALLOWED_OPERATION_PROPERTIES:
+            executable.append(row)
+        elif input_name in KNOWN_EXCLUDED_SOURCE_PROPERTIES:
+            excluded.append(row)
+        else:
+            unknown.append(input_name or "<missing>")
+    return executable, excluded, sorted(set(unknown))
 
 
 def load_gate(path: Path, label: str, required_mode: Optional[str] = None) -> Tuple[Dict[str, Any], List[str]]:
@@ -120,7 +148,7 @@ def build(args: argparse.Namespace) -> Dict[str, Any]:
     _animation_validation, f2 = load_gate(paths["animation_validation"], "step_3C_validation", "idempotent_second_run")
     _position_validation, f3 = load_gate(paths["position_validation"], "step_3B_5B_validation", "idempotent_second_run")
     probe_report, f4 = load_gate(paths["probe_report"], "step_3B_6C_report", "idempotent_second_run")
-    _probe_validation, f5 = load_gate(paths["probe_validation"], "step_3B_6C_validation", "idempotent_second_run")
+    probe_validation, f5 = load_gate(paths["probe_validation"], "step_3B_6C_validation", "idempotent_second_run")
 
     failures: List[str] = [*f1, *f2, *f3, *f4, *f5]
     warnings: List[str] = []
@@ -134,8 +162,27 @@ def build(args: argparse.Namespace) -> Dict[str, Any]:
         failures.append("animation_plan_gate_failed")
     if probe_report.get("probe_cue_id") != "sub_114" or int((probe_report.get("summary") or {}).get("target_key_verified_count") or 0) != 12:
         failures.append("step_3B_6C_probe_baseline_not_verified")
+    probe_checks = probe_validation.get("checks") if isinstance(probe_validation.get("checks"), dict) else {}
+    if not all((
+        probe_report.get("task_id") == ACCEPTED_PROBE_TASK_ID,
+        probe_report.get("run_id") == ACCEPTED_PROBE_RUN_ID,
+        probe_report.get("timeline_modified") is False,
+        finite(probe_report.get("setter_call_count"), -1) == 0,
+        finite(probe_report.get("effective_mutation_count"), -1) == 0,
+        finite(probe_report.get("blend_operation_count"), -1) == 0,
+        probe_validation.get("task_id") == ACCEPTED_PROBE_TASK_ID,
+        probe_validation.get("run_id") == ACCEPTED_PROBE_RUN_ID,
+        bool(probe_checks) and all(value is True for value in probe_checks.values()),
+        Path(str(probe_validation.get("report") or "")).resolve() == paths["probe_report"],
+    )):
+        failures.append("step_3B_6C_canonical_idempotency_evidence_not_verified")
 
-    animation_items = {str(row.get("cue_id")): row for row in animation_plan.get("items") or [] if row.get("cue_id")}
+    animation_rows: Dict[str, List[Dict[str, Any]]] = {}
+    for row in animation_plan.get("items") or []:
+        if row.get("cue_id"):
+            animation_rows.setdefault(str(row.get("cue_id")), []).append(row)
+    animation_items = {cue_id: rows[0] for cue_id, rows in animation_rows.items()}
+    track_rows: Dict[str, List[Dict[str, Any]]] = {}
     track_items: Dict[str, Dict[str, Any]] = {}
     accepted_count = 0
     unresolved_count = 0
@@ -143,6 +190,7 @@ def build(args: argparse.Namespace) -> Dict[str, Any]:
     for scene in tracks.get("scenes") or []:
         for track in scene.get("tracks") or []:
             cue_id = str(track.get("cue_id") or "")
+            track_rows.setdefault(cue_id, []).append(track)
             track_items[cue_id] = track
             if track.get("accepted_source_instance"):
                 accepted_count += 1
@@ -154,13 +202,24 @@ def build(args: argparse.Namespace) -> Dict[str, Any]:
 
     rollout_items: List[Dict[str, Any]] = []
     for cue_id in EXPECTED_TARGET_CUES:
+        if len(track_rows.get(cue_id) or []) != 1:
+            failures.append(f"rollout_source_identity_count_failed:{cue_id}:{len(track_rows.get(cue_id) or [])}")
+        if len(animation_rows.get(cue_id) or []) != 1:
+            failures.append(f"rollout_timeline_identity_count_failed:{cue_id}:{len(animation_rows.get(cue_id) or [])}")
         track = track_items.get(cue_id)
         item = animation_items.get(cue_id)
         if track is None or item is None:
             failures.append(f"rollout_source_missing:{cue_id}")
             continue
         vis = visibility(track, item)
-        if not track.get("accepted_source_instance"):
+        expected_text, expected_start, expected_end = EXPECTED_TARGET_IDENTITY[cue_id]
+        if normalize_text(track.get("text")) != expected_text or normalize_text(item.get("text")) != expected_text:
+            failures.append(f"rollout_text_failed:{cue_id}")
+        if str(item.get("name") or "") != f"VC_TEXTPLUS_{int(cue_id[-3:]):04d}_{cue_id}":
+            failures.append(f"rollout_name_failed:{cue_id}")
+        if int(item.get("start_frame") or -1) != expected_start or int(item.get("end_frame") or -1) != expected_end:
+            failures.append(f"rollout_timing_failed:{cue_id}")
+        if not track.get("accepted_source_instance") or track.get("source_exactness") != "source_redetected_dense_word_instance" or track.get("fallback_reasons"):
             failures.append(f"rollout_cue_not_accepted:{cue_id}")
         if not vis.get("fully_contained_in_existing_item"):
             failures.append(f"rollout_cue_not_contained:{cue_id}")
@@ -198,41 +257,61 @@ def build(args: argparse.Namespace) -> Dict[str, Any]:
                 "source_frame": row.get("source_frame"), "assignment_score": row.get("assignment_score"),
             })
 
-        blend_targets: List[Dict[str, Any]] = []
+        excluded_targets: List[Dict[str, Any]] = []
         late = int(vis.get("source_visibility_late_start_frames") or 0)
         early = int(vis.get("source_visibility_early_end_frames") or 0)
         if late > 0:
-            blend_targets.extend([
-                {"input": "Blend", "local_frame": 0, "timeline_frame": start, "expected": 0.0, "reason": "source_not_yet_visible"},
-                {"input": "Blend", "local_frame": late, "timeline_frame": start + late, "expected": 1.0, "reason": "source_first_visible_frame"},
+            excluded_targets.extend([
+                {"input": "Blend", "local_frame": 0, "timeline_frame": start, "source_expected": 0.0, "reason": "source_not_yet_visible"},
+                {"input": "Blend", "local_frame": late, "timeline_frame": start + late, "source_expected": 1.0, "reason": "source_first_visible_frame"},
             ])
         if early > 0:
             visible_local = int(last) - start
             invisible_local = visible_local + 1
-            blend_targets.extend([
-                {"input": "Blend", "local_frame": visible_local, "timeline_frame": int(last), "expected": 1.0, "reason": "source_last_visible_frame"},
-                {"input": "Blend", "local_frame": invisible_local, "timeline_frame": int(last) + 1, "expected": 0.0, "reason": "source_no_longer_visible"},
+            excluded_targets.extend([
+                {"input": "Blend", "local_frame": visible_local, "timeline_frame": int(last), "source_expected": 1.0, "reason": "source_last_visible_frame"},
+                {"input": "Blend", "local_frame": invisible_local, "timeline_frame": int(last) + 1, "source_expected": 0.0, "reason": "source_no_longer_visible"},
             ])
-        # Deduplicate identical frame/input targets.
+        # Preserve the source-derived visibility provenance, but never serialize it as executable geometry.
         unique: Dict[Tuple[str, int], Dict[str, Any]] = {}
-        for target in blend_targets:
+        for target in excluded_targets:
             key = (target["input"], int(target["local_frame"]))
             previous = unique.get(key)
-            if previous is not None and finite(previous.get("expected")) != finite(target.get("expected")):
+            if previous is not None and finite(previous.get("source_expected")) != finite(target.get("source_expected")):
                 failures.append(f"conflicting_visibility_target:{cue_id}:{key}")
             unique[key] = target
-        blend_targets = [unique[key] for key in sorted(unique)]
+        excluded_targets = [
+            {
+                **unique[key],
+                "provenance": "source_visibility_boundary",
+                "exclusion_reason": "Blend is outside the Step 3B.6D source-geometry property allowlist",
+                "executable": False,
+            }
+            for key in sorted(unique)
+        ]
+        if len(excluded_targets) != EXPECTED_EXCLUDED_BLEND_BY_CUE[cue_id]:
+            failures.append(f"excluded_blend_count_failed:{cue_id}:{len(excluded_targets)}")
+
+        executable_targets, excluded_targets, unknown_properties = select_contained_rollout_operations(
+            center_targets + size_targets + excluded_targets
+        )
+        executable_properties = {str(row.get("input") or "") for row in executable_targets}
+        if unknown_properties:
+            failures.append(f"unknown_executable_properties:{cue_id}:{unknown_properties}")
 
         rollout_items.append({
             "scene_id": track.get("scene_id"), "cue_id": cue_id, "cue_index": track.get("cue_index"),
             "name": item.get("name"), "text": track.get("text"), "style_profile_id": track.get("style_profile_id"),
             "start_frame": start, "end_frame": end, "duration_frames": end - start,
             "base_size": round(base_size, 12), "source_exactness": track.get("source_exactness"),
+            "accepted_source_instance": bool(track.get("accepted_source_instance")),
+            "fallback_reasons": list(track.get("fallback_reasons") or []),
             "confidence": track.get("confidence"), "visibility": vis,
-            "targets": center_targets + size_targets + blend_targets,
-            "center_targets": center_targets, "size_targets": size_targets, "blend_targets": blend_targets,
-            "write_inputs": sorted(set(row["input"] for row in center_targets + size_targets + blend_targets)),
-            "forbidden_writes": ["clip_start", "clip_end", "track_index", "z_order", "Alpha1", "outline", "shadow", "fill", "font", "text"],
+            "targets": executable_targets,
+            "center_targets": center_targets, "size_targets": size_targets, "blend_targets": [],
+            "excluded_targets": excluded_targets,
+            "write_inputs": sorted(executable_properties),
+            "forbidden_writes": ["Blend", "clip_start", "clip_end", "track_index", "z_order", "Alpha1", "outline", "shadow", "fill", "font", "text"],
         })
 
     protected_animation_targets: List[Dict[str, Any]] = []
@@ -261,10 +340,10 @@ def build(args: argparse.Namespace) -> Dict[str, Any]:
 
     warnings.extend([
         "Step 3B.6D applies dense Center/Size only to the four accepted cues whose complete source visibility fits inside their existing V3 items.",
-        "Three of the four cues receive binary Text+ Blend visibility gates for one-frame late-start/early-end differences.",
+        "Six source-derived binary Blend visibility targets are preserved only in the exclusion audit and are not executable.",
         f"{timing_mismatch_count} accepted cues remain excluded because their source visibility extends outside current V3 clip boundaries.",
         f"{unresolved_count} cues remain excluded because Step 3B.6B did not establish source-exact word instances.",
-        "Opacity proxies remain diagnostic; only binary visibility gates derived from first/last visible frames are written.",
+        "Opacity proxies and source visibility boundaries remain diagnostic; no Blend target is written.",
         "Z-order and timeline item boundaries remain read-only.",
     ])
 
@@ -284,7 +363,9 @@ def build(args: argparse.Namespace) -> Dict[str, Any]:
             "timeline_item_boundaries_read_only": True,
             "other_v3_captions_read_only": True,
             "opacity_proxy_diagnostic_only": True,
-            "binary_visibility_gate_allowed": True,
+            "binary_visibility_gate_allowed": False,
+            "center_size_property_allowlist_enforced": True,
+            "unknown_properties_fail_closed": True,
             "z_order_read_only": True,
             "hard_outline_default_forbidden": True,
             "solid_outline_100pct_no_blur_forbidden": True,
@@ -299,12 +380,23 @@ def build(args: argparse.Namespace) -> Dict[str, Any]:
             "center_target_count": sum(len(row["center_targets"]) for row in rollout_items),
             "size_target_count": sum(len(row["size_targets"]) for row in rollout_items),
             "blend_target_count": sum(len(row["blend_targets"]) for row in rollout_items),
+            "other_property_target_count": sum(
+                1 for row in rollout_items for target in row["targets"]
+                if str(target.get("input") or "") not in ALLOWED_OPERATION_PROPERTIES
+            ),
+            "excluded_blend_target_count": sum(len(row["excluded_targets"]) for row in rollout_items),
             "total_target_count": sum(len(row["targets"]) for row in rollout_items),
-            "visibility_gated_caption_count": sum(1 for row in rollout_items if row["blend_targets"]),
+            "visibility_gated_caption_count": 0,
+            "visibility_exclusion_audit_caption_count": sum(1 for row in rollout_items if row["excluded_targets"]),
             "expected_first_modified_count": 3,
             "expected_first_already_correct_count": 1,
             "protected_animation_caption_count": len(protected_animation_targets),
             "protected_animation_target_count": sum(len(row["targets"]) for row in protected_animation_targets),
+        },
+        "property_contract": {
+            "allowed_operation_properties": list(ALLOWED_OPERATION_PROPERTIES),
+            "known_excluded_source_properties": list(KNOWN_EXCLUDED_SOURCE_PROPERTIES),
+            "unknown_properties_fail_closed": True,
         },
         "warnings": warnings,
         "failures": failures,

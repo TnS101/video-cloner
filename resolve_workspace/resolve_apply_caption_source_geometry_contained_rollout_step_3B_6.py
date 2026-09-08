@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply Major Step 3B.6D contained source geometry/visibility rollout in Resolve."""
+"""Apply Major Step 3B.6D contained source geometry rollout in Resolve."""
 from __future__ import annotations
 
 import hashlib
@@ -11,11 +11,18 @@ import traceback
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-VERSION = "resolve_apply_caption_source_geometry_contained_rollout_step_3B_6D_v1_0"
+VERSION = "resolve_apply_caption_source_geometry_contained_rollout_step_3B_6D_v1_1_center_size_only"
 DEFAULT_PROJECT_ROOT = r"C:\Users\User\Downloads\Projects\Video Cloner"
 DEFAULT_VIDEO_ID = "DZsqH7auhjt"
 DEFAULT_CONFIG_NAME = "resolve_caption_source_geometry_contained_step_3B_6D_config.json"
 EXPECTED_SCHEMA = "video_cloner_caption_source_geometry_contained_rollout_plan"
+ALLOWED_OPERATION_PROPERTIES = {"Center", "Size"}
+EXPECTED_TARGET_IDENTITY = {
+    "sub_007": ("While", 196, 199),
+    "sub_013": ("out", 224, 230),
+    "sub_110": ("looks", 862, 868),
+    "sub_114": ("AND", 888, 894),
+}
 
 
 def now_unix() -> float:
@@ -46,6 +53,77 @@ def canonical_hash(value: Dict[str, Any], ignored: Sequence[str] = ()) -> str:
         clean.pop(key, None)
     raw = json.dumps(clean, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
+
+
+def operation_input(row: Any) -> str:
+    if not isinstance(row, dict):
+        return ""
+    nested = row.get("target")
+    return str((nested.get("input") if isinstance(nested, dict) else row.get("input")) or "")
+
+
+def manifest_operations(value: Any) -> List[Dict[str, Any]]:
+    if isinstance(value, list):
+        return [row for row in value if isinstance(row, dict)]
+    if not isinstance(value, dict):
+        return []
+    if operation_input(value):
+        return [value]
+    rows: List[Dict[str, Any]] = []
+    for key in ("operations", "targets", "writes"):
+        rows.extend(manifest_operations(value.get(key)))
+    return rows
+
+
+def integer(value: Any, default: int = -1) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def executable_plan_failures(plan: Dict[str, Any]) -> List[str]:
+    items = list(plan.get("rollout_items") or [])
+    summary = plan.get("summary") or {}
+    safety = plan.get("safety_contract") or {}
+    contract = plan.get("property_contract") or {}
+    cue_ids = [str(row.get("cue_id") or "") for row in items]
+    targets = [target for row in items for target in (row.get("targets") or [])]
+    manifest = manifest_operations(plan.get("mutation_manifest"))
+    properties = {operation_input(row) for row in targets + manifest}
+    properties.discard("")
+    center_count = sum(1 for row in targets if operation_input(row) == "Center")
+    size_count = sum(1 for row in targets if operation_input(row) == "Size")
+    checks = {
+        "rollout_item_contract_failed": len(items) == 4 and len(cue_ids) == len(set(cue_ids)) and set(cue_ids) == set(EXPECTED_TARGET_IDENTITY),
+        "rollout_identity_contract_failed": all(
+            cue_id in EXPECTED_TARGET_IDENTITY
+            and str(row.get("text") or "") == EXPECTED_TARGET_IDENTITY[cue_id][0]
+            and int(row.get("start_frame") or -1) == EXPECTED_TARGET_IDENTITY[cue_id][1]
+            and int(row.get("end_frame") or -1) == EXPECTED_TARGET_IDENTITY[cue_id][2]
+            and str(row.get("name") or "") == f"VC_TEXTPLUS_{int(cue_id[-3:]):04d}_{cue_id}"
+            for row, cue_id in zip(items, cue_ids)
+        ),
+        "rollout_target_contract_failed": len(targets) == 36 and center_count == 18 and size_count == 18,
+        "rollout_property_contract_failed": properties == ALLOWED_OPERATION_PROPERTIES
+        and all(not row.get("blend_targets") and set(str(value) for value in (row.get("write_inputs") or [])) == ALLOWED_OPERATION_PROPERTIES for row in items),
+        "mutation_manifest_property_contract_failed": all(operation_input(row) in ALLOWED_OPERATION_PROPERTIES for row in manifest),
+        "plan_property_contract_failed": set(contract.get("allowed_operation_properties") or []) == ALLOWED_OPERATION_PROPERTIES
+        and contract.get("known_excluded_source_properties") == ["Blend"]
+        and contract.get("unknown_properties_fail_closed") is True,
+        "plan_summary_contract_failed": integer(summary.get("center_target_count"), 0) == 18
+        and integer(summary.get("size_target_count"), 0) == 18
+        and integer(summary.get("blend_target_count"), 0) == 0
+        and integer(summary.get("other_property_target_count"), 0) == 0
+        and integer(summary.get("total_target_count"), 0) == 36,
+        "safety_contract_failed": all(bool(safety.get(key)) for key in (
+            "only_contained_accepted_cues_writable", "timeline_item_boundaries_read_only",
+            "other_v3_captions_read_only", "opacity_proxy_diagnostic_only", "z_order_read_only",
+            "hard_outline_default_forbidden", "solid_outline_100pct_no_blur_forbidden",
+            "center_size_property_allowlist_enforced", "unknown_properties_fail_closed",
+        )) and safety.get("binary_visibility_gate_allowed") is False,
+    }
+    return [failure for failure, ok in checks.items() if not ok]
 
 
 def safe_call(obj: Any, method: str, *args: Any, default: Any = None) -> Any:
@@ -567,24 +645,7 @@ def run() -> Dict[str, Any]:
         if str(plan.get("plan_hash") or "") != canonical_hash(plan, ignored=("created_at_unix",)):
             report["failures"].append("plan_hash_failed")
         rollout_items = list(plan.get("rollout_items") or [])
-        expected_cues = {"sub_007", "sub_013", "sub_110", "sub_114"}
-        if len(rollout_items) != 4 or {str(row.get("cue_id")) for row in rollout_items} != expected_cues:
-            report["failures"].append("rollout_item_contract_failed")
-        if sum(len(row.get("targets") or []) for row in rollout_items) != 42:
-            report["failures"].append("rollout_target_contract_failed")
-        safety = plan.get("safety_contract") or {}
-        required_safety = (
-            "only_contained_accepted_cues_writable",
-            "timeline_item_boundaries_read_only",
-            "other_v3_captions_read_only",
-            "opacity_proxy_diagnostic_only",
-            "binary_visibility_gate_allowed",
-            "z_order_read_only",
-            "hard_outline_default_forbidden",
-            "solid_outline_100pct_no_blur_forbidden",
-        )
-        if not all(bool(safety.get(key)) for key in required_safety):
-            report["failures"].append("safety_contract_failed")
+        report["failures"].extend(executable_plan_failures(plan))
         if report["failures"]:
             raise StopIteration
 
@@ -682,7 +743,7 @@ def run() -> Dict[str, Any]:
                 continue
             write_runtime_status(status_path, {
                 "ok": False, "running": True, "step": "Major Step 3B.6D", "version": VERSION,
-                "run_id": run_id, "run_mode": run_mode, "stage": "apply_dense_geometry_visibility",
+                "run_id": run_id, "run_mode": run_mode, "stage": "apply_dense_geometry",
                 "current": index, "total": len(rollout_items), "current_caption": item_plan.get("cue_id"),
                 "elapsed_seconds": round(time.time() - started, 2),
             })
@@ -813,6 +874,7 @@ def run() -> Dict[str, Any]:
         center_count = sum(1 for row in target_rows_after if row.get("input") == "Center" and row.get("present"))
         size_count = sum(1 for row in target_rows_after if row.get("input") == "Size" and row.get("present"))
         blend_count = sum(1 for row in target_rows_after if row.get("input") == "Blend" and row.get("present"))
+        other_property_count = sum(1 for row in target_rows_after if row.get("input") not in ALLOWED_OPERATION_PROPERTIES)
         modified_count = sum(
             1 for row in per_item_after
             if not already_correct_by_name.get(str(row.get("name")), False) and row.get("all_present")
@@ -839,6 +901,8 @@ def run() -> Dict[str, Any]:
             "size_key_verified_count": size_count,
             "blend_key_count": int((plan.get("summary") or {}).get("blend_target_count") or 0),
             "blend_key_verified_count": blend_count,
+            "other_property_key_count": other_property_count,
+            "excluded_blend_target_count": int((plan.get("summary") or {}).get("excluded_blend_target_count") or 0),
             "visibility_gated_caption_count": int((plan.get("summary") or {}).get("visibility_gated_caption_count") or 0),
             "non_rollout_caption_count": expected_v3 - len(rollout_items),
             "non_rollout_caption_verified_count": expected_v3 - len(rollout_items) - len(non_rollout_failures),
@@ -850,7 +914,7 @@ def run() -> Dict[str, Any]:
                 for row in protected_after
             ),
             "opacity_proxy_applied_count": 0,
-            "binary_visibility_target_count": blend_count,
+            "binary_visibility_target_count": 0,
             "z_order_write_count": 0,
             "timeline_boundary_write_count": 0,
             "timeline_integrity_failure_count": (0 if track_ok else 1) + (0 if ranges_ok else 1),
@@ -949,7 +1013,7 @@ def main() -> None:
             f"Already correct: {summary.get('already_correct_count', 0)}\n"
             f"Center keys verified: {summary.get('center_key_verified_count', 0)}/{summary.get('center_key_count', 0)}\n"
             f"Size keys verified: {summary.get('size_key_verified_count', 0)}/{summary.get('size_key_count', 0)}\n"
-            f"Visibility keys verified: {summary.get('blend_key_verified_count', 0)}/{summary.get('blend_key_count', 0)}\n"
+            f"Forbidden Blend keys: {summary.get('blend_key_count', 0)}\n"
             f"Other V3 captions preserved: {summary.get('non_rollout_caption_verified_count', 0)}/{summary.get('non_rollout_caption_count', 0)}\n"
             f"Step 3C targets preserved: {summary.get('protected_animation_target_verified_count', 0)}/{summary.get('protected_animation_target_count', 0)}\n"
             f"Boundary-mismatch cues excluded: {summary.get('timing_mismatch_excluded_count', 0)}\n"

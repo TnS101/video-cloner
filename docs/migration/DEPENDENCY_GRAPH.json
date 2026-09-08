@@ -1,0 +1,72 @@
+{
+  "schema": "video_cloner.dependency_graph.v2",
+  "authority_gate": "PASS",
+  "workflow_nodes": 33,
+  "reachable_nodes": 25,
+  "external_repository_dependencies": 15,
+  "phase1": {
+    "source_video": [
+      "wav",
+      "proxy"
+    ],
+    "wav": [
+      "beat_detection",
+      "transcription"
+    ],
+    "proxy": [
+      "scene_detection",
+      "motion_detection",
+      "transition_detection",
+      "caption_occlusion"
+    ]
+  },
+  "canonical_stages": [
+    "input",
+    "run_context",
+    "source_acquisition",
+    "media_preparation",
+    "analysis",
+    "planning",
+    "compilation",
+    "resolve_application",
+    "verification"
+  ],
+  "constraints": [
+    "required inputs must exist and be non-empty",
+    "caption occlusion requires proxy, caption style, and transcript",
+    "analysis outputs are observations, not executable edit authority",
+    "Phase 2 never invokes planning, compilation, or Resolve",
+    "cookies, credentials, tokens, and full environment values are not serialized"
+  ],
+  "phase2": {
+    "wav": [
+      "transcript",
+      "rhythm"
+    ],
+    "proxy": [
+      "cuts"
+    ],
+    "source_video+transcript": [
+      "caption_style"
+    ],
+    "proxy+shots": [
+      "motion",
+      "transitions"
+    ],
+    "proxy+caption_style+transcript": [
+      "caption_occlusion"
+    ],
+    "topological_order": [
+      "cuts",
+      "transcript",
+      "rhythm",
+      "caption_style",
+      "motion",
+      "transitions",
+      "caption_occlusion"
+    ],
+    "outputs_root": "data/<video_id>/analysis",
+    "cache_identity": "analyzer script hash + actual configured interpreter identity + deterministic argv profile hash + required input hashes",
+    "caption_occlusion_bundle": "primary JSON + every declared required event manifest + every expected non-empty mask frame; zero requested masks require no sidecars; optional debug/audit excluded"
+  }
+}

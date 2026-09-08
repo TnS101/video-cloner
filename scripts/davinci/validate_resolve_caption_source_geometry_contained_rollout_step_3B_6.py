@@ -8,9 +8,10 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
-VERSION = "validate_resolve_caption_source_geometry_contained_rollout_step_3B_6D_v1_0"
-WORKSPACE_VERSION = "resolve_apply_caption_source_geometry_contained_rollout_step_3B_6D_v1_0"
+VERSION = "validate_resolve_caption_source_geometry_contained_rollout_step_3B_6D_v1_1_center_size_only"
+WORKSPACE_VERSION = "resolve_apply_caption_source_geometry_contained_rollout_step_3B_6D_v1_1_center_size_only"
 SCHEMA = "video_cloner_caption_source_geometry_contained_rollout_plan"
+ALLOWED_PROPERTIES = {"Center", "Size"}
 
 
 def load_json(path: Path) -> Dict[str, Any]:
@@ -39,11 +40,39 @@ def canonical_hash(value: Dict[str, Any], ignored: Sequence[str] = ()) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def operation_input(row: Any) -> str:
+    if not isinstance(row, dict):
+        return ""
+    nested = row.get("target")
+    return str((nested.get("input") if isinstance(nested, dict) else row.get("input")) or "")
+
+
+def manifest_operations(value: Any) -> List[Dict[str, Any]]:
+    if isinstance(value, list):
+        return [row for row in value if isinstance(row, dict)]
+    if not isinstance(value, dict):
+        return []
+    if operation_input(value):
+        return [value]
+    rows: List[Dict[str, Any]] = []
+    for key in ("operations", "targets", "writes"):
+        rows.extend(manifest_operations(value.get(key)))
+    return rows
+
+
 def validate(plan: Dict[str, Any], report: Dict[str, Any], requested_mode: str) -> Dict[str, Any]:
     expected_mode = "first_application" if requested_mode == "first_application_pass" else "idempotent_second_run"
     summary = report.get("summary") or {}
     plan_summary = plan.get("summary") or {}
     items_after = report.get("items_after") or []
+    plan_targets = [target for row in (plan.get("rollout_items") or []) for target in (row.get("targets") or [])]
+    report_targets = [target for row in items_after for target in (row.get("targets") or [])]
+    plan_manifest = manifest_operations(plan.get("mutation_manifest"))
+    report_manifest = manifest_operations(report.get("mutation_manifest")) + manifest_operations(report.get("writes"))
+    executable_properties = {operation_input(row) for row in plan_targets + plan_manifest}
+    runtime_properties = {operation_input(row) for row in report_targets + report_manifest}
+    executable_properties.discard("")
+    runtime_properties.discard("")
     failures: List[str] = []
     checks = {
         "plan_ok": bool(plan.get("ok")),
@@ -59,11 +88,15 @@ def validate(plan: Dict[str, Any], report: Dict[str, Any], requested_mode: str) 
         "timing_mismatch_excluded": int(summary.get("timing_mismatch_excluded_count") or 0) == 41,
         "rollout_count": int(summary.get("rollout_item_count") or 0) == 4,
         "mapped_count": int(summary.get("mapped_count") or 0) == 4,
-        "target_count": int(summary.get("target_key_count") or 0) == 42,
-        "all_targets_verified": int(summary.get("target_key_verified_count") or 0) == 42,
+        "target_count": int(summary.get("target_key_count") or 0) == 36,
+        "all_targets_verified": int(summary.get("target_key_verified_count") or 0) == 36,
         "center_count": int(summary.get("center_key_count") or 0) == 18 and int(summary.get("center_key_verified_count") or 0) == 18,
         "size_count": int(summary.get("size_key_count") or 0) == 18 and int(summary.get("size_key_verified_count") or 0) == 18,
-        "blend_count": int(summary.get("blend_key_count") or 0) == 6 and int(summary.get("blend_key_verified_count") or 0) == 6,
+        "blend_count": int(summary.get("blend_key_count") or 0) == 0 and int(summary.get("blend_key_verified_count") or 0) == 0,
+        "other_property_count": int(summary.get("other_property_key_count") or 0) == 0,
+        "excluded_blend_audit": int(summary.get("excluded_blend_target_count") or 0) == int(plan_summary.get("excluded_blend_target_count") or 0) == 6,
+        "plan_property_contract": executable_properties == ALLOWED_PROPERTIES,
+        "runtime_property_contract": runtime_properties == ALLOWED_PROPERTIES,
         "items_after_present": len(items_after) == 4 and all(bool(row.get("all_present")) for row in items_after),
         "non_rollout_preserved": int(summary.get("non_rollout_caption_count") or 0) == 112 and int(summary.get("non_rollout_caption_verified_count") or 0) == 112,
         "protected_animation_caption_count": int(summary.get("protected_animation_caption_count") or 0) == int(plan_summary.get("protected_animation_caption_count") or 0) == 8,
@@ -71,7 +104,7 @@ def validate(plan: Dict[str, Any], report: Dict[str, Any], requested_mode: str) 
         "protected_animation_target_count": int(summary.get("protected_animation_target_count") or 0) == int(plan_summary.get("protected_animation_target_count") or 0) == 16,
         "protected_animation_targets": int(summary.get("protected_animation_target_verified_count") or 0) == 16,
         "opacity_proxy_not_applied": int(summary.get("opacity_proxy_applied_count") or 0) == 0,
-        "binary_visibility_written": int(summary.get("binary_visibility_target_count") or 0) == 6,
+        "binary_visibility_written": int(summary.get("binary_visibility_target_count") or 0) == 0,
         "z_order_not_written": int(summary.get("z_order_write_count") or 0) == 0,
         "boundaries_not_written": int(summary.get("timeline_boundary_write_count") or 0) == 0,
         "timeline_integrity": int(summary.get("timeline_integrity_failure_count") or 0) == 0,

@@ -62,6 +62,8 @@ from __future__ import annotations
 import argparse
 import difflib
 import html
+import hashlib
+import heapq
 import json
 import os
 import re
@@ -70,9 +72,11 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 from urllib.parse import quote
 
-VERSION = "davinci_textplus_fcpxml_compiler_v1_5_per_cue_caption_styles"
+VERSION = "davinci_textplus_fcpxml_compiler_v1_6_visual_lifecycle"
 SCHEMA = "video_cloner_davinci_textplus_fcpxml"
-SCHEMA_VERSION = "1.5"
+SCHEMA_VERSION = "1.6"
+LIFECYCLE_PLAN_SCHEMA = "video_cloner_caption_lifecycle_authority_plan"
+LIFECYCLE_TIMING_AUTHORITIES = {"visual_primary", "visual_primary_redetected", "transcript_fallback"}
 
 # Resolve accepts this conservative Basic Title template better than more exotic
 # generators. It imports as editable Title - Text clips with inspector controls.
@@ -140,6 +144,16 @@ def load_json(path: str) -> Dict[str, Any]:
     with open(path, "r", encoding="utf-8-sig") as f:
         return json.load(f)
 
+
+
+def canonical_json_sha256(value: Any) -> str:
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 def str2bool(value: Any) -> bool:
     if isinstance(value, bool):
@@ -951,6 +965,209 @@ def enforce_timing_rules(cues: List[Dict[str, Any]], fps: float, min_duration_fr
 
 
 # -----------------------------------------------------------------------------
+# Visual-first caption lifecycle support
+# -----------------------------------------------------------------------------
+
+
+def cue_transcript_window_frames(cue: Dict[str, Any], fps: float) -> List[int]:
+    raw = cue.get("raw") if isinstance(cue.get("raw"), dict) else {}
+    start = first_present(raw, ["timeline_start_frame", "start_frame", "frame_start"])
+    end = first_present(raw, ["timeline_end_frame", "end_frame", "frame_end"])
+    if start is None:
+        start = cue.get("start_frame")
+    if end is None:
+        end = cue.get("end_frame")
+    if start is None:
+        start = sec_to_frames(safe_float(cue.get("start"), 0.0), fps)
+    if end is None:
+        end = sec_to_frames(safe_float(cue.get("end"), 0.0), fps)
+    return [safe_int(start, 0), safe_int(end, 0)]
+
+
+def normalize_semantic_caption_text(value: Any) -> str:
+    text = norm_text(value).casefold().replace("’", "'")
+    return re.sub(r"[^0-9a-zа-яё']+", "", text, flags=re.IGNORECASE)
+
+
+def allocate_caption_lanes(cues: List[Dict[str, Any]], base_lane: int = 1) -> Dict[str, Any]:
+    base_lane = max(1, int(base_lane))
+    active: List[Tuple[int, int]] = []
+    free_lanes: List[int] = []
+    next_lane = base_lane
+    usage: Dict[int, int] = {}
+    max_concurrency = 0
+
+    ordered = sorted(
+        cues,
+        key=lambda cue: (
+            safe_int(cue.get("start_frame"), 0),
+            safe_int(cue.get("end_frame"), 0),
+            safe_int(cue.get("index"), 0),
+        ),
+    )
+    for cue in ordered:
+        start = safe_int(cue.get("start_frame"), 0)
+        end = safe_int(cue.get("end_frame"), start + 1)
+        while active and active[0][0] <= start:
+            _, lane = heapq.heappop(active)
+            heapq.heappush(free_lanes, lane)
+        if free_lanes:
+            lane = heapq.heappop(free_lanes)
+        else:
+            lane = next_lane
+            next_lane += 1
+        cue["lane"] = lane
+        usage[lane] = usage.get(lane, 0) + 1
+        heapq.heappush(active, (end, lane))
+        max_concurrency = max(max_concurrency, len(active))
+
+    return {
+        "base_lane": base_lane,
+        "max_lane": max(usage) if usage else base_lane,
+        "lane_count": len(usage),
+        "max_concurrency": max_concurrency,
+        "lane_usage": {str(key): usage[key] for key in sorted(usage)},
+    }
+
+
+def apply_caption_lifecycle_plan(
+    cues: List[Dict[str, Any]],
+    plan: Dict[str, Any],
+    fps: float,
+    base_lane: int = 1,
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    if not isinstance(plan, dict) or plan.get("ok") is not True:
+        raise ValueError("caption_lifecycle_plan_not_ok")
+    if plan.get("schema") != LIFECYCLE_PLAN_SCHEMA or safe_int(plan.get("schema_version"), 0) != 1:
+        raise ValueError("caption_lifecycle_plan_schema")
+    if plan.get("mandatory_visual_redetection_queue") not in ([], None):
+        raise ValueError("caption_lifecycle_plan_redetection_queue_not_empty")
+
+    raw_layers = plan.get("layers")
+    if not isinstance(raw_layers, list):
+        raise ValueError("caption_lifecycle_plan_layers")
+    by_cue: Dict[str, Dict[str, Any]] = {}
+    for layer in raw_layers:
+        if not isinstance(layer, dict):
+            raise ValueError("caption_lifecycle_plan_layer_type")
+        cue_id = str(layer.get("cue_id") or "")
+        if not cue_id or cue_id in by_cue:
+            raise ValueError(f"caption_lifecycle_plan_duplicate_cue:{cue_id}")
+        by_cue[cue_id] = layer
+
+    cue_ids = [str(cue.get("id") or "") for cue in cues]
+    missing = [cue_id for cue_id in cue_ids if cue_id not in by_cue]
+    if missing:
+        raise ValueError("caption_lifecycle_plan_missing_cues:" + ",".join(missing[:10]))
+
+    applied: List[Dict[str, Any]] = []
+    timing_counts: Dict[str, int] = {}
+    visual_outside_count = 0
+    animated_count = 0
+    animated_visual_count = 0
+    generic_transcript_window_drift_count = 0
+    generic_transcript_window_max_delta_frames = 0
+
+    for cue in cues:
+        cue_id = str(cue.get("id") or "")
+        layer = by_cue[cue_id]
+        generic_transcript_window = cue_transcript_window_frames(cue, fps)
+        layer_transcript = layer.get("transcript_window")
+        if (
+            not isinstance(layer_transcript, list)
+            or len(layer_transcript) != 2
+            or safe_int(layer_transcript[1], 0) <= safe_int(layer_transcript[0], 0)
+        ):
+            raise ValueError(f"caption_lifecycle_transcript_window:{cue_id}")
+        transcript_window = [safe_int(layer_transcript[0], 0), safe_int(layer_transcript[1], 0)]
+        deltas = [
+            abs(transcript_window[0] - generic_transcript_window[0]),
+            abs(transcript_window[1] - generic_transcript_window[1]),
+        ]
+        if any(deltas):
+            generic_transcript_window_drift_count += 1
+            generic_transcript_window_max_delta_frames = max(
+                generic_transcript_window_max_delta_frames, max(deltas)
+            )
+        lifecycle = layer.get("lifecycle_window")
+        if (
+            not isinstance(lifecycle, list)
+            or len(lifecycle) != 2
+            or safe_int(lifecycle[1], 0) <= safe_int(lifecycle[0], 0)
+        ):
+            raise ValueError(f"caption_lifecycle_window:{cue_id}")
+        timing_authority = str(layer.get("timing_authority") or "")
+        if timing_authority not in LIFECYCLE_TIMING_AUTHORITIES:
+            raise ValueError(f"caption_lifecycle_timing_authority:{cue_id}:{timing_authority}")
+        if timing_authority == "transcript_fallback" and lifecycle != transcript_window:
+            raise ValueError(f"caption_lifecycle_fallback_window:{cue_id}")
+
+        transcript_text = norm_text(cue.get("text"))
+        display_text = norm_text(layer.get("text")) or transcript_text
+        if normalize_semantic_caption_text(display_text) != normalize_semantic_caption_text(transcript_text):
+            raise ValueError(f"caption_lifecycle_text_mismatch:{cue_id}:{display_text}:{transcript_text}")
+
+        start_frame = safe_int(lifecycle[0], 0)
+        end_frame = safe_int(lifecycle[1], start_frame + 1)
+        updated = dict(cue)
+        updated.update({
+            "text": display_text,
+            "transcript_text": transcript_text,
+            "transcript_window": transcript_window,
+            "generic_transcript_window": generic_transcript_window,
+            "start_frame": start_frame,
+            "end_frame": end_frame,
+            "duration_frames": end_frame - start_frame,
+            "start": round(start_frame / fps, 6),
+            "end": round(end_frame / fps, 6),
+            "duration": round((end_frame - start_frame) / fps, 6),
+            "timing_authority": timing_authority,
+            "lifecycle_status": layer.get("lifecycle_status"),
+            "lifecycle_phases": layer.get("lifecycle_phases"),
+            "opacity_envelope": layer.get("opacity_envelope"),
+            "animation_selected_step_3C": bool(layer.get("animation_selected_step_3C")),
+            "animation_type_step_3C": layer.get("animation_type_step_3C"),
+            "visual_confidence_label": layer.get("visual_confidence_label"),
+        })
+        applied.append(updated)
+        timing_counts[timing_authority] = timing_counts.get(timing_authority, 0) + 1
+        if lifecycle != transcript_window:
+            visual_outside_count += 1
+        if updated["animation_selected_step_3C"]:
+            animated_count += 1
+            if timing_authority.startswith("visual_primary"):
+                animated_visual_count += 1
+
+    lane_info = allocate_caption_lanes(applied, base_lane=base_lane)
+    summary = plan.get("summary") if isinstance(plan.get("summary"), dict) else {}
+    info = {
+        "enabled": True,
+        "schema": plan.get("schema"),
+        "schema_version": plan.get("schema_version"),
+        "version": plan.get("version"),
+        "authority_policy": plan.get("authority_policy"),
+        "plan_semantic_sha256": canonical_json_sha256(plan),
+        "layer_count": len(applied),
+        "timing_authority_counts": dict(sorted(timing_counts.items())),
+        "visual_primary_count": timing_counts.get("visual_primary", 0) + timing_counts.get("visual_primary_redetected", 0),
+        "transcript_fallback_count": timing_counts.get("transcript_fallback", 0),
+        "lifecycle_differs_from_transcript_count": visual_outside_count,
+        "animated_caption_count": animated_count,
+        "animated_visual_lifecycle_count": animated_visual_count,
+        "mandatory_redetection_count": len(plan.get("mandatory_visual_redetection_queue") or []),
+        "source_summary": summary,
+        "lane_allocation": lane_info,
+        "overlap_preserved": True,
+        "transcript_text_semantics_preserved": True,
+        "display_casing_from_calibrated_plan": True,
+        "generic_transcript_window_drift_count": generic_transcript_window_drift_count,
+        "generic_transcript_window_max_delta_frames": generic_transcript_window_max_delta_frames,
+        "generic_timing_role": "identity_fallback_only; calibrated plan owns emitted caption timing",
+    }
+    return applied, info
+
+
+# -----------------------------------------------------------------------------
 # Video clip extraction for full_timeline mode
 # -----------------------------------------------------------------------------
 
@@ -1636,6 +1853,7 @@ def build_title_xml(
     indent: str = "        ",
 ) -> str:
     idx = safe_int(cue.get("index"), 1)
+    lane = max(1, safe_int(cue.get("lane"), lane))
     start_frames = safe_int(cue.get("start_frame"), sec_to_frames(safe_float(cue.get("start"), 0.0), fps))
     duration_frames = max(1, safe_int(cue.get("duration_frames"), sec_to_frames(safe_float(cue.get("duration"), 1.0 / fps), fps)))
     offset = frames_to_fcpx_time(start_frames, fps)
@@ -1848,6 +2066,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Compile styled Resolve/FCPXML editable title captions from Video Cloner generic commands.")
     p.add_argument("--generic", required=True, help="Path to *_generic_edit_commands.json")
     p.add_argument("--caption-style", required=True, help="Path to *_caption_style.json")
+    p.add_argument("--caption-lifecycle-plan", default=None, help="Optional calibrated Step 3D lifecycle authority plan. Applies visual lifecycle windows and deterministic overlap lanes while preserving transcript text semantics.")
     p.add_argument("--output-fcpxml", required=True, help="Output .fcpxml path")
     p.add_argument("--report", required=True, help="Output report JSON path")
     p.add_argument("--source", default="auto", choices=["auto", "subtitle_clips", "commands"], help="Subtitle cue source inside generic JSON")
@@ -1909,6 +2128,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         "inputs": {
             "generic": args.generic,
             "caption_style": args.caption_style,
+            "caption_lifecycle_plan": args.caption_lifecycle_plan,
             "source": args.source,
             "profile_id": args.profile_id,
             "timeline_mode": args.timeline_mode,
@@ -1975,6 +2195,19 @@ def main(argv: Optional[List[str]] = None) -> int:
             min_match_score=max(0.0, safe_float(args.style_event_min_match_score, 0.12)),
         )
 
+        lifecycle_info: Dict[str, Any] = {"enabled": False}
+        if args.caption_lifecycle_plan:
+            lifecycle_plan = load_json(args.caption_lifecycle_plan)
+            cues, lifecycle_info = apply_caption_lifecycle_plan(
+                cues=cues,
+                plan=lifecycle_plan,
+                fps=fps,
+                base_lane=max(1, args.lane),
+            )
+            report["warnings"].append(
+                "Calibrated caption lifecycle windows override transcript timing and preserve overlaps using deterministic FCPXML lanes."
+            )
+
         cue_total_duration = max((safe_float(c.get("end"), 0.0) for c in cues), default=0.0)
         video_path = args.video or find_first_scalar(generic, ["source_video", "video_path", "proxy_path", "sourceVideo", "source_video_path"])
         audio_path = args.audio or find_first_scalar(generic, ["source_audio", "audio_path", "wav_path", "sourceAudio", "source_audio_path"])
@@ -2011,6 +2244,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         timeline_base = Path(args.generic).stem.replace("_generic_edit_commands", "")
         default_suffix = "_textplus_full" if args.timeline_mode == "full_timeline" else "_textplus_captions"
         timeline_name = args.timeline_name or f"{timeline_base}{default_suffix}"
+        effective_vfx_placeholder_lane = max(1, args.vfx_placeholder_lane)
+        if lifecycle_info.get("enabled") and args.transition_mode in {"hybrid", "vfx_placeholders"}:
+            max_caption_lane = safe_int((lifecycle_info.get("lane_allocation") or {}).get("max_lane"), max(1, args.lane))
+            if effective_vfx_placeholder_lane <= max_caption_lane:
+                effective_vfx_placeholder_lane = max_caption_lane + 1
+                report["warnings"].append(
+                    f"VFX placeholder lane moved to {effective_vfx_placeholder_lane} to avoid calibrated caption lanes."
+                )
 
         if args.timeline_mode == "full_timeline":
             fcpxml_text = build_full_timeline_fcpxml(
@@ -2034,7 +2275,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 include_audio=bool(args.include_audio and audio_path),
                 transitions=transitions,
                 transition_mode=args.transition_mode,
-                vfx_placeholder_lane=args.vfx_placeholder_lane,
+                vfx_placeholder_lane=effective_vfx_placeholder_lane,
                 vfx_placeholder_visible=bool(args.vfx_placeholder_visible),
                 vfx_placeholder_prefix=args.vfx_placeholder_prefix,
             )
@@ -2097,6 +2338,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                     "visibility_fix": "Default --position-mode reset writes Resolve-safe Position X/Y = 0/0.",
                 },
             },
+            "caption_lifecycle": lifecycle_info,
             "video": {
                 "timeline_mode": args.timeline_mode,
                 "video_path": video_path,
@@ -2115,7 +2357,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "cut_only_count": sum(1 for t in transitions if t.get("backend") == "cut_only"),
                 "info": transition_info,
                 "first_transition": {k: transitions[0].get(k) for k in ("index", "transition_type", "backend", "confidence", "boundary_frame", "duration_frames", "effect_key", "effect_name")} if transitions else None,
-                "vfx_placeholder_lane": args.vfx_placeholder_lane,
+                "vfx_placeholder_lane": effective_vfx_placeholder_lane,
                 "vfx_placeholder_visible": bool(args.vfx_placeholder_visible),
                 "note": "v1.4 hybrid mode writes simple transitions as native FCPXML <transition> elements and advanced viral transitions as invisible upper-lane VFX placeholder title clips for a later Resolve/Fusion applier.",
             },
@@ -2131,13 +2373,16 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "caption_only_timeline": args.timeline_mode == "caption_only",
                 "full_timeline": args.timeline_mode == "full_timeline",
                 "position_mode": args.position_mode,
+                "caption_lifecycle_plan_applied": bool(lifecycle_info.get("enabled")),
+                "caption_lane_count": (lifecycle_info.get("lane_allocation") or {}).get("lane_count", 1),
+                "caption_max_lane": (lifecycle_info.get("lane_allocation") or {}).get("max_lane", max(1, args.lane)),
             },
             "compatibility": {
                 "primary_use": "Import FCPXML into Resolve. caption_only creates title-only timeline; full_timeline creates V1 video + A1 audio + V2 editable title captions.",
                 "why_not_native_subtitles": "Resolve Free/external scripting path did not expose reliable automatic native subtitle styling.",
                 "visibility_fix": "Default --position-mode reset writes Resolve-safe Position X/Y = 0/0. The previous detected transform hid titles.",
                 "full_timeline_note": "full_timeline avoids manual copy/paste and avoids dragging nested caption timelines over the edited video.",
-                "transition_note": "v1.5 uses per-cue style events when available, while v1.4 hybrid transition behavior remains active.",
+                "transition_note": "v1.6 keeps per-cue styles and hybrid transitions while optionally applying calibrated visual lifecycles on separate overlap-safe lanes.",
             },
             "runtime_sec": round(now_unix() - started, 4),
         })
@@ -2151,6 +2396,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             "style_profile": style.get("profile_id"),
             "style_event_matches": style_event_info.get("matched_cue_count", 0),
             "style_event_match_ratio": style_event_info.get("match_ratio", 0.0),
+            "caption_lifecycle_plan_applied": bool(lifecycle_info.get("enabled")),
+            "caption_lane_count": (lifecycle_info.get("lane_allocation") or {}).get("lane_count", 1),
             "position_mode": args.position_mode,
             "timeline_mode": args.timeline_mode,
             "video_clip_count": len(video_clips),

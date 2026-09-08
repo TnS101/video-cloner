@@ -75,7 +75,11 @@ def _run() -> int:
             raise RuntimeError(f"could not load repository bridge: {bridge_path}")
         bridge = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(bridge)
-        result = bridge.workspace_main(resolve=globals().get("resolve"), fusion=globals().get("fusion"))
+        result = bridge.workspace_main(
+            resolve=globals().get("resolve"),
+            fusion=globals().get("fusion"),
+            config_path=config_path,
+        )
         _append(launcher_trace, "launcher_completed", return_code=result)
         _append(repository_trace, "launcher_completed", return_code=result)
         return int(result or 0)

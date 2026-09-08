@@ -6,6 +6,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from resolve_workspace import VC_Agent_Bridge as bridge
 
@@ -44,6 +45,11 @@ class BridgeQueueTests(unittest.TestCase):
     def test_config_discovery(self):
         self.assertEqual(bridge.load_config(self.config)["repository_root"], self.repo)
 
+    def test_canonical_queue_directories(self):
+        queue = bridge.command_queue(bridge.load_config(self.config))
+        self.assertEqual(queue, self.repo / ".agent" / "commands")
+        self.assertEqual([queue / state for state in bridge.QUEUE_DIRS], [self.queue / state for state in ("pending", "running", "completed", "failed")])
+
     def test_missing_config(self):
         with self.assertRaises(bridge.BridgeError): bridge.load_config(self.tmp / "missing.json")
 
@@ -53,26 +59,68 @@ class BridgeQueueTests(unittest.TestCase):
 
     def test_oldest_selection_and_claim(self):
         old = self.command("old.json", "old"); new = self.command("new.json", "new")
-        os.utime(old, (10, 10)); os.utime(new, (20, 20))
+        os.utime(old, (20, 20)); os.utime(new, (10, 10))
         claimed = bridge.claim_oldest(self.queue)
-        self.assertEqual(claimed[0].name, "old.json")
-        self.assertTrue((self.queue / "running" / "old.json").exists())
+        self.assertEqual(claimed[0].name, "new.json")
+        self.assertTrue((self.queue / "running" / "new.json").exists())
 
     def test_success_completed_transition(self):
         self.module(True); self.command(); self.assertEqual(bridge.process_one(self.config, resolve=object()), 0)
         self.assertTrue((self.queue / "completed" / "task.json").exists())
+        self.assertEqual(json.loads((self.queue / "completed" / "task.json").read_text())["run_id"], "r1")
 
     def test_failure_failed_transition(self):
         self.module(False); self.command(); self.assertEqual(bridge.process_one(self.config, resolve=object()), 1)
         self.assertTrue((self.queue / "failed" / "task.json").exists())
 
     def test_duplicate_run_id_rejection(self):
-        self.command("pending.json", "same"); (self.queue / "running" / "active.json").write_text(json.dumps({"run_id": "same"}), encoding="utf-8")
+        pending = self.command("pending.json", "same"); (self.queue / "completed" / "completed.json").write_text(json.dumps({"run_id": "same"}), encoding="utf-8")
         with self.assertRaises(bridge.BridgeError): bridge.claim_oldest(self.queue)
-        self.assertTrue((self.queue / "failed" / "pending.json").exists())
+        self.assertTrue(pending.exists())
+
+    def test_one_invocation_processes_one_filename_ordered_command(self):
+        self.module(True)
+        self.command("b.json", "b")
+        self.command("a.json", "a")
+        self.assertEqual(bridge.process_one(self.config, resolve=object()), 0)
+        self.assertTrue((self.queue / "completed" / "a.json").exists())
+        self.assertTrue((self.queue / "pending" / "b.json").exists())
+
+    def test_claim_failure_does_not_execute_module(self):
+        marker = self.tmp / "executed"
+        (self.repo / "resolve_workspace" / "modules" / "test_module.py").write_text(
+            "from pathlib import Path\ndef run(resolve, context):\n Path(r'" + str(marker) + "').write_text('executed'); return {'ok': True}\n",
+            encoding="utf-8",
+        )
+        pending = self.command()
+        with patch.object(Path, "rename", side_effect=PermissionError("locked")):
+            with self.assertRaises(bridge.BridgeError):
+                bridge.process_one(self.config, resolve=object())
+        self.assertTrue(pending.exists())
+        self.assertFalse(marker.exists())
+
+    def test_installed_copy_uses_adjacent_config_outside_repository(self):
+        installed = self.tmp / "Scripts" / "Edit" / "VC_Agent_Bridge.py"
+        installed.parent.mkdir(parents=True)
+        shutil.copy2(Path(bridge.__file__), installed)
+        installed.with_name(bridge.CONFIG_NAME).write_text(self.config.read_text(encoding="utf-8"), encoding="utf-8")
+        self.module(True)
+        self.command()
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("installed_bridge", installed)
+        loaded = importlib.util.module_from_spec(spec); assert spec.loader is not None; spec.loader.exec_module(loaded)
+        self.assertEqual(loaded.process_one(resolve=object()), 0)
+        self.assertTrue((self.queue / "completed" / "task.json").exists())
 
     def test_no_command_available(self):
         self.assertEqual(bridge.process_one(self.config, resolve=object()), 0)
+
+    def test_non_command_and_temporary_files_are_ignored(self):
+        pending = self.queue / "pending"
+        (pending / "notes.txt").write_text("not a command", encoding="utf-8")
+        (pending / "task.json.tmp").write_text("{}", encoding="utf-8")
+        (pending / ".hidden.json").write_text("{}", encoding="utf-8")
+        self.assertEqual(bridge.pending_commands(self.queue), [])
 
     def test_bootstrap_trace_precedes_config_loading(self):
         self.assertEqual(bridge.workspace_entrypoint(self.tmp / "missing.json"), 1)

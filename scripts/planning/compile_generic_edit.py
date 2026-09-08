@@ -35,7 +35,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
-VERSION = "generic_edit_compiler_v2_1_subtitle_candidate_priority"
+VERSION = "generic_edit_compiler_v2_3_zoom_candidate_non_actionable"
 DEFAULT_FPS = 24.0
 DEFAULT_SUBTITLE_MIN_FRAMES = 6
 DEFAULT_WORD_SUBTITLE_MIN_FRAMES = 3
@@ -459,12 +459,14 @@ def compile_main_operation(action: Dict[str, Any], shot: Dict[str, Any], ctx: Di
         return compile_cut(action, shot, ctx)
     if action_type == "beat_cut":
         return compile_beat_cut(action, shot, ctx)
-    if action_type == "zoom_in":
-        return compile_zoom(action, shot, ctx, direction="in")
-    if action_type == "zoom_out":
-        return compile_zoom(action, shot, ctx, direction="out")
+    if action_type in {"zoom_in", "zoom_out"}:
+        raise RuntimeError(
+            "zoom action is not executable: current planner has no source-backed editable zoom authority contract"
+        )
     if action_type == "speed_ramp":
-        return compile_speed_ramp(action, shot, ctx)
+        raise RuntimeError(
+            "speed_ramp action is not executable: current planner has no source-backed retime authority contract"
+        )
 
     return {
         "operation": "unknown",
@@ -1211,6 +1213,7 @@ def compile_timeline(validated_plan: Dict[str, Any], analysis: Dict[str, Any]) -
                 "intent": action.get("intent"),
                 "reason": action.get("reason"),
             },
+            "observations": item.get("observations") or {},
 
             "operations": operations,
             "compiler_hints": action.get("compiler_hints") or {},
@@ -1303,7 +1306,7 @@ def compile_generic(validated_plan: Dict[str, Any], analysis: Dict[str, Any], in
                 "source_end_frame",
                 "handles",
                 "transform_zoom.parameters.keyframes",
-                "speed_ramp.parameters.segments",
+                "observations.speed_ramp_candidate",
                 "transition_hint.parameters.duration_frames",
                 "transition_hint.parameters.side",
                 "transition_hint.parameters.placement",
