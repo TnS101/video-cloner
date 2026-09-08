@@ -335,6 +335,62 @@ def flow_stats(a: np.ndarray, b: np.ndarray) -> Dict[str, Any]:
     }
 
 
+def directional_context_stats(frames: List[np.ndarray]) -> Dict[str, Any]:
+    """Measure real motion on each side of a cut without crossing the cut.
+
+    Cross-cut optical flow between unrelated shots can produce a large coherent
+    vector even when the edit is just a hard cut.  A whip-pan promotion therefore
+    requires directional motion inside at least one adjacent shot as well.
+    """
+    if len(frames) < 4:
+        empty = {
+            "pair_count": 0,
+            "p90_magnitude": 0.0,
+            "mean_x": 0.0,
+            "mean_y": 0.0,
+            "direction": "mixed",
+            "directional_coherence": 0.0,
+        }
+        return {"outgoing": dict(empty), "incoming": dict(empty)}
+
+    center = len(frames) // 2
+    outgoing_frames = frames[:center]
+    incoming_frames = frames[center:]
+
+    def summarize(side_frames: List[np.ndarray]) -> Dict[str, Any]:
+        rows: List[Dict[str, Any]] = []
+        for index in range(len(side_frames) - 1):
+            try:
+                rows.append(flow_stats(side_frames[index], side_frames[index + 1]))
+            except Exception:
+                pass
+
+        if not rows:
+            return {
+                "pair_count": 0,
+                "p90_magnitude": 0.0,
+                "mean_x": 0.0,
+                "mean_y": 0.0,
+                "direction": "mixed",
+                "directional_coherence": 0.0,
+            }
+
+        best = max(rows, key=lambda row: float(row.get("p90_magnitude", 0.0) or 0.0))
+        return {
+            "pair_count": len(rows),
+            "p90_magnitude": float(best.get("p90_magnitude", 0.0) or 0.0),
+            "mean_x": float(best.get("mean_x", 0.0) or 0.0),
+            "mean_y": float(best.get("mean_y", 0.0) or 0.0),
+            "direction": str(best.get("direction") or "mixed"),
+            "directional_coherence": float(best.get("directional_coherence", 0.0) or 0.0),
+        }
+
+    return {
+        "outgoing": summarize(outgoing_frames),
+        "incoming": summarize(incoming_frames),
+    }
+
+
 # -------------------------
 # Transition classification
 # -------------------------
@@ -393,9 +449,48 @@ def classify_transition(metrics: Dict[str, Any], args: argparse.Namespace) -> Tu
         and coherence >= args.directional_coherence
         and direction in {"horizontal", "vertical"}
     ):
-        transition_type = "whip_pan" if direction == "horizontal" else "slide_transition"
+        if direction == "horizontal":
+            context = metrics.get("directional_context") or {}
+            context_rows = [context.get("outgoing") or {}, context.get("incoming") or {}]
+            supported_rows = [
+                row
+                for row in context_rows
+                if str(row.get("direction") or "") == "horizontal"
+                and float(row.get("p90_magnitude", 0.0) or 0.0) >= args.whip_context_flow_p90
+                and float(row.get("directional_coherence", 0.0) or 0.0) >= args.whip_context_coherence
+            ]
+            if not supported_rows:
+                return "whip_pan_candidate", "medium", [
+                    "cross-cut horizontal flow lacks within-shot horizontal support",
+                    "direction=horizontal",
+                ]
+
+            confidence = "high" if flow_p90 >= args.directional_high_flow_p90 and strength >= 0.52 else "medium"
+            return "whip_pan", confidence, [
+                "horizontal optical-flow spike with within-shot support",
+                "direction=horizontal",
+            ]
+
+        context = metrics.get("directional_context") or {}
+        context_rows = [context.get("outgoing") or {}, context.get("incoming") or {}]
+        supported_rows = [
+            row
+            for row in context_rows
+            if str(row.get("direction") or "") == "vertical"
+            and float(row.get("p90_magnitude", 0.0) or 0.0) >= args.slide_context_flow_p90
+            and float(row.get("directional_coherence", 0.0) or 0.0) >= args.slide_context_coherence
+        ]
+        if not supported_rows:
+            return "slide_transition_candidate", "medium", [
+                "cross-cut vertical flow lacks within-shot vertical support",
+                "direction=vertical",
+            ]
+
         confidence = "high" if flow_p90 >= args.directional_high_flow_p90 and strength >= 0.52 else "medium"
-        return transition_type, confidence, ["directional optical-flow spike", f"direction={direction}"]
+        return "slide_transition_candidate", confidence, [
+            "vertical optical-flow spike with within-shot support",
+            "direction=vertical",
+        ]
 
     if blur_drop >= args.blur_drop and flow_p90 >= args.blur_flow_p90:
         confidence = "high" if strength >= 0.65 else "medium"
@@ -428,6 +523,7 @@ def analyze_boundary_frames(before: np.ndarray, after: np.ndarray, near_frames: 
     blur_drop = 0.0 if blur_median <= 1 else max(0.0, (blur_median - blur_min) / blur_median)
 
     flow = flow_stats(before, after)
+    directional_context = directional_context_stats(near_frames)
     adjacent = adjacent_hist_deltas(near_frames)
     adjacent_mean = float(np.mean(adjacent)) if adjacent else 0.0
     adjacent_max = float(np.max(adjacent)) if adjacent else 0.0
@@ -459,6 +555,17 @@ def analyze_boundary_frames(before: np.ndarray, after: np.ndarray, near_frames: 
             "direction": flow["direction"],
             "directional_coherence": round(float(flow.get("directional_coherence", 0.0) or 0.0), 4),
             "radial_score": round(float(flow.get("radial_score", 0.0) or 0.0), 4),
+        },
+        "directional_context": {
+            side: {
+                key: (
+                    round(float(value), 4)
+                    if key in {"p90_magnitude", "mean_x", "mean_y", "directional_coherence"}
+                    else value
+                )
+                for key, value in row.items()
+            }
+            for side, row in directional_context.items()
         },
     }
     metrics["transition_strength"] = transition_strength_score(metrics)
@@ -792,6 +899,30 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--directional-high-flow-p90", type=float, default=13.0)
     parser.add_argument("--directional-hist-delta", type=float, default=0.30)
     parser.add_argument("--directional-coherence", type=float, default=0.10)
+    parser.add_argument(
+        "--whip-context-flow-p90",
+        type=float,
+        default=4.5,
+        help="Minimum within-shot horizontal p90 flow required for whip-pan promotion. Default: 4.5",
+    )
+    parser.add_argument(
+        "--whip-context-coherence",
+        type=float,
+        default=0.25,
+        help="Minimum within-shot horizontal coherence required for whip-pan promotion. Default: 0.25",
+    )
+    parser.add_argument(
+        "--slide-context-flow-p90",
+        type=float,
+        default=4.5,
+        help="Minimum within-shot vertical p90 flow required for slide-transition promotion. Default: 4.5",
+    )
+    parser.add_argument(
+        "--slide-context-coherence",
+        type=float,
+        default=0.25,
+        help="Minimum within-shot vertical coherence required for slide-transition promotion. Default: 0.25",
+    )
     parser.add_argument("--blur-drop", type=float, default=0.45)
     parser.add_argument("--blur-flow-p90", type=float, default=3.0)
     parser.add_argument("--zoom-score", type=float, default=0.55)

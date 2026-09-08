@@ -1,0 +1,19 @@
+{
+  "data_root": "data",
+  "input_root": "input",
+  "media_root": "media",
+  "ffmpeg": "ffmpeg",
+  "yt_dlp": "yt-dlp",
+  "python_default": "python",
+  "python_audio": "python",
+  "python_ocr": "python",
+  "python_rhythm": "python",
+  "python_resolve": null,
+  "resolve_home": null,
+  "resolve_script_api": null,
+  "resolve_script_lib": null,
+  "resolve_portable_exe": null,
+  "ollama_url": "http://127.0.0.1:11434",
+  "ollama_model": "llama3.1",
+  "cookies_path": null
+}

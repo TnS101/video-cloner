@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
-VERSION = "edit_planner_v4_rich_operation_hints"
+VERSION = "edit_planner_v4_2_zoom_candidate_non_actionable"
 
 # Primary editor-agnostic intent actions. These are still not DaVinci/OpenReel commands.
 # The compiler converts their deterministic operation_hints into generic edit commands.
@@ -14,9 +14,6 @@ ALLOWED_ACTIONS = [
     "hold",
     "cut",
     "beat_cut",
-    "zoom_in",
-    "zoom_out",
-    "speed_ramp",
 ]
 
 VALID_SPEED_RAMP_INTENSITIES = {"medium", "high", "very_high"}
@@ -241,6 +238,10 @@ def slim_analysis(analysis: Dict[str, Any]) -> Dict[str, Any]:
             "motion_intensity": motion.get("motion_intensity"),
             "motion_confidence": motion.get("confidence"),
             "speed_ramp_candidate": edit_signals.get("speed_ramp_candidate"),
+            "zoom_candidate": bool(motion.get("zoom_candidate")),
+            "zoom_direction": motion.get("zoom_direction"),
+            "zoom_confidence": safe_dict(motion.get("motion_based_zoom")).get("confidence"),
+            "zoom_affine_scale_delta": safe_dict(motion.get("camera_motion")).get("avg_scale_delta"),
             "cut_rhythm_label": edit_signals.get("cut_rhythm_label"),
             "cut_priority_score": edit_signals.get("cut_priority_score"),
             "beats_in_shot_count": edit_signals.get("beats_in_shot_count"),
@@ -282,21 +283,12 @@ def build_prompt(slim: Dict[str, Any]) -> str:
     the planner useful without allowing hallucinated editor-specific commands.
     """
     action_schema = {
-        "type": "hold|cut|beat_cut|zoom_in|zoom_out|speed_ramp",
+        "type": "hold|cut|beat_cut",
         "reason": "short practical reason",
         "caption_policy": "none|keep|emphasize_speech",
         "operation_hints": [
             {
-                "operation": "transform_zoom|speed_ramp|cut|hold|beat_cut",
-                "keyframes": [
-                    {"relative_frame": 0, "zoom": 1.0},
-                    {"relative_frame": 46, "zoom": 1.12},
-                ],
-                "segments": [
-                    {"from_frame": 0, "to_frame": 8, "speed": 1.0},
-                    {"from_frame": 8, "to_frame": 28, "speed": 1.35},
-                    {"from_frame": 28, "to_frame": 46, "speed": 1.0},
-                ],
+                "operation": "cut|hold|beat_cut",
             }
         ],
     }
@@ -353,27 +345,20 @@ Hard rules:
 - Do NOT invent subtitle text. Only decide caption_plan enabled/style/placement/density.
 
 Action priority:
-1. speed_ramp
-2. beat_cut
-3. zoom_in
-4. zoom_out
-5. cut
-6. hold
+1. beat_cut
+2. cut
+3. hold
 
 Decision rules:
-- Use speed_ramp only when speed_ramp_candidate == true AND motion_intensity is medium/high/very_high.
+- Treat speed_ramp_candidate as non-actionable motion metadata only. Never emit speed_ramp without separate source-backed retime authority.
+- Treat affine-scale zoom_candidate motion as non-actionable metadata only. Never emit zoom_in/zoom_out without separate source-backed editable-transform authority.
 - Use beat_cut only when cut_priority_score > 0.5 AND beats_in_shot_count > 0.
-- Use zoom_in only when motion_family is push_in OR motion_type contains push_in.
-- Use zoom_out only when motion_family is pull_out OR motion_type contains pull_out.
-- Use cut when no higher-priority action applies AND cut_priority_score >= 0.3.
+- Use cut for non-actionable speed/zoom candidates and when cut_priority_score >= 0.3.
 - Use hold only when no higher-priority action applies AND motion_family is static AND cut_priority_score < 0.3.
 - If none apply, use cut.
 
 Operation hint rules:
-- For zoom_in, operation_hints should describe transform_zoom keyframes from zoom 1.0 to 1.06/1.12/1.18 depending on strength.
-- For zoom_out, operation_hints should describe transform_zoom keyframes from zoom 1.06/1.12/1.18 to 1.0.
-- For speed_ramp, operation_hints should describe three segments: ramp_in, hold_fast, ramp_out.
-- Use relative_frame values only. Do not use absolute timeline frames.
+- Emit only source-preserving cut/hold/beat_cut hints from this planner.
 - If unsure about exact values, output a valid simple action; sanitizer will rebuild deterministic hints.
 
 Caption plan rules:
@@ -584,7 +569,9 @@ def build_cut_operation_hint(action_type: str, shot: Dict[str, Any], compiler_hi
 
 def build_operation_hints(action_type: str, shot: Dict[str, Any], compiler_hints: Dict[str, Any]) -> List[Dict[str, Any]]:
     if action_type in {"zoom_in", "zoom_out"}:
-        return [build_zoom_operation_hint(action_type, shot, compiler_hints)]
+        raise RuntimeError(
+            "zoom action is not executable: current planner has no source-backed editable zoom authority contract"
+        )
     if action_type == "speed_ramp":
         return [build_speed_ramp_operation_hint(shot, compiler_hints)]
     return [build_cut_operation_hint(action_type, shot, compiler_hints)]
@@ -708,6 +695,47 @@ def compute_action_metadata(action_type: str, shot: Dict[str, Any]) -> Dict[str,
     }
 
 
+def build_speed_ramp_observation(shot: Dict[str, Any]) -> Dict[str, Any]:
+    """Preserve motion-derived speed interest without granting retime authority."""
+    candidate = bool(shot.get("speed_ramp_candidate"))
+    return {
+        "candidate": candidate,
+        "actionable": False,
+        "authority": "motion_heuristic_only",
+        "motion_intensity": shot.get("motion_intensity"),
+        "motion_confidence": shot.get("motion_confidence"),
+        "reason": (
+            "motion analysis marked a speed-ramp candidate; exact retime authority "
+            "requires separate source-backed evidence"
+            if candidate
+            else "motion analysis did not mark a speed-ramp candidate"
+        ),
+    }
+
+
+def build_zoom_observation(shot: Dict[str, Any]) -> Dict[str, Any]:
+    """Preserve affine-scale motion evidence without granting editable zoom authority."""
+    candidate = bool(shot.get("zoom_candidate"))
+    return {
+        "candidate": candidate,
+        "actionable": False,
+        "authority": "motion_heuristic_only",
+        "source": "motion_affine_scale_delta",
+        "direction": shot.get("zoom_direction") if candidate else None,
+        "confidence": shot.get("zoom_confidence"),
+        "motion_family": shot.get("motion_family"),
+        "motion_type": shot.get("motion_type"),
+        "motion_intensity": shot.get("motion_intensity"),
+        "avg_scale_delta": shot.get("zoom_affine_scale_delta"),
+        "reason": (
+            "affine scale motion marked a zoom candidate; editable zoom authority "
+            "requires separate source-backed transform evidence"
+            if candidate
+            else "affine scale motion did not mark a zoom candidate"
+        ),
+    }
+
+
 def expected_action_for_shot(shot: Dict[str, Any]) -> Dict[str, Any]:
     """
     Deterministic fallback/sanitizer using priority rules.
@@ -719,22 +747,19 @@ def expected_action_for_shot(shot: Dict[str, Any]) -> Dict[str, Any]:
     cut_priority_score = get_float(shot.get("cut_priority_score"), 0.0)
     beats_in_shot_count = get_float(shot.get("beats_in_shot_count"), 0.0)
     speed_ramp_candidate = bool(shot.get("speed_ramp_candidate"))
+    zoom_candidate = bool(shot.get("zoom_candidate"))
 
     if speed_ramp_candidate and motion_intensity in VALID_SPEED_RAMP_INTENSITIES:
-        action_type = "speed_ramp"
-        reason = f"speed_ramp_candidate is true and motion_intensity is {motion_intensity}"
+        action_type = "cut"
+        reason = "speed_ramp_candidate retained as non-actionable motion observation; preserve source timing"
 
     elif cut_priority_score > 0.5 and beats_in_shot_count > 0:
         action_type = "beat_cut"
         reason = f"cut_priority_score is {round(cut_priority_score, 4)} and beats_in_shot_count is {int(beats_in_shot_count)}"
 
-    elif motion_family == "push_in" or "push_in" in motion_type:
-        action_type = "zoom_in"
-        reason = "motion supports push_in"
-
-    elif motion_family == "pull_out" or "pull_out" in motion_type:
-        action_type = "zoom_out"
-        reason = "motion supports pull_out"
+    elif zoom_candidate:
+        action_type = "cut"
+        reason = "zoom_candidate retained as non-actionable motion observation; preserve source geometry"
 
     elif cut_priority_score >= 0.3:
         action_type = "cut"
@@ -870,6 +895,10 @@ def sanitize_edit_plan(edit_plan: Dict[str, Any], slim: Dict[str, Any]) -> Tuple
         cleaned_timeline.append({
             "shot_id": shot_id,
             "actions": [action],
+            "observations": {
+                "speed_ramp_candidate": build_speed_ramp_observation(shot),
+                "zoom_candidate": build_zoom_observation(shot),
+            },
         })
 
     caption_plan = sanitize_caption_plan(edit_plan, slim)

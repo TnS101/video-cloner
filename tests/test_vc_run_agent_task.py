@@ -26,9 +26,9 @@ class LauncherTests(unittest.TestCase):
 
     def test_non_main_runs_and_forwards_globals(self):
         marker = self.tmp / "called.json"
-        (self.repo / "resolve_workspace" / "VC_Agent_Bridge.py").write_text("import json\nfrom pathlib import Path\ndef workspace_main(resolve=None, fusion=None):\n Path(r'" + str(marker) + "').write_text(json.dumps({'resolve': resolve, 'fusion': fusion})); return 0\n", encoding="utf-8")
+        (self.repo / "resolve_workspace" / "VC_Agent_Bridge.py").write_text("import json\nfrom pathlib import Path\ndef workspace_main(resolve=None, fusion=None, config_path=None):\n Path(r'" + str(marker) + "').write_text(json.dumps({'resolve': resolve, 'fusion': fusion, 'config_path': str(config_path)})); return 0\n", encoding="utf-8")
         self.execute({"resolve": "RESOLVE", "fusion": "FUSION"})
-        self.assertEqual(json.loads(marker.read_text()), {"resolve": "RESOLVE", "fusion": "FUSION"})
+        self.assertEqual(json.loads(marker.read_text()), {"resolve": "RESOLVE", "fusion": "FUSION", "config_path": str(self.config)})
         self.assertIn("repository_bridge_loaded", (self.repo / ".agent" / "logs" / "VC_Run_Agent_Task_bootstrap.log").read_text())
 
     def test_directory_trace_precedes_missing_config(self):
@@ -41,7 +41,7 @@ class LauncherTests(unittest.TestCase):
         self.execute(); self.assertIn("Traceback", self.launcher.with_name("VC_Run_Agent_Task_bootstrap.log").read_text())
 
     def test_uses_argv_when_resolve_omits_file_global(self):
-        (self.repo / "resolve_workspace" / "VC_Agent_Bridge.py").write_text("def workspace_main(resolve=None, fusion=None): return 0\n", encoding="utf-8")
+        (self.repo / "resolve_workspace" / "VC_Agent_Bridge.py").write_text("def workspace_main(resolve=None, fusion=None, config_path=None): return 0\n", encoding="utf-8")
         original = sys.argv[:]
         try:
             sys.argv = [str(self.launcher)]

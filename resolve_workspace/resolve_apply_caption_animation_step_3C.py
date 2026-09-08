@@ -20,6 +20,7 @@ from __future__ import annotations
 import ctypes
 import json
 import math
+import os
 import re
 import time
 import traceback
@@ -1676,4 +1677,5 @@ def main() -> None:
         )
 
 
-main()
+if os.environ.get("VC_DISABLE_WORKSPACE_AUTORUN") != "1":
+    main()

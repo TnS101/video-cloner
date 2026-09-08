@@ -1,0 +1,34 @@
+index,name,type,reachable,stage,dependency_or_disposition
+1,When clicking ‘Execute workflow’,manualTrigger,true,trigger,
+2,Dummy URL pass,code,true,ingest,replaced_phase1
+3,Download Video,executeCommand,true,ingest,yt-dlp
+4,Get Media Path,code,true,run_context,replaced_phase1
+5,Create Dirs,executeCommand,true,run_context,replaced_phase1
+6,Extract WAV,executeCommand,true,media_prep,ffmpeg
+7,Beat Detection,executeCommand,true,analysis,phase2_standalone_equivalent:scripts/analysis/detect_rhythm_beats.py
+8,Transcribe,executeCommand,true,analysis,phase2_standalone_equivalent:scripts/analysis/transcribe.py
+9,Parse Transcription,code,true,analysis,phase2_standalone_equivalent
+10,Caption Style Detection OCR,executeCommand,true,analysis,phase2_standalone_equivalent:scripts/analysis/detect_caption_style.py
+11,Detect Caption Occlusion,executeCommand,true,analysis,phase2_standalone_equivalent:scripts/analysis/detect_caption_occlusion.py
+12,Generate Low-Res Proxy,executeCommand,true,media_prep,ffmpeg; reordered_before_proxy_consumers
+13,Scene Detect,executeCommand,true,analysis,phase2_standalone_equivalent:scripts/analysis/detect_cuts.py
+14,Parse Scene Detect,code,true,analysis,phase2_standalone_equivalent
+15,Write Shots File,code,true,analysis,phase2_standalone_equivalent
+16,Motion Detect,executeCommand,true,analysis,phase2_standalone_equivalent:scripts/analysis/detect_motion_speed.py
+17,Transition Detect,executeCommand,true,analysis,phase2_standalone_equivalent:scripts/analysis/detect_transitions_proxy.py
+18,Collect Analysis,executeCommand,true,planning,scripts/planning/merge_analysis.py
+19,Generate Edit Plan,executeCommand,true,planning,scripts/planning/plan_edit.py
+20,Validate Edit Plan,executeCommand,true,planning,scripts/planning/validate_edit_plan.py
+21,Compile Generic Edit,executeCommand,true,planning,scripts/planning/compile_generic_edit.py
+22,Compile Davinci Otio,executeCommand,true,compile,scripts/davinci/compile_davinci_otio.py
+23,Compile Davinci Subtitles,executeCommand,true,compile,scripts/davinci/compile_davinci_srt.py
+24,Compile TextPlus,executeCommand,true,compile,scripts/davinci/compile_davinci_textplus_fcpxml.py
+25,Apply Video Cloner,executeCommand,true,resolve,scripts/davinci/resolve_apply_video_cloner_metadata.py
+26,Download Video Metadata,executeCommand,false,unreachable,disabled
+27,Compile Davinci Styled Subtitles,executeCommand,false,unreachable,disabled
+28,Apply Davinci Styled Subtitles,executeCommand,false,unreachable,disabled
+29,Sticky Note,stickyNote,false,documentation,
+30,Sticky Note1,stickyNote,false,documentation,
+31,Sticky Note2,stickyNote,false,documentation,
+32,Sticky Note3,stickyNote,false,documentation,
+33,Sticky Note4,stickyNote,false,documentation,
