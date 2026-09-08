@@ -16,3 +16,10 @@ Inventory totals after Phase 1:
 - TOTAL: 376
 
 `UNKNOWN` means no direct immutable caller or acceptance evidence was found; it is not an archive recommendation. No deletion or archive operation is authorized by this audit. Phase 1 adds only standalone RunContext, ingest/media preparation, configuration, tests, and these reports. Resolve execution is outside the phase.
+
+Migration file accounting:
+
+- Original candidate inventory: 440 files (427 INCLUDE, 13 EXCLUDE).
+- INCLUDE: 105 tracked files and 322 untracked source, test, configuration, and documentation files.
+- EXCLUDE: three generated usage outputs, two machine-local scripts, and eight dependent workflow/test files.
+- `.agent/SOL_ENGINEER.md` and `.agent/LUNA_ASSEMBLER.md` were outside the 440-file inventory because `.agent/*` ignored them. Sanitized portable copies are now committed as two supplemental instruction files, increasing the migrated baseline from 427 to 429 files without changing the original candidate dispositions.
