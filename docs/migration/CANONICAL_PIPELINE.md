@@ -11,9 +11,11 @@
    - Proxy + shots -> motion and transitions.
    - Proxy + caption style + transcript -> caption occlusion.
    Cache identity includes the analyzer script, actual configured interpreter, deterministic command profile, and required input hashes. Caption-occlusion reuse additionally fingerprints its primary JSON and all required foreground-mask manifests and frames; zero requested masks are a valid no-sidecar result, while optional debug/audit artifacts are excluded.
-6. Planning: merge, plan, validate, and compile generic source-preserving operations. Not implemented by Phase 2.
-7. Compilation: OTIO, SRT, and Text+ timeline artifacts.
+6. Planning: merge, plan, validate, and compile generic source-preserving operations. Source and tests are present but are not part of Phase 2 acceptance.
+7. Compilation: cut-only FCPXML source and tests are present; OTIO, SRT, and Text+ standalone compilation remains unaccepted.
 8. Resolve application: permanent bridge only.
 9. Verification: persistent readback, idempotency, regression, immutable artifacts, and visual approval where required.
 
 Phases 1 and 2 implement stages 1-5. Analysis produces observations only. Existing n8n remains immutable orchestration evidence; its analysis-node responsibilities are superseded only after Phase 2 acceptance.
+
+Standalone Migration phase numbers in these documents are distinct from Reel pipeline phase numbers in retained historical filenames.
