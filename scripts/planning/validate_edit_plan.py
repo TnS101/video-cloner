@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
-VERSION = "validate_edit_plan_v4_rich_generic_contract"
+VERSION = "validate_edit_plan_v4_2_zoom_candidate_non_actionable"
 
 PRIMARY_ACTIONS = {
     "hold",
@@ -90,6 +90,11 @@ REQUIRED_PRIMARY_COMPILER_HINT_KEYS = {
 }
 
 VALID_SPEED_RAMP_INTENSITIES = {"medium", "high", "very_high"}
+OBSERVATIONAL_TRANSITION_CANDIDATES = {
+    "slide_transition_candidate",
+    "whip_pan_candidate",
+}
+UNSUPPORTED_EXECUTABLE_TRANSITIONS = {"slide_transition", "whip_pan"}
 MIN_TRANSITION_FRAMES = 6
 DEFAULT_TRANSITION_FRAMES = 12
 
@@ -343,11 +348,98 @@ def is_static(shot: Dict[str, Any]) -> bool:
 
 
 def valid_speed_ramp(shot: Dict[str, Any]) -> bool:
+    """Motion heuristics alone never authorize an executable retime."""
+    return False
+
+
+def expected_speed_ramp_observation(shot: Dict[str, Any]) -> Dict[str, Any]:
     motion = get_motion(shot)
     signals = get_edit_signals(shot)
     candidate = bool(signals.get("speed_ramp_candidate"))
-    intensity = str(motion.get("motion_intensity") or "").lower()
-    return candidate and intensity in VALID_SPEED_RAMP_INTENSITIES
+    return {
+        "candidate": candidate,
+        "actionable": False,
+        "authority": "motion_heuristic_only",
+        "motion_intensity": motion.get("motion_intensity"),
+        "motion_confidence": motion.get("confidence"),
+        "reason": (
+            "motion analysis marked a speed-ramp candidate; exact retime authority "
+            "requires separate source-backed evidence"
+            if candidate
+            else "motion analysis did not mark a speed-ramp candidate"
+        ),
+    }
+
+
+def validate_speed_ramp_observation(
+    item: Dict[str, Any],
+    shot: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    shot_id = int(shot.get("shot_id"))
+    observations = item.get("observations")
+    if not isinstance(observations, dict):
+        return [err("timeline item missing observations object", shot_id=shot_id)]
+
+    actual = observations.get("speed_ramp_candidate")
+    expected = expected_speed_ramp_observation(shot)
+    if actual != expected:
+        return [
+            err(
+                "speed_ramp_candidate observation mismatch",
+                shot_id=shot_id,
+                expected=expected,
+                actual=actual,
+            )
+        ]
+    return []
+
+
+def expected_zoom_observation(shot: Dict[str, Any]) -> Dict[str, Any]:
+    motion = get_motion(shot)
+    camera_motion = motion.get("camera_motion") or {}
+    motion_based_zoom = motion.get("motion_based_zoom") or {}
+    candidate = bool(motion.get("zoom_candidate"))
+    return {
+        "candidate": candidate,
+        "actionable": False,
+        "authority": "motion_heuristic_only",
+        "source": "motion_affine_scale_delta",
+        "direction": motion.get("zoom_direction") if candidate else None,
+        "confidence": motion_based_zoom.get("confidence"),
+        "motion_family": motion.get("motion_family"),
+        "motion_type": motion.get("motion_type"),
+        "motion_intensity": motion.get("motion_intensity"),
+        "avg_scale_delta": camera_motion.get("avg_scale_delta"),
+        "reason": (
+            "affine scale motion marked a zoom candidate; editable zoom authority "
+            "requires separate source-backed transform evidence"
+            if candidate
+            else "affine scale motion did not mark a zoom candidate"
+        ),
+    }
+
+
+def validate_zoom_observation(
+    item: Dict[str, Any],
+    shot: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    shot_id = int(shot.get("shot_id"))
+    observations = item.get("observations")
+    if not isinstance(observations, dict):
+        return [err("timeline item missing observations object", shot_id=shot_id)]
+
+    actual = observations.get("zoom_candidate")
+    expected = expected_zoom_observation(shot)
+    if actual != expected:
+        return [
+            err(
+                "zoom_candidate observation mismatch",
+                shot_id=shot_id,
+                expected=expected,
+                actual=actual,
+            )
+        ]
+    return []
 
 
 def valid_beat_cut(shot: Dict[str, Any]) -> bool:
@@ -376,16 +468,13 @@ def expected_action_type_for_shot(shot: Dict[str, Any]) -> str:
     speed_ramp_candidate = bool(signals.get("speed_ramp_candidate"))
 
     if speed_ramp_candidate and motion_intensity in VALID_SPEED_RAMP_INTENSITIES:
-        return "speed_ramp"
+        return "cut"
 
     if cut_priority_score > 0.5 and beats_in_shot_count > 0:
         return "beat_cut"
 
-    if motion_family == "push_in" or "push_in" in motion_type:
-        return "zoom_in"
-
-    if motion_family == "pull_out" or "pull_out" in motion_type:
-        return "zoom_out"
+    if bool(motion.get("zoom_candidate")):
+        return "cut"
 
     if cut_priority_score >= 0.3:
         return "cut"
@@ -877,10 +966,11 @@ def validate_action_against_analysis(
     if action_type == "speed_ramp" and not valid_speed_ramp(shot):
         errors.append(
             err(
-                "invalid speed_ramp action",
+                "invalid speed_ramp action; motion heuristic is not retime authority",
                 shot_id=shot_id,
                 speed_ramp_candidate=signals.get("speed_ramp_candidate"),
                 motion_intensity=motion.get("motion_intensity"),
+                required_authority="separate source-backed retime evidence",
             )
         )
 
@@ -894,23 +984,17 @@ def validate_action_against_analysis(
             )
         )
 
-    elif action_type == "zoom_in" and not is_push_in(shot):
+    elif action_type in {"zoom_in", "zoom_out"}:
         errors.append(
             err(
-                "invalid zoom_in action; motion does not support push_in",
+                "invalid zoom action; motion heuristic is not editable zoom authority",
                 shot_id=shot_id,
+                action_type=action_type,
+                zoom_candidate=motion.get("zoom_candidate"),
+                zoom_direction=motion.get("zoom_direction"),
                 motion_type=motion.get("motion_type"),
                 motion_family=motion.get("motion_family"),
-            )
-        )
-
-    elif action_type == "zoom_out" and not is_pull_out(shot):
-        errors.append(
-            err(
-                "invalid zoom_out action; motion does not support pull_out",
-                shot_id=shot_id,
-                motion_type=motion.get("motion_type"),
-                motion_family=motion.get("motion_family"),
+                required_authority="separate source-backed transform evidence",
             )
         )
 
@@ -1043,10 +1127,40 @@ def validate_transition_contract(
     confidence = transition.get("confidence")
     transition_type = transition.get("transition_type")
 
+    if transition_type in UNSUPPORTED_EXECUTABLE_TRANSITIONS:
+        errors.append(
+            err(
+                "unsupported executable transition_type",
+                shot_id=shot_id,
+                transition_type=transition_type,
+            )
+        )
+
     if confidence not in {"low", "medium", "high", None}:
         warnings.append(warn("transition confidence is unusual", shot_id=shot_id, confidence=confidence))
 
     if confidence != "high":
+        return errors, warnings
+
+    scores = transition.get("scores")
+    reasons = transition.get("reasons")
+    observational_candidate = (
+        transition_type in OBSERVATIONAL_TRANSITION_CANDIDATES
+        and transition.get("editor_actionable") is False
+        and transition.get("is_editor_candidate") is not True
+        and is_number(transition.get("duration_frames"))
+        and float(transition["duration_frames"]) == 0.0
+        and is_number(transition.get("duration_seconds"))
+        and float(transition["duration_seconds"]) == 0.0
+        and isinstance(scores, dict)
+        and bool(scores)
+        and isinstance(reasons, list)
+        and bool(reasons)
+    )
+
+    if observational_candidate:
+        if transition.get("cut_time") is None and transition.get("cut_frame") is None:
+            errors.append(err("high-confidence transition must include cut_time or cut_frame", shot_id=shot_id))
         return errors, warnings
 
     if not transition_type or "candidate" in str(transition_type).lower():
@@ -1267,6 +1381,9 @@ def validate_timeline(
         if source_shot is None:
             errors.append(err("unknown shot_id", index=index, shot_id=shot_id))
             continue
+
+        errors.extend(validate_speed_ramp_observation(item, source_shot))
+        errors.extend(validate_zoom_observation(item, source_shot))
 
         actions = item.get("actions")
         if not isinstance(actions, list):

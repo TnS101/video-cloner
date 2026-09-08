@@ -45,7 +45,7 @@ def utc_now() -> str:
 
 
 def load_config(config_path: Path | str | None = None) -> Dict[str, Any]:
-    path = Path(config_path) if config_path else Path(__file__).with_name(CONFIG_NAME)
+    path = (Path(config_path) if config_path else Path(__file__).with_name(CONFIG_NAME)).resolve()
     if not path.is_file():
         raise BridgeError(f"missing bridge config: {path}")
     try:
@@ -54,7 +54,7 @@ def load_config(config_path: Path | str | None = None) -> Dict[str, Any]:
         raise BridgeError(f"invalid bridge config: {path}: {exc}") from exc
     if config.get("schema_version") != 1:
         raise BridgeError("unsupported bridge config schema")
-    repository_root = Path(str(config.get("repository_root") or "")).expanduser()
+    repository_root = Path(str(config.get("repository_root") or "")).expanduser().resolve()
     if not repository_root.is_dir():
         raise BridgeError(f"invalid repository root: {repository_root}")
     if config.get("command_queue") != ".agent\\commands":
@@ -84,18 +84,22 @@ def load_command(path: Path) -> Dict[str, Any]:
 
 
 def pending_commands(queue: Path) -> list[Path]:
-    return sorted((p for p in (queue / "pending").glob("*.json") if p.is_file()), key=lambda p: (p.stat().st_mtime_ns, p.name))
+    return sorted(
+        (path for path in (queue / "pending").glob("*.json") if path.is_file() and not path.name.startswith(".")),
+        key=lambda path: path.name,
+    )
 
 
-def active_run_ids(queue: Path) -> set[str]:
+def existing_run_ids(queue: Path) -> set[str]:
     ids: set[str] = set()
-    for path in (queue / "running").glob("*.json"):
-        try:
-            value = json.loads(path.read_text(encoding="utf-8-sig")).get("run_id")
-            if isinstance(value, str):
-                ids.add(value)
-        except Exception:
-            continue
+    for state in ("running", "completed", "failed"):
+        for path in (queue / state).glob("*.json"):
+            try:
+                value = json.loads(path.read_text(encoding="utf-8-sig")).get("run_id")
+                if isinstance(value, str) and value:
+                    ids.add(value)
+            except Exception:
+                continue
     return ids
 
 
@@ -105,12 +109,16 @@ def claim_oldest(queue: Path) -> tuple[Path, Dict[str, Any]] | None:
         return None
     source = paths[0]
     command = load_command(source)
-    if command["run_id"] in active_run_ids(queue):
-        failed = queue / "failed" / source.name
-        os.replace(source, failed)
-        raise BridgeError(f"duplicate active run_id rejected: {command['run_id']}")
+    conflicts = [queue / state / source.name for state in ("running", "completed", "failed") if (queue / state / source.name).exists()]
+    if conflicts:
+        raise BridgeError(f"command filename already exists in a terminal or active state: {source.name}")
+    if command["run_id"] in existing_run_ids(queue):
+        raise BridgeError(f"run_id already exists in a terminal or active state: {command['run_id']}")
     running = queue / "running" / source.name
-    os.replace(source, running)
+    try:
+        source.rename(running)
+    except OSError as exc:
+        raise BridgeError(f"could not atomically claim command: {source.name}: {exc}") from exc
     return running, command
 
 
@@ -131,14 +139,24 @@ def safe_module_path(repository_root: Path, command: Dict[str, Any]) -> Path:
     return resolved
 
 
-def write_text(path_value: str, text: str) -> None:
-    path = Path(path_value)
+def repository_path(repository_root: Path, path_value: Any, field: str) -> Path:
+    if not isinstance(path_value, str) or not path_value:
+        raise BridgeError(f"command {field} is required")
+    candidate = Path(path_value)
+    resolved = candidate.resolve() if candidate.is_absolute() else (repository_root / candidate).resolve()
+    try:
+        resolved.relative_to(repository_root.resolve())
+    except ValueError as exc:
+        raise BridgeError(f"command {field} must resolve inside the repository: {path_value}") from exc
+    return resolved
+
+
+def write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
 
 
-def write_json(path_value: str, payload: Dict[str, Any]) -> None:
-    path = Path(path_value)
+def write_json(path: Path, payload: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_name(path.name + ".tmp")
     temp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -174,11 +192,8 @@ def execute_command(command: Dict[str, Any], repository_root: Path, resolve: Any
 
 
 def process_one(config_path: Path | str | None = None, resolve: Any = None) -> int:
-    config = load_config(config_path) if config_path else {
-        "repository_root": Path(__file__).resolve().parent.parent,
-        "command_queue": ".agent\\commands",
-    }
-    repository_root = Path(config["repository_root"])
+    config = load_config(config_path)
+    repository_root = Path(config["repository_root"]).resolve()
     queue = command_queue(config)
     pending = pending_commands(queue)
     bootstrap_trace("queue_processing_start", repository_root=repository_root,
@@ -190,41 +205,48 @@ def process_one(config_path: Path | str | None = None, resolve: Any = None) -> i
         return 0
     running_path, command = claimed
     run_id = command["run_id"]
-    status_path = command.get("status_path")
-    log_path = command.get("log_path")
-    report_path = command.get("report_path")
-    started = utc_now()
-    status = {"schema_version": 1, "run_id": run_id, "running": True, "ok": False, "started_at": started}
-    if status_path:
-        write_json(status_path, status)
-    if log_path:
-        write_text(log_path, f"{run_id} bridge_started {started}\n")
-    code = 1
+    status_path: Path | None = None
+    log_path: Path | None = None
+    report_path: Path | None = None
     try:
+        status_path = repository_path(repository_root, command.get("status_path"), "status_path")
+        log_path = repository_path(repository_root, command.get("log_path"), "log_path")
+        report_path = repository_path(repository_root, command.get("report_path"), "report_path")
+        started = utc_now()
+        status = {"schema_version": 1, "run_id": run_id, "running": True, "ok": False, "started_at": started}
+        write_json(status_path, status)
+        write_text(log_path, f"{run_id} bridge_started {started}\n")
         result = execute_command(command, repository_root, resolve=resolve)
         report = dict(result)
         report.update({"run_id": run_id, "module": command.get("module"), "mode": command.get("mode"), "ok": bool(result.get("ok"))})
-        code = 0 if report["ok"] else 1
-        final_status = {"schema_version": 1, "run_id": run_id, "running": False, "ok": report["ok"], "finished_at": utc_now(), "report_path": report_path}
-        if report_path:
-            write_json(report_path, report)
-        if status_path:
-            write_json(status_path, final_status)
-        if log_path:
-            write_text(log_path, f"{run_id} bridge_finished ok={report['ok']} {final_status['finished_at']}\n")
-        os.replace(running_path, queue / ("completed" if report["ok"] else "failed") / running_path.name)
-        return code
+        final_status = {"schema_version": 1, "run_id": run_id, "running": False, "ok": report["ok"], "finished_at": utc_now(), "report_path": str(report_path)}
+        write_json(report_path, report)
+        write_json(status_path, final_status)
+        write_text(log_path, f"{run_id} bridge_finished ok={report['ok']} {final_status['finished_at']}\n")
+        destination = queue / ("completed" if report["ok"] else "failed") / running_path.name
+        if destination.exists():
+            raise BridgeError(f"refusing to overwrite queue evidence: {destination}")
+        running_path.rename(destination)
+        return 0 if report["ok"] else 1
     except BaseException as exc:
         error = f"{type(exc).__name__}: {exc}"
         failure = {"schema_version": 1, "run_id": run_id, "ok": False, "error": error}
-        if report_path:
-            write_json(report_path, failure)
-        if status_path:
-            write_json(status_path, {"schema_version": 1, "run_id": run_id, "running": False, "ok": False, "finished_at": utc_now(), "error": error})
-        if log_path:
-            write_text(log_path, f"{run_id} bridge_failed {error}\n{traceback.format_exc()}\n")
-        os.replace(running_path, queue / "failed" / running_path.name)
-        return code
+        for path, writer, payload in (
+            (report_path, write_json, failure),
+            (status_path, write_json, {"schema_version": 1, "run_id": run_id, "running": False, "ok": False, "finished_at": utc_now(), "error": error}),
+            (log_path, write_text, f"{run_id} bridge_failed {error}\n{traceback.format_exc()}\n"),
+        ):
+            if path is not None:
+                try:
+                    writer(path, payload)  # type: ignore[arg-type]
+                except BaseException:
+                    bootstrap_trace("failure_artifact_write_failed", path=path, traceback=traceback.format_exc())
+        failed_path = queue / "failed" / running_path.name
+        if running_path.exists() and not failed_path.exists():
+            running_path.rename(failed_path)
+        elif running_path.exists():
+            bootstrap_trace("queue_transition_blocked", running_path=running_path, failed_path=failed_path)
+        return 1
 
 
 def workspace_entrypoint(config_path: Path | str | None = None, resolve: Any = None, fusion: Any = None) -> int:
