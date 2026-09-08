@@ -25,6 +25,7 @@ Standalone Migration phases describe repository migration gates. They are not th
 PR #8 remains **BLOCKED** by these source-issue test failures:
 
 - `tests/test_speed_ramp_planner_authority_v1.py::test_reel1_cli_pipeline_emits_16_nonactionable_candidates_and_zero_speed_ops`
+- `tests/test_speed_ramp_planner_authority_v1.py::test_reel1_candidate_primary_actions_are_monotonic_source_preserving`
 - `tests/test_zoom_planner_authority_v1.py::test_reel1_cli_pipeline_emits_15_nonactionable_zoom_candidates_and_zero_zoom_ops`
 
-Both node IDs were run with Python 3.14.5 and pytest 9.1.1 in clean detached checkouts of base `17d29fec0923e0f3c9d9d9adba6c704e5a802332` and head `69116c4b1aba86b8cb7c9c8c3d7bd509caff979a`. Both revisions failed identically because the tests require ignored, untracked `data/DZsqH7auhjt/analysis/DZsqH7auhjt_analysis.json`; neither commit contains that fixture. Product runtime, the Reel fixture expectation, and `scripts/planning/validate_edit_plan.py` remain unchanged. Advancing this gate requires a separately authorized product correction with accepted transition authority.
+The affected-family run otherwise passed 125 tests and seven subtests. All three failures require ignored, untracked `data/DZsqH7auhjt/analysis/DZsqH7auhjt_analysis.json`, which is absent from both migration base `17d29fec0923e0f3c9d9d9adba6c704e5a802332` and this correction head. Product runtime and the Reel fixture expectations are unchanged by the correction. Advancing this gate requires a separately authorized product correction with accepted transition authority.
