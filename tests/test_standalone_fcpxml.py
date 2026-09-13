@@ -10,6 +10,13 @@ from scripts.davinci import compile_davinci_textplus_fcpxml as canonical
 from scripts.standalone.video_cloner_fcpxml import FcpxmlCompilationError, compile_fcpxml, main
 
 
+ROOT = Path(__file__).parents[1]
+REEL1_ID = "DZsqH7auhjt"
+REEL1_GENERIC = ROOT / "data" / REEL1_ID / "planning" / f"{REEL1_ID}_generic_edit_commands.json"
+REEL1_TRANSITIONS = ROOT / "data" / REEL1_ID / "analysis" / f"{REEL1_ID}_transition_authority_accepted_reel1_v1.json"
+REEL1_TRANSITION_RUN_ID = "DZsqH7auhjt_accepted_reel1_transition_authority_v1"
+
+
 def _command(index: int, start: int, end: int) -> dict:
     duration = end - start
     return {
@@ -59,6 +66,18 @@ def _fixture(tmp_path: Path, count: int = 3) -> tuple[Path, Path, Path, Path]:
     output = tmp_path / "davinci" / "fixture.fcpxml"
     report = tmp_path / "davinci" / "fixture_report.json"
     return generic_path, video, output, report
+
+
+def _reel1_safe_generic(tmp_path: Path) -> Path:
+    generic = json.loads(REEL1_GENERIC.read_text(encoding="utf-8-sig"))
+    for command in generic["timeline"]:
+        command["action"] = {"type": "cut"}
+        command["observations"] = {}
+        command["operations"] = [{"operation": "cut", "parameters": {"cut_policy": "use_compiled_timeline_range"}}]
+    generic["summary"]["operation_counts"] = {"cut": len(generic["timeline"])}
+    path = tmp_path / "DZsqH7auhjt_safe_generic_edit_commands.json"
+    path.write_text(json.dumps(generic), encoding="utf-8")
+    return path
 
 
 def test_generic_commands_compile_to_cut_only_fcpxml(tmp_path: Path):
@@ -192,3 +211,87 @@ def test_accepted_reel_shape_preserves_twenty_two_cuts(tmp_path: Path):
     result = compile_fcpxml(generic, output, report)
     assert result["structure"]["clip_count"] == 22
     assert len(ET.parse(output).getroot().findall("./library/event/project/sequence/spine/asset-clip")) == 22
+
+
+def test_reel1_real_transition_authority_is_exact_and_deterministic(tmp_path: Path):
+    generic = _reel1_safe_generic(tmp_path)
+    output = tmp_path / "reel1.fcpxml"
+    report_path = tmp_path / "reel1_report.json"
+    first = compile_fcpxml(
+        generic, output, report_path,
+        transition_authority_path=REEL1_TRANSITIONS,
+        transition_run_id=REEL1_TRANSITION_RUN_ID,
+    )
+    first_bytes = output.read_bytes()
+    second = compile_fcpxml(
+        generic, output, report_path,
+        transition_authority_path=REEL1_TRANSITIONS,
+        transition_run_id=REEL1_TRANSITION_RUN_ID,
+    )
+    root = ET.parse(output).getroot()
+    native = root.findall(".//transition")
+    handoffs = root.findall(".//title")
+    flash_boundaries = [json.loads(title.find("marker").get("note"))["boundary_frame"] for title in handoffs]
+
+    assert first["structure"]["clip_count"] == 22
+    assert first["compiled_operation_counts"] == {
+        "speed": 0, "animated_zoom": 0, "whip": 0, "slide": 0, "blur": 0,
+        "transitions": 6, "slide_edge_wipe": 3, "cross_dissolve": 3,
+        "flash_handoffs": 5, "captions": 0,
+    }
+    assert first["transition_authority"] == {
+        "enabled": True,
+        "schema": "video_cloner.transition_authority.v1",
+        "run_id": REEL1_TRANSITION_RUN_ID,
+        "native_count": 6,
+        "flash_handoff_count": 5,
+        "decision_count": 11,
+        "native_boundaries": [492, 526, 556, 587, 618, 833],
+        "flash_handoff_boundaries": [96, 377, 426, 454, 758],
+        "decision_boundaries": [96, 377, 426, 454, 492, 526, 556, 587, 618, 758, 833],
+    }
+    assert [item.get("name") for item in native] == ["Slide", "Cross Dissolve", "Cross Dissolve", "Slide", "Slide", "Cross Dissolve"]
+    assert [item.get("offset") for item in native] == [f"{frame}/24s" for frame in [488, 522, 552, 583, 614, 829]]
+    assert flash_boundaries == [96, 377, 426, 454, 758]
+    assert output.read_bytes() == first_bytes
+    assert second["output"]["sha256"] == first["output"]["sha256"]
+
+
+@pytest.mark.parametrize("mutation", ["duplicate_boundary", "unknown_type", "bad_boundary", "video_id", "run_id", "malformed_flash"])
+def test_transition_authority_fails_closed(tmp_path: Path, mutation: str):
+    generic = _reel1_safe_generic(tmp_path)
+    authority = json.loads(REEL1_TRANSITIONS.read_text(encoding="utf-8"))
+    supplied_run_id = REEL1_TRANSITION_RUN_ID
+    if mutation == "duplicate_boundary":
+        authority["flash_handoffs"][0]["boundary_frame"] = 492
+    elif mutation == "unknown_type":
+        authority["native_transitions"][0]["transition_type"] = "spin"
+    elif mutation == "bad_boundary":
+        authority["native_transitions"][0]["boundary_frame"] = 491
+    elif mutation == "video_id":
+        authority["video_id"] = "DcJRJtUKScu"
+    elif mutation == "run_id":
+        supplied_run_id = "wrong_run"
+    else:
+        authority["flash_handoffs"][0].pop("handoff_type")
+    authority_path = tmp_path / "transition_authority.json"
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+    with pytest.raises(FcpxmlCompilationError):
+        compile_fcpxml(
+            generic, tmp_path / "out.fcpxml", tmp_path / "report.json",
+            transition_authority_path=authority_path,
+            transition_run_id=supplied_run_id,
+        )
+
+
+def test_transition_authority_is_optional_and_requires_explicit_run_identity(tmp_path: Path):
+    generic = _reel1_safe_generic(tmp_path)
+    report = compile_fcpxml(generic, tmp_path / "none.fcpxml", tmp_path / "none.json")
+    assert report["transition_authority"] == {"enabled": False, "native_count": 0, "flash_handoff_count": 0, "decision_count": 0}
+    with pytest.raises(FcpxmlCompilationError, match="run identity"):
+        compile_fcpxml(generic, transition_authority_path=REEL1_TRANSITIONS)
+
+
+def test_historical_reel1_speed_zoom_authority_remains_rejected():
+    with pytest.raises(FcpxmlCompilationError):
+        compile_fcpxml(REEL1_GENERIC)

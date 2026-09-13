@@ -1056,9 +1056,14 @@ def apply_caption_lifecycle_plan(
         by_cue[cue_id] = layer
 
     cue_ids = [str(cue.get("id") or "") for cue in cues]
+    if any(not cue_id for cue_id in cue_ids) or len(set(cue_ids)) != len(cue_ids):
+        raise ValueError("caption_lifecycle_generic_duplicate_or_empty_cue")
     missing = [cue_id for cue_id in cue_ids if cue_id not in by_cue]
     if missing:
         raise ValueError("caption_lifecycle_plan_missing_cues:" + ",".join(missing[:10]))
+    unexpected = [cue_id for cue_id in by_cue if cue_id not in set(cue_ids)]
+    if unexpected:
+        raise ValueError("caption_lifecycle_plan_unexpected_cues:" + ",".join(unexpected[:10]))
 
     applied: List[Dict[str, Any]] = []
     timing_counts: Dict[str, int] = {}

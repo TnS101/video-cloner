@@ -217,7 +217,12 @@ def test_compiler_propagates_observation_as_metadata_not_operation():
 
 
 def test_reel1_cli_pipeline_emits_16_nonactionable_candidates_and_zero_speed_ops(tmp_path: Path):
-    analysis = ROOT / "data/DZsqH7auhjt/analysis/DZsqH7auhjt_analysis.json"
+    source_analysis = ROOT / "data/DZsqH7auhjt/analysis/DZsqH7auhjt_analysis.json"
+    analysis_data = json.loads(source_analysis.read_text(encoding="utf-8-sig"))
+    for shot in analysis_data["timeline"]["shots"]:
+        shot.pop("transition_to_next", None)
+    analysis = tmp_path / "analysis_without_transition_authority.json"
+    analysis.write_text(json.dumps(analysis_data), encoding="utf-8")
     plan_out = tmp_path / "edit_plan.json"
     validated_out = tmp_path / "validated.json"
     generic_out = tmp_path / "generic.json"
