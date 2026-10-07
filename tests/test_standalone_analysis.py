@@ -43,11 +43,11 @@ class FakeRunner:
         name = Path(call[1]).name
         if self.fail and self.fail in name:
             return subprocess.CompletedProcess(call, 9, "", "SECRET stderr must not serialize")
-        if name == "detect_cuts.py":
+        if name == "cuts.py":
             return subprocess.CompletedProcess(call, 0, json.dumps(fake_scene_result()), "")
         output = Path(call[call.index("--output") + 1])
         payload = {"success": True, "analysis_version": f"mock_{name}", "observations": []}
-        if name == "detect_caption_occlusion.py":
+        if name == "caption_occlusion.py":
             root = output.parent / "foreground_masks"
             event_dir = root / "0001_mock"
             event_dir.mkdir(parents=True, exist_ok=True)
@@ -85,13 +85,13 @@ class ZeroMaskOcclusionRunner(FakeRunner):
     def __call__(self, argv):
         call = list(argv)
         name = Path(call[1]).name
-        if name != "detect_caption_occlusion.py":
+        if name != "caption_occlusion.py":
             return super().__call__(argv)
         self.calls.append(call)
         output = Path(call[call.index("--output") + 1])
         payload = {
             "success": True,
-            "analysis_version": "mock_detect_caption_occlusion.py",
+            "analysis_version": "mock_caption_occlusion.py",
             "observations": [],
             "mask_assets": {
                 "enabled": True,
@@ -127,7 +127,7 @@ def test_canonical_analyzer_map_and_interpreters_are_exact(tmp_path: Path):
     orchestrator = AnalysisOrchestrator(make_context(tmp_path), FakeRunner())
     specs = {spec.name: spec for spec in ANALYZERS}
     assert list(specs) == ["cuts", "transcript", "rhythm", "caption_style", "motion", "transitions", "caption_occlusion"]
-    assert specs["transitions"].script == "scripts/analysis/detect_transitions_proxy.py"
+    assert specs["transitions"].script == "video_cloner/analysis/transitions.py"
     assert specs["transcript"].interpreter == specs["rhythm"].interpreter == "python_audio"
     assert specs["caption_style"].interpreter == specs["caption_occlusion"].interpreter == "python_ocr"
     assert specs["cuts"].interpreter == specs["motion"].interpreter == specs["transitions"].interpreter == "python_default"
@@ -165,7 +165,7 @@ def test_missing_wav_blocks_wav_consumers_but_preserves_independent_proxy_branch
     assert states["transcript"] == states["rhythm"] == "blocked"
     assert states["caption_style"] == states["caption_occlusion"] == "blocked"
     assert states["cuts"] == states["motion"] == states["transitions"] == "generated"
-    assert all("transcribe.py" not in call[1] and "detect_rhythm_beats.py" not in call[1] for call in runner.calls)
+    assert all("transcription.py" not in call[1] and "rhythm.py" not in call[1] for call in runner.calls)
 
 
 def test_missing_proxy_blocks_proxy_consumers_but_allows_wav_branch(tmp_path: Path):
@@ -190,13 +190,13 @@ def test_transitions_and_caption_occlusion_readiness_require_nonempty_inputs(tmp
 
 def test_independent_branches_execute_in_deterministic_topological_order(tmp_path: Path):
     runner = FakeRunner(); report = AnalysisOrchestrator(make_context(tmp_path), runner).run()
-    assert [Path(call[1]).name for call in runner.calls] == ["detect_cuts.py", "transcribe.py", "detect_rhythm_beats.py", "detect_caption_style.py", "detect_motion_speed.py", "detect_transitions_proxy.py", "detect_caption_occlusion.py"]
+    assert [Path(call[1]).name for call in runner.calls] == ["cuts.py", "transcription.py", "rhythm.py", "caption_style.py", "motion.py", "transitions.py", "caption_occlusion.py"]
     assert [record["analyzer"] for record in report["analyzers"]] == [spec.name for spec in ANALYZERS]
     assert report["summary"] == {"generated": 7, "reused": 0, "failed": 0, "blocked": 0}
 
 
 def test_failed_cuts_blocks_dependents_but_independent_branches_complete(tmp_path: Path):
-    runner = FakeRunner(fail="detect_cuts.py"); orchestrator = AnalysisOrchestrator(make_context(tmp_path), runner)
+    runner = FakeRunner(fail="cuts.py"); orchestrator = AnalysisOrchestrator(make_context(tmp_path), runner)
     with pytest.raises(AnalysisRunError) as caught:
         orchestrator.run()
     states = status_map(caught.value.report)
@@ -216,7 +216,7 @@ def test_second_run_reuses_all_valid_outputs_without_external_calls(tmp_path: Pa
 def test_force_selected_analyzer_reruns_only_requested_scope_when_output_is_identical(tmp_path: Path):
     context = make_context(tmp_path); AnalysisOrchestrator(context, FakeRunner()).run()
     runner = FakeRunner(); report = AnalysisOrchestrator(context, runner).run(force_analyzers={"transitions"})
-    assert [Path(call[1]).name for call in runner.calls] == ["detect_transitions_proxy.py"]
+    assert [Path(call[1]).name for call in runner.calls] == ["transitions.py"]
     assert status_map(report)["transitions"] == "generated"
     assert sum(value == "reused" for value in status_map(report).values()) == 6
 
@@ -233,7 +233,7 @@ def test_changed_proxy_invalidates_only_relevant_reuse(tmp_path: Path):
     context.proxy_path.write_bytes(b"proxy-v2")
     runner = FakeRunner(); report = AnalysisOrchestrator(context, runner).run()
     called = [Path(call[1]).name for call in runner.calls]
-    assert called == ["detect_cuts.py", "detect_motion_speed.py", "detect_transitions_proxy.py", "detect_caption_occlusion.py"]
+    assert called == ["cuts.py", "motion.py", "transitions.py", "caption_occlusion.py"]
     states = status_map(report)
     assert states["transcript"] == states["rhythm"] == states["caption_style"] == "reused"
 
@@ -245,7 +245,7 @@ def test_changed_transcript_invalidates_caption_dependents(tmp_path: Path):
         def __call__(self, argv):
             result = super().__call__(argv)
             call = list(argv)
-            if Path(call[1]).name == "transcribe.py":
+            if Path(call[1]).name == "transcription.py":
                 output = Path(call[call.index("--output") + 1])
                 output.write_text(json.dumps({"success": True, "analysis_version": "changed"}), encoding="utf-8")
             return result
@@ -253,7 +253,7 @@ def test_changed_transcript_invalidates_caption_dependents(tmp_path: Path):
     runner = ChangedTranscriptRunner()
     report = AnalysisOrchestrator(context, runner).run(force_analyzers={"transcript"})
     called = [Path(call[1]).name for call in runner.calls]
-    assert called == ["transcribe.py", "detect_caption_style.py", "detect_caption_occlusion.py"]
+    assert called == ["transcription.py", "caption_style.py", "caption_occlusion.py"]
     assert status_map(report)["transcript"] == status_map(report)["caption_style"] == status_map(report)["caption_occlusion"] == "generated"
 
 
@@ -261,7 +261,7 @@ def test_changed_ocr_runtime_invalidates_only_ocr_analyzers(tmp_path: Path):
     context = make_context(tmp_path); AnalysisOrchestrator(context, FakeRunner()).run()
     changed = replace(context, config=replace(context.config, python_ocr="py-ocr-v2"))
     runner = FakeRunner(); report = AnalysisOrchestrator(changed, runner).run()
-    assert [Path(call[1]).name for call in runner.calls] == ["detect_caption_style.py", "detect_caption_occlusion.py"]
+    assert [Path(call[1]).name for call in runner.calls] == ["caption_style.py", "caption_occlusion.py"]
     assert status_map(report)["caption_style"] == status_map(report)["caption_occlusion"] == "generated"
     assert status_map(report)["cuts"] == status_map(report)["transcript"] == status_map(report)["rhythm"] == "reused"
 
@@ -283,7 +283,7 @@ def test_missing_required_occlusion_mask_invalidates_bundle_reuse(tmp_path: Path
     context = make_context(tmp_path); orchestrator = AnalysisOrchestrator(context, FakeRunner()); orchestrator.run()
     (context.analysis_dir / "foreground_masks" / "0001_mock" / "mask_000010.png").unlink()
     runner = FakeRunner(); report = AnalysisOrchestrator(context, runner).run()
-    assert [Path(call[1]).name for call in runner.calls] == ["detect_caption_occlusion.py"]
+    assert [Path(call[1]).name for call in runner.calls] == ["caption_occlusion.py"]
     assert status_map(report)["caption_occlusion"] == "generated"
 
 
@@ -291,7 +291,7 @@ def test_modified_required_occlusion_mask_invalidates_bundle_reuse(tmp_path: Pat
     context = make_context(tmp_path); orchestrator = AnalysisOrchestrator(context, FakeRunner()); orchestrator.run()
     (context.analysis_dir / "foreground_masks" / "0001_mock" / "mask_000011.png").write_bytes(b"changed-mask")
     runner = FakeRunner(); report = AnalysisOrchestrator(context, runner).run()
-    assert [Path(call[1]).name for call in runner.calls] == ["detect_caption_occlusion.py"]
+    assert [Path(call[1]).name for call in runner.calls] == ["caption_occlusion.py"]
     assert status_map(report)["caption_occlusion"] == "generated"
 
 
@@ -315,12 +315,12 @@ def test_invalid_cached_json_is_regenerated(tmp_path: Path):
     context = make_context(tmp_path); first = AnalysisOrchestrator(context, FakeRunner()); first.run()
     first.artifacts["beatmap"].write_text("not-json", encoding="utf-8")
     runner = FakeRunner(); report = AnalysisOrchestrator(context, runner).run()
-    assert [Path(call[1]).name for call in runner.calls] == ["detect_rhythm_beats.py"]
+    assert [Path(call[1]).name for call in runner.calls] == ["rhythm.py"]
     assert status_map(report)["rhythm"] == "generated"
 
 
 def test_failure_report_is_sanitized_and_persisted(tmp_path: Path):
-    context = make_context(tmp_path); orchestrator = AnalysisOrchestrator(context, FakeRunner(fail="transcribe.py"))
+    context = make_context(tmp_path); orchestrator = AnalysisOrchestrator(context, FakeRunner(fail="transcription.py"))
     with pytest.raises(AnalysisRunError) as caught:
         orchestrator.run()
     serialized = json.dumps(caught.value.report)

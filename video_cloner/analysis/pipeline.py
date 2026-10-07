@@ -29,13 +29,13 @@ class AnalyzerSpec:
 
 
 ANALYZERS = (
-    AnalyzerSpec("cuts", "scripts/analysis/detect_cuts.py", "python_default", ("proxy",), "shots"),
-    AnalyzerSpec("transcript", "scripts/analysis/transcribe.py", "python_audio", ("wav",), "transcript"),
-    AnalyzerSpec("rhythm", "scripts/analysis/detect_rhythm_beats.py", "python_audio", ("wav",), "beatmap"),
-    AnalyzerSpec("caption_style", "scripts/analysis/detect_caption_style.py", "python_ocr", ("source_video", "transcript"), "caption_style"),
-    AnalyzerSpec("motion", "scripts/analysis/detect_motion_speed.py", "python_default", ("proxy", "shots"), "motion"),
-    AnalyzerSpec("transitions", "scripts/analysis/detect_transitions_proxy.py", "python_default", ("proxy", "shots"), "transitions"),
-    AnalyzerSpec("caption_occlusion", "scripts/analysis/detect_caption_occlusion.py", "python_ocr", ("proxy", "caption_style", "transcript"), "caption_occlusion"),
+    AnalyzerSpec("cuts", "video_cloner/analysis/cuts.py", "python_default", ("proxy",), "shots"),
+    AnalyzerSpec("transcript", "video_cloner/analysis/transcription.py", "python_audio", ("wav",), "transcript"),
+    AnalyzerSpec("rhythm", "video_cloner/analysis/rhythm.py", "python_audio", ("wav",), "beatmap"),
+    AnalyzerSpec("caption_style", "video_cloner/analysis/caption_style.py", "python_ocr", ("source_video", "transcript"), "caption_style"),
+    AnalyzerSpec("motion", "video_cloner/analysis/motion.py", "python_default", ("proxy", "shots"), "motion"),
+    AnalyzerSpec("transitions", "video_cloner/analysis/transitions.py", "python_default", ("proxy", "shots"), "transitions"),
+    AnalyzerSpec("caption_occlusion", "video_cloner/analysis/caption_occlusion.py", "python_ocr", ("proxy", "caption_style", "transcript"), "caption_occlusion"),
 )
 ANALYZER_BY_NAME = {spec.name: spec for spec in ANALYZERS}
 PRODUCER = {spec.output: spec.name for spec in ANALYZERS}
