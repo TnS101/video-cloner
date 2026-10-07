@@ -22,6 +22,8 @@ The repository-local `--basetemp` removed the prior global-temp permission error
 
 `test_video_cloner_phase6_offline_timeline_authority.py` is classified `LEGACY_EXTERNAL_FIXTURE` and is retained outside this canonical suite. It requires the absent ignored `data/DcJRJtUKScu/davinci/offline_timeline_v1` package. The deselected `actual_step7b_preflight_report_validates_without_mutation` test likewise depends on a 1.65 MB ignored `.agent` report; the remaining current Resolve contract tests are self-contained and green.
 
+Before Resolve consolidation or deletion in Step 4, the safety property represented by each external-fixture exclusion must either have a self-contained replacement fixture/test or be formally proven legacy-only and irrelevant to the canonical route. The `-k not` exclusion is a temporary baseline boundary, not permanent coverage policy.
+
 ## Coverage boundary
 
 - Media preparation and safe path/config behavior
@@ -33,3 +35,7 @@ The repository-local `--basetemp` removed the prior global-temp permission error
 - Queue publication safety contract
 - Agent bridge queue/dispatch behavior
 - Current Resolve timeline contract and fail-closed offline validation
+
+## Step 2.5 hardening confirmation
+
+The exact command above was rerun after the reviewed upstream merge and all documentation/manifest changes: **115 passed, 0 failed, 0 errors, 1 deselected in 6.95 seconds**.

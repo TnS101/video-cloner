@@ -1,5 +1,9 @@
 # Git Health Audit
 
+## Manifest semantics
+
+`PRE_HYGIENE_SOURCE_MANIFEST.json` is the **PRE-COMMIT WORKING-TREE MANIFEST**. Its `tracked` and `modified` fields deliberately describe the working tree before recovery commit `f728d4ae1073a2b37f58e5b06a77ed6b97ca0605`; files recorded there as `tracked: false` may therefore be tracked by that commit. `SNAPSHOT_COMMIT_MANIFEST.json` is the separate authority for the actual committed Git tree and derives object IDs and byte hashes directly from that snapshot commit.
+
 Audit date: 2026-10-07.
 
 ## State
