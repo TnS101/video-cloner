@@ -23,7 +23,11 @@ def test_context_and_cli_route_to_same_pipeline_api(tmp_path: Path, monkeypatch)
 
 def test_compile_translates_options_to_proven_compiler(monkeypatch, tmp_path: Path) -> None:
     captured = {}
-    monkeypatch.setattr("video_cloner.resolve.fcpxml.main", lambda argv: captured.setdefault("argv", argv) or 0)
+    def compiler(argv):
+        captured["argv"] = argv
+        return 0
+
+    monkeypatch.setattr("video_cloner.resolve.fcpxml.main", compiler)
     result = pipeline.compile("generic.json", "style.json", "timeline.fcpxml", "report.json", options={"timeline_mode": "full_timeline", "include_audio": False})
-    assert result == captured["argv"]
+    assert result == 0
     assert captured["argv"][-4:] == ["--timeline-mode", "full_timeline", "--include-audio", "false"]

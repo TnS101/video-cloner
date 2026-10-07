@@ -26,13 +26,14 @@ def _source_value(args: argparse.Namespace) -> str:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="video-cloner", description="Canonical offline Video Cloner pipeline")
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("ingest", "analyze", "profile"):
+    for name in ("ingest", "analyze"):
         sub = commands.add_parser(name)
         _source(sub)
         sub.add_argument("--force", action="store_true")
     analyze = commands.choices["analyze"]
     analyze.add_argument("--force-analyzer", action="append", default=[])
-    profile = commands.choices["profile"]
+    profile = commands.add_parser("profile")
+    _source(profile)
     profile.add_argument("--samples-per-shot", type=int, default=5)
     plan = commands.add_parser("plan")
     _source(plan)
