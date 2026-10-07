@@ -32,10 +32,14 @@ Supported: deterministic ingest, analysis, transition policy, planning, camera/c
 
 Canonical regression is 116 passed; CI-equivalent core is 64 passed; Python 3.10 audio/OCR imports pass; clean package install and both console help commands pass. Virtual environments, `.agent` forensic history, and local media remain ignored local state. The reproducible 335,460,967-byte Step 4 E2E scratch tree was deleted after its durable evidence check.
 
+## Repository authority
+
+Repository cleanup is complete. GitHub `main` and `repo-hygiene/canonical-consolidation-20261007` are identical and authoritative. The audited historical `main` lineage was joined by `ours` merge `7a5b7ba337fc1879872beb6445dd986e632afc7b` without changing canonical tree `aeca13c0385eedeae130f8e601e10245329ec17b`. The exact final authority commit is the commit peeled from annotated tag `video-cloner-canonical-cleanup-20261007`; the tag certifies repository/software authority, not live Resolve acceptance.
+
 ## Recovery and lessons
 
 Recovery tag: `video-cloner-pre-hygiene-snapshot-20261007` → `f728d4ae1073a2b37f58e5b06a77ed6b97ca0605`. Git history is the archive; deleted Step/Phase scripts must not be recreated. The important lesson is to separate technical persistence from visual fidelity and to keep Resolve as an explicit machine-acceptance boundary.
 
 ## Exact next product-development move
 
-Resolve the remote branch authority divergence using normal Git policy, then run one controlled live Resolve acceptance with the frozen bridge: matching run ID, target identity readback, first-pass validation, second-run idempotency, and human visual review. Do not redesign the canonical package during that gate.
+Run one controlled live Resolve machine acceptance with the frozen bridge: matching run ID, target identity readback, first-pass validation, second-run idempotency, and human visual review. Do not redesign the canonical package during that gate.

@@ -8,7 +8,7 @@ Turn a source video into a reproducible analysis, edit plan, caption/style profi
 
 ## Current win condition
 
-The current repository is the canonical software authority for offline generation and queue publication. The working tree is clean, the canonical test gates are green, and deferred capabilities are indexed. Live Resolve acceptance remains a separate product-development gate.
+GitHub `main` is the canonical repository and software authority for offline generation and queue publication. The canonical branch has identical content and history, the working tree is clean, the canonical test gates are green, and deferred capabilities are indexed. Live Resolve acceptance remains a separate product-development gate.
 
 ## Canonical entry point
 
@@ -77,6 +77,12 @@ Deleted Step/Phase scripts are historical. Do not recreate them because an old r
 
 `video-cloner-pre-hygiene-snapshot-20261007` is an annotated immutable recovery tag pointing to commit `f728d4ae1073a2b37f58e5b06a77ed6b97ca0605`. It is the pre-hygiene archive, not the current authority.
 
+## Git authority
+
+The seven formerly `origin/main`-only commits were audited before reconciliation. Their substantive baseline tree was already represented by ancestor `f2d1837faae5c3f6c7d0e87dd1634e4899f11c20`; the other commits were empty/control artifacts or superseded migration-status documentation. Commit `7a5b7ba337fc1879872beb6445dd986e632afc7b` joined the histories with Git's `ours` strategy. Its tree `aeca13c0385eedeae130f8e601e10245329ec17b` exactly matches the pre-merge canonical tree, so no deleted source returned and no runtime content changed.
+
+The exact final repository-authority commit is the commit peeled from annotated tag `video-cloner-canonical-cleanup-20261007` (`git rev-parse video-cloner-canonical-cleanup-20261007^{}`). The tag is the immutable final identity; `main` and `repo-hygiene/canonical-consolidation-20261007` must resolve to that same commit.
+
 ## Current next move
 
-Resolve the remote authority divergence through normal repository policy, then perform the live Resolve product gate. The canonical cleanup tag must point at the final clean authority commit; it must never be presented as proof that all video-cloning capabilities are complete.
+Run one controlled live Resolve machine-acceptance gate with the frozen bridge: matching run ID, target identity readback, first-pass validation, second-run idempotency, and human visual review. The canonical cleanup tag certifies repository/software authority only; it is not proof that all video-cloning capabilities are complete.

@@ -6,6 +6,8 @@ Video Cloner is an offline-first video analysis and timeline-generation package.
 
 The canonical offline workflow and public Python API are implemented and regression-tested. Queue publication is proven. Live DaVinci Resolve machine acceptance is **not** accepted: the frozen bridge has previously created/inspected timelines but failed post-import identity validation. That is the next product-development gate, not a repository-hygiene failure.
 
+Repository hygiene is complete. GitHub `main` and `repo-hygiene/canonical-consolidation-20261007` are the canonical repository authority, certified by the annotated tag `video-cloner-canonical-cleanup-20261007`. The immutable pre-hygiene recovery point remains `video-cloner-pre-hygiene-snapshot-20261007`.
+
 ## Installation
 
 From a fresh checkout:
