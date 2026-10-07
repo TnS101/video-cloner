@@ -30,7 +30,7 @@ The post-cleanup top-level audit is dominated by intentionally external/evidence
 | `Virtual Environments/` | 10,627,773,620 |
 | `.agent/` | 2,112,525,797 |
 | `data/` | 496,350,898 |
-| `.pytest-tmp-step4-e2e-2/` (accepted evidence) | 335,460,967 |
+| `.pytest-tmp-step4-e2e-2/` (deleted after durable evidence check) | 0 |
 | `.git/` | 112,984,476 |
 | `input/` | 53,338,559 |
 | `media/` | 15,091,649 |
@@ -38,7 +38,7 @@ The post-cleanup top-level audit is dominated by intentionally external/evidence
 | `tests/` | 1,653,953 |
 | `resolve_workspace/` | 1,373,213 |
 
-The current `scripts/` footprint is 405,955 bytes; generated Step 4.5 scratch directories and source bytecode caches were removed.
+The current `scripts/` footprint is 405,955 bytes; generated Step 4.5 scratch directories and source bytecode caches were removed. The reproducible `.pytest-tmp-step4-e2e-2/` directory was deleted after confirming it contained no tracked files, no unique human-approved artifact, and that its run ID, manifest hash, artifact hashes, command identity, and acceptance boundary are durably recorded in the Step 4 report and canonical manifest. Bytes reclaimed: 335,460,967.
 
 ## Classification
 
@@ -70,7 +70,7 @@ Only seven explicitly requested deferred domains remain: caption animation/lifec
 - `git diff --cached --check`: passed.
 - The two files initially found to be current regression dependencies were restored and retained: `scripts/davinci/validate_caption_lifecycle_fcpxml_step_3D.py` and `resolve_workspace/modules/video_cloner_phase6_offline_timeline_live_application.py`.
 - Frozen hashes remained unchanged from Step 4: `VC_Run_Agent_Task.py` `873ada0103990254232e16bfdb4e6590a2d91f24`, `VC_Agent_Bridge.py` `19b1c048ea8992bae419ad60abc826e339fd6032`, and `video_cloner_phase6_textplus_application.py` `4ec39183aee74d1478ec811946e21b0137098644`.
-- Generated scratch directories and Python bytecode caches created during this step were removed. The accepted fresh E2E evidence directory `.pytest-tmp-step4-e2e-2` remains intentionally retained.
+- Generated scratch directories and Python bytecode caches created during this step were removed. The reproducible fresh E2E scratch directory `.pytest-tmp-step4-e2e-2` was later deleted during Step 5 after its durable evidence check.
 
 ## Step 5 boundary
 
