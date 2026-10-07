@@ -58,7 +58,7 @@ class FakeRunner:
         if self.fail == name:
             return subprocess.CompletedProcess(call, 7, "", "SECRET stderr")
         output = Path(call[call.index("--output") + 1])
-        if name == "merge_analysis.py":
+        if name == "merge.py":
             transitions = json.loads(Path(call[call.index("--transitions") + 1]).read_text(encoding="utf-8"))
             payload = {
                 "success": True,
@@ -69,13 +69,13 @@ class FakeRunner:
                 "timeline": {"shots": [{"shot_id": index + 1, "transition_to_next": row} for index, row in enumerate(transitions["transitions"])]},
                 "planner_ready": {"ready": True},
             }
-        elif name == "plan_edit.py":
+        elif name == "plan.py":
             analysis = json.loads(Path(call[call.index("--analysis") + 1]).read_text(encoding="utf-8"))
             payload = {"version": "1.0", "video_id": analysis["job"]["job_id"], "global_style": {}, "caption_plan": {}, "timeline": [{"shot_id": 1, "actions": [{"type": "cut"}]}], "_meta": {"planner_version": "mock", "skip_llm": True, "sanitized": True}}
-        elif name == "validate_edit_plan.py":
+        elif name == "validate.py":
             plan = json.loads(Path(call[call.index("--edit-plan") + 1]).read_text(encoding="utf-8"))
             payload = {"success": True, "validation_version": "mock", "video_id": plan["video_id"], "analysis_video_id": plan["video_id"], "errors_count": 0, "errors": [], "edit_plan": plan, "_meta": {"ready_for_compile_generic_edit_v2": True}}
-        elif name == "compile_generic_edit.py":
+        elif name == "compile.py":
             analysis = json.loads(Path(call[call.index("--analysis") + 1]).read_text(encoding="utf-8"))
             operations = [{"operation": "cut", "parameters": {}}]
             for shot in analysis["timeline"]["shots"]:
@@ -112,7 +112,7 @@ def test_successful_end_to_end_run_preserves_authority(tmp_path: Path):
     context, authority = make_context(tmp_path)
     runner = FakeRunner(); orchestrator = PlanningOrchestrator(context, authority, runner)
     report = orchestrator.run()
-    assert names(runner) == ["merge_analysis.py", "plan_edit.py", "validate_edit_plan.py", "compile_generic_edit.py"]
+    assert names(runner) == ["merge.py", "plan.py", "validate.py", "compile.py"]
     assert report["summary"] == {"generated": 4, "reused": 0, "failed": 0}
     assert report["authority"]["speed_operations"] == report["authority"]["zoom_operations"] == 0
     assert report["authority"]["generated_blur_operations"] == report["authority"]["rejected_transition_operations"] == 0
@@ -169,10 +169,10 @@ def test_stale_actionable_whip_authority_is_rejected(tmp_path: Path):
 
 
 @pytest.mark.parametrize("failed,expected", [
-    ("merge_analysis.py", ["merge_analysis.py"]),
-    ("plan_edit.py", ["merge_analysis.py", "plan_edit.py"]),
-    ("validate_edit_plan.py", ["merge_analysis.py", "plan_edit.py", "validate_edit_plan.py"]),
-    ("compile_generic_edit.py", ["merge_analysis.py", "plan_edit.py", "validate_edit_plan.py", "compile_generic_edit.py"]),
+    ("merge.py", ["merge.py"]),
+    ("plan.py", ["merge.py", "plan.py"]),
+    ("validate.py", ["merge.py", "plan.py", "validate.py"]),
+    ("compile.py", ["merge.py", "plan.py", "validate.py", "compile.py"]),
 ])
 def test_failure_isolation_stops_at_first_failed_stage(failed: str, expected: list[str], tmp_path: Path):
     context, authority = make_context(tmp_path)
@@ -180,7 +180,7 @@ def test_failure_isolation_stops_at_first_failed_stage(failed: str, expected: li
     with pytest.raises(PlanningRunError) as caught:
         PlanningOrchestrator(context, authority, runner).run()
     assert names(runner) == expected
-    assert caught.value.report["first_failure"]["stage"] == {"merge_analysis.py": "merge", "plan_edit.py": "plan", "validate_edit_plan.py": "validate", "compile_generic_edit.py": "compile"}[failed]
+    assert caught.value.report["first_failure"]["stage"] == {"merge.py": "merge", "plan.py": "plan", "validate.py": "validate", "compile.py": "compile"}[failed]
     assert "SECRET" not in json.dumps(caught.value.report)
 
 
@@ -190,17 +190,17 @@ def test_changed_transition_authority_invalidates_merge_and_downstream(tmp_path:
     payload = transition_payload(); payload["transitions"].append({"cut_frame": 120, "transition_type": "hard_cut", "editor_actionable": False, "duration_frames": 0, "duration_seconds": 0.0})
     authority.write_text(json.dumps(payload), encoding="utf-8")
     runner = FakeRunner(); report = PlanningOrchestrator(context, authority, runner).run()
-    assert names(runner) == ["merge_analysis.py", "plan_edit.py", "validate_edit_plan.py", "compile_generic_edit.py"]
+    assert names(runner) == ["merge.py", "plan.py", "validate.py", "compile.py"]
     assert all(value == "generated" for value in statuses(report).values())
 
 
 def test_changed_planner_script_invalidates_only_plan_when_output_is_identical(tmp_path: Path):
     context, authority = make_context(tmp_path)
     PlanningOrchestrator(context, authority, FakeRunner()).run()
-    planner = context.config.project_root / "scripts/planning/plan_edit.py"
+    planner = context.config.project_root / "video_cloner/planning/plan.py"
     planner.write_text("# plan changed\n", encoding="utf-8")
     runner = FakeRunner(); report = PlanningOrchestrator(context, authority, runner).run()
-    assert names(runner) == ["plan_edit.py"]
+    assert names(runner) == ["plan.py"]
     assert statuses(report) == {"merge": "reused", "plan": "generated", "validate": "reused", "compile": "reused"}
 
 
@@ -209,7 +209,7 @@ def test_default_runtime_identity_change_invalidates_all_default_runtime_stages(
     PlanningOrchestrator(context, authority, FakeRunner()).run()
     changed = replace(context, config=replace(context.config, python_default="py-default-v2"))
     runner = FakeRunner(); report = PlanningOrchestrator(changed, authority, runner).run()
-    assert names(runner) == ["merge_analysis.py", "plan_edit.py", "validate_edit_plan.py", "compile_generic_edit.py"]
+    assert names(runner) == ["merge.py", "plan.py", "validate.py", "compile.py"]
     assert report["summary"]["generated"] == 4
 
 
@@ -217,7 +217,7 @@ def test_selective_force_and_force_all(tmp_path: Path):
     context, authority = make_context(tmp_path)
     PlanningOrchestrator(context, authority, FakeRunner()).run()
     selective = FakeRunner(); report = PlanningOrchestrator(context, authority, selective).run(force_stages={"compile"})
-    assert names(selective) == ["compile_generic_edit.py"]
+    assert names(selective) == ["compile.py"]
     assert statuses(report)["compile"] == "generated"
     all_runner = FakeRunner(); all_report = PlanningOrchestrator(context, authority, all_runner).run(force=True)
     assert len(all_runner.calls) == 4 and all_report["summary"]["generated"] == 4
@@ -235,7 +235,7 @@ def test_report_records_runtime_command_and_output_identities_without_secrets(tm
 
 
 def test_source_has_no_phase2_analyzer_fcpxml_resolve_network_or_hardcoded_reel_calls():
-    source = (Path(__file__).resolve().parents[1] / "scripts/standalone/video_cloner_plan.py").read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "video_cloner/planning/pipeline.py").read_text(encoding="utf-8")
     for forbidden in ("detect_transitions_proxy.py", "detect_motion_speed.py", "detect_caption_style.py", "compile_davinci", "DaVinciResolveScript", "SaveProject", "DZsqH7auhjt", "requests.", "urlopen("):
         assert forbidden not in source
     assert "--skip-llm" in source
