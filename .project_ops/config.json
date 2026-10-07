@@ -1,0 +1,52 @@
+{
+  "schema_version": 2,
+  "name": "VIDEO_CLONER_PROJECT_OPS",
+  "context": {
+    "primary": "GITHUB_MAIN",
+    "repository": "TnS101/video-cloner",
+    "browser_zip_fallback": true,
+    "chat_history_is_authority": false
+  },
+  "namespaces": {
+    "resolve_runtime": ".agent",
+    "project_ops": ".project_ops",
+    "report_path_pattern": ".project_ops/reports/<PLAN_ID>/<TASK_ID>/REPORT.md",
+    "artifact_path_pattern": ".project_ops/artifacts/<PLAN_ID>/<TASK_ID>/",
+    "plan_archive_path_pattern": "docs/plans/archive/<PLAN_ID>.md"
+  },
+  "research_gate": {
+    "mode": "CONDITIONAL_LATE_STAGE",
+    "trigger": "new_or_changed_material_mechanism_dependency_adapter_or_architecture",
+    "minimum_material_candidates_when_available": 5,
+    "target_candidates": 10
+  },
+  "dependency_policy": {
+    "prefer_foss_or_local": true,
+    "paid_only_requires_human_approval": true,
+    "trial_dependency_must_be_explicitly_approved": true
+  },
+  "plan_partition": {
+    "fresh_codex_session_per_plan": true,
+    "fresh_browser_chat_for_next_independent_plan": true,
+    "same_browser_chat_reviews_current_plan": true,
+    "default_max_local_repair_attempts": 1,
+    "codex_may_choose_next_plan": false,
+    "architect_reviews_worker_pass": true
+  },
+  "external_skills": {
+    "verify_if_present_and_applicable": true,
+    "absence_blocks_only_if_plan_marks_required": true
+  },
+  "mandatory_project_files": [
+    "AGENTS.md",
+    "ARCHITECT_RULES.md",
+    "PROJECT_STATE.md",
+    "ARCHITECTURE.md",
+    "plan.md",
+    "PROJECT_TRACKER.xlsx",
+    "docs/RESEARCH_BASELINE.md",
+    "docs/DECISIONS.md",
+    "docs/TEST_STRATEGY.md",
+    ".project_ops/templates/REPORT_TEMPLATE.md"
+  ]
+}

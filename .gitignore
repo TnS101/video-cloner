@@ -19,6 +19,10 @@ env/
 .agent/*
 !.agent/README.md
 
+# Project-operations local artifacts / fallback handoffs
+.project_ops/artifacts/
+.handoffs/
+
 # Secrets and local configuration
 .env
 .env.*
