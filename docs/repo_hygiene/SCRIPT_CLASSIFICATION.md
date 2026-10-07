@@ -1,10 +1,12 @@
-# Script Classification
+# Historical Script Classification — Step 1 Snapshot
 
-Audit date: 2026-10-07. Inventory: 414 `.py`/`.ps1`/`.bat` files under `scripts/` and `resolve_workspace/`, 169 Python tests, and four root BAT launchers. Of the runtime/operations scripts, 329 are tracked and 85 are untracked.
+> Historical evidence only. The wrapper paths described here were the pre-consolidation graph and are not current operator recommendations. Use `CURRENT_PIPELINE_GRAPH.md` and `STEP4_REGRESSION_PROOF_STALE_CODE_DELETION_REPORT.md` for the post-Step-4 authority.
+
+Audit snapshot date: 2026-10-07. Inventory at that point: 414 `.py`/`.ps1`/`.bat` files under `scripts/` and `resolve_workspace/`, 169 Python tests, and four root BAT launchers. Of the runtime/operations scripts, 329 were tracked and 85 were untracked.
 
 This document is deliberately conservative. `UNKNOWN` means preserve until a caller/provenance check is completed.
 
-## Proven current path
+## Then-proven path (superseded by the canonical package)
 
 | Path | Classification | Current caller | Current callees | Current test coverage | Last proven use | Reel-specific | Safe to remove eventually | Why |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -34,7 +36,7 @@ This document is deliberately conservative. `UNKNOWN` means preserve until a cal
 | `resolve_workspace/VC_Agent_Bridge.py` | KEEP_CANONICAL | Workspace launcher / BAT | command-selected module via importlib | `test_vc_agent_bridge.py` | 2026-10-07 | no | no | Single queue/dispatch authority. |
 | `resolve_workspace/modules/video_cloner_phase6_textplus_application.py` | MERGE_CANDIDATE | bridge command payload | Resolve API + FCPXML contract | Phase 6 offline tests | 2026-10-07 (failed validation) | no | no | Current Resolve implementation to keep for migration; both fresh bridge transactions are machine-unaccepted. |
 
-## Current logic not yet one production path
+## Step 1 logic not yet on one production path
 
 | Path | Classification | Caller/callees | Test coverage | Reel-specific | Removal | Why / intended owner |
 | --- | --- | --- | --- | --- | --- | --- |
