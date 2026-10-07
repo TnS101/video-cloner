@@ -1,0 +1,22 @@
+name: offline-core
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: python -m pip install -e .[test]
+      - run: >-
+          python -m pytest -q
+          tests/test_video_cloner_config_contracts.py
+          tests/test_video_cloner_pipeline_cli.py
+          tests/test_standalone_media_prep.py
+          tests/test_standalone_analysis.py
+          tests/test_standalone_plan.py
