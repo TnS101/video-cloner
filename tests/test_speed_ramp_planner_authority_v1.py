@@ -21,9 +21,9 @@ def load_module(name: str, rel: str):
     return module
 
 
-PLAN = load_module("vc_plan_edit_speed_authority", "scripts/planning/plan_edit.py")
-VALIDATE = load_module("vc_validate_edit_speed_authority", "scripts/planning/validate_edit_plan.py")
-COMPILE = load_module("vc_compile_generic_speed_authority", "scripts/planning/compile_generic_edit.py")
+PLAN = load_module("vc_plan_edit_speed_authority", "video_cloner/planning/plan.py")
+VALIDATE = load_module("vc_validate_edit_speed_authority", "video_cloner/planning/validate.py")
+COMPILE = load_module("vc_compile_generic_speed_authority", "video_cloner/planning/compile.py")
 
 
 def slim_candidate_shot(**overrides):
@@ -230,21 +230,21 @@ def test_reel1_cli_pipeline_emits_16_nonactionable_candidates_and_zero_speed_ops
     commands = [
         [
             sys.executable,
-            str(ROOT / "scripts/planning/plan_edit.py"),
+            str(ROOT / "video_cloner/planning/plan.py"),
             "--analysis", str(analysis),
             "--output", str(plan_out),
             "--skip-llm",
         ],
         [
             sys.executable,
-            str(ROOT / "scripts/planning/validate_edit_plan.py"),
+            str(ROOT / "video_cloner/planning/validate.py"),
             "--analysis", str(analysis),
             "--edit-plan", str(plan_out),
             "--output", str(validated_out),
         ],
         [
             sys.executable,
-            str(ROOT / "scripts/planning/compile_generic_edit.py"),
+            str(ROOT / "video_cloner/planning/compile.py"),
             "--analysis", str(analysis),
             "--validated-edit-plan", str(validated_out),
             "--output", str(generic_out),

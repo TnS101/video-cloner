@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.davinci import compile_davinci_textplus_fcpxml as canonical
-from scripts.standalone.video_cloner_fcpxml import FcpxmlCompilationError, compile_fcpxml
+from video_cloner.resolve import fcpxml as canonical
+from video_cloner.captions.fcpxml import FcpxmlCompilationError, compile_fcpxml
 
 
 ROOT = Path(__file__).parents[1]

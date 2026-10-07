@@ -1,4 +1,4 @@
-from scripts.analysis.build_camera_style_profile import build_camera_style_profile
+from video_cloner.camera import build_camera_style_profile
 
 
 def test_builds_locked_talking_head_profile_and_reframe_plan():

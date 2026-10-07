@@ -7,8 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.standalone.video_cloner_media_prep import InputSpec, RuntimeConfig, build_run_context
-from scripts.standalone.video_cloner_plan import STAGES, PlanningOrchestrator, PlanningRunError
+from video_cloner.config import RuntimeConfig, build_run_context
+from video_cloner.contracts import InputSpec
+from video_cloner.planning.pipeline import STAGES, PlanningOrchestrator, PlanningRunError
 
 
 def transition_payload(*, video_id: str | None = None):

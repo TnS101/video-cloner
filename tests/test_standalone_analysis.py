@@ -7,8 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.standalone.video_cloner_analysis import ANALYZERS, AnalysisOrchestrator, AnalysisRunError
-from scripts.standalone.video_cloner_media_prep import InputSpec, RuntimeConfig, build_run_context
+from video_cloner.analysis.pipeline import ANALYZERS, AnalysisOrchestrator, AnalysisRunError
+from video_cloner.config import RuntimeConfig, build_run_context
+from video_cloner.contracts import InputSpec
 
 
 def make_context(tmp_path: Path, *, wav: bool = True, proxy: bool = True):
@@ -345,7 +346,7 @@ def test_report_records_hashes_versions_runtime_and_observation_only_boundary(tm
 
 
 def test_source_contains_no_network_resolve_planner_or_hardcoded_reel_defaults():
-    source = (Path(__file__).resolve().parents[1] / "scripts" / "standalone" / "video_cloner_analysis.py").read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "video_cloner" / "analysis" / "pipeline.py").read_text(encoding="utf-8")
     for forbidden in ("DaVinciResolveScript", "merge_analysis.py", "plan_edit.py", "compile_generic_edit.py", "DS5AyItD8DV", "DZsqH7auhjt", "--apply-zoom", "--animated-zoom"):
         assert forbidden not in source
     assert "requests." not in source and "urlopen(" not in source

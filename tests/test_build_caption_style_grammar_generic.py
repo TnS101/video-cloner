@@ -1,15 +1,12 @@
 import hashlib
-import importlib.util
 import json
 from pathlib import Path
 
 
+import video_cloner.caption_grammar as MODULE
+
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts/analysis/build_caption_style_grammar_generic.py"
-SPEC = importlib.util.spec_from_file_location("build_caption_style_grammar_generic", SCRIPT)
-MODULE = importlib.util.module_from_spec(SPEC)
-assert SPEC.loader
-SPEC.loader.exec_module(MODULE)
+SCRIPT = ROOT / "video_cloner" / "caption_grammar.py"
 
 
 def _hash(path):

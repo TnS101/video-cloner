@@ -1,4 +1,4 @@
-from scripts.standalone.video_cloner_mvp_transition_filter import filter_mvp_transitions
+from video_cloner.transition_policy import filter_mvp_transitions
 
 
 def test_unsupported_transition_is_demoted_without_losing_cut_evidence():

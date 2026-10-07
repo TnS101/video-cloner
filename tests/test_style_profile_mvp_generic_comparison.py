@@ -1,23 +1,11 @@
 import hashlib
-import importlib.util
 import json
 from pathlib import Path
 
+from video_cloner import profile_comparison as COMPARE
+from video_cloner import profiles as PROFILE
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def _module(name):
-    path = ROOT / f"scripts/analysis/{name}.py"
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec.loader
-    spec.loader.exec_module(module)
-    return module
-
-
-PROFILE = _module("build_style_profile_mvp_generic")
-COMPARE = _module("compare_style_profiles_mvp")
 
 
 def _hash(path):
@@ -50,7 +38,7 @@ def test_generic_profile_is_deterministic_and_preserves_authority_boundaries():
     assert profile["captions"]["observed"]["opacity_rules"]["status"] == "UNKNOWN"
     assert set(profile["deferred"]) == {"flash_execution", "generic_vfx", "occlusion_reconstruction", "sfx", "graphics"}
     assert _hash(accepted) == accepted_hash
-    source = (ROOT / "scripts/analysis/build_style_profile_mvp_generic.py").read_text(encoding="utf-8").lower()
+    source = (ROOT / "video_cloner/profiles.py").read_text(encoding="utf-8").lower()
     assert not any(term in source for term in ("dcjrjtukscu", "dzatr0ejt4b", ".agent/gold", ".drt"))
 
 
@@ -69,5 +57,5 @@ def test_comparator_separates_style_difference_unknown_and_limitation():
     assert checks["enter_exit_availability"] == "PIPELINE_LIMITATION"
     assert transition_checks["candidate_authority_separation"] == "MATCH"
     assert comparison["pipeline_generalization"]["status"] == "PASS"
-    source = (ROOT / "scripts/analysis/compare_style_profiles_mvp.py").read_text(encoding="utf-8").lower()
+    source = (ROOT / "video_cloner/profile_comparison.py").read_text(encoding="utf-8").lower()
     assert not any(term in source for term in ("dcjrjtukscu", "dzatr0ejt4b", ".agent/gold", ".drt"))

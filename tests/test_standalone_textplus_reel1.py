@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.standalone.video_cloner_textplus import (
+from video_cloner.captions.textplus import (
     StandaloneTextplusError,
     compile_textplus,
     validate_caption_cues,

@@ -12,7 +12,7 @@ if "paddleocr" not in sys.modules:
     paddleocr.PaddleOCR = object
     sys.modules["paddleocr"] = paddleocr
 
-from scripts.analysis.detect_caption_style import (
+from video_cloner.analysis.caption_style import (
     _compatible_continuation,
     apply_short_caption_continuations,
     observation_timestamps,

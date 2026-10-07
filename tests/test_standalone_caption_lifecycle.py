@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from scripts.davinci import compile_davinci_textplus_fcpxml as canonical
-from scripts.standalone import video_cloner_caption_lifecycle as lifecycle
+from video_cloner.resolve import fcpxml as canonical
+from video_cloner.captions import lifecycle
 
 
 def cue(index: int, text: str, start: int, end: int, source_ids=None) -> dict:

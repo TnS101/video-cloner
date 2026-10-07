@@ -9,7 +9,7 @@ if "paddleocr" not in sys.modules:
     paddleocr.PaddleOCR = object
     sys.modules["paddleocr"] = paddleocr
 
-from scripts.analysis.detect_caption_style import choose_fill_stroke_shadow
+from video_cloner.analysis.caption_style import choose_fill_stroke_shadow
 
 
 def _cluster(hex_color: str, ratio: float, brightness: float, saturation: float) -> dict:

@@ -10,7 +10,7 @@ if "paddleocr" not in sys.modules:
     paddleocr.PaddleOCR = object
     sys.modules["paddleocr"] = paddleocr
 
-import scripts.analysis.detect_caption_style as detector
+import video_cloner.analysis.caption_style as detector
 
 
 def _args() -> SimpleNamespace:

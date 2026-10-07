@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import pytest
 
-from scripts.planning.validate_edit_plan import validate_transition_contract
+from video_cloner.planning.validate import validate_transition_contract
 
 
 def candidate():

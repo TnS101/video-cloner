@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.standalone.video_cloner_textplus import (
+from video_cloner.captions.textplus import (
     StandaloneTextplusError,
     attach_visual_animation_authority,
     render_visual_compositions,

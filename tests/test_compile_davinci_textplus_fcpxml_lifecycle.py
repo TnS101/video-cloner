@@ -5,7 +5,6 @@ import json
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-COMPILER_PATH = Path(__file__).parents[1] / "scripts" / "davinci" / "compile_davinci_textplus_fcpxml.py"
 VALIDATOR_PATH = Path(__file__).parents[1] / "scripts" / "davinci" / "validate_caption_lifecycle_fcpxml_step_3D.py"
 
 
@@ -17,7 +16,7 @@ def load_module(path: Path, name: str):
     return module
 
 
-compiler = load_module(COMPILER_PATH, "compiler_lifecycle_test")
+from video_cloner.resolve import fcpxml as compiler
 validator = load_module(VALIDATOR_PATH, "validator_lifecycle_test")
 
 

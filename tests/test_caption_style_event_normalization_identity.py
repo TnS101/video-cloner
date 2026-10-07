@@ -1,4 +1,4 @@
-from scripts.davinci.compile_davinci_textplus_fcpxml import extract_caption_style_events
+from video_cloner.resolve.fcpxml import extract_caption_style_events
 
 
 def _event(identity, text="the", start=5.4, end=6.4, **extra):

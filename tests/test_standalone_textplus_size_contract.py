@@ -1,4 +1,4 @@
-from scripts.standalone.video_cloner_textplus import (
+from video_cloner.captions.textplus import (
     _ensure_textplus_size,
     apply_static_style_authority,
     attach_independent_style_evidence_contract,

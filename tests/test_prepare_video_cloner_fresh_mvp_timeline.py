@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from scripts.davinci import prepare_video_cloner_fresh_mvp_timeline as prepare
+from video_cloner.resolve import queue as prepare
 
 
 def test_publish_writes_one_safe_bridge_command(tmp_path, monkeypatch):

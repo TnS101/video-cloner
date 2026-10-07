@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.standalone import video_cloner_caption_lifecycle as lifecycle
+from video_cloner.captions import lifecycle
 
 
 def cue(index: int, text: str, source_ids=None) -> dict:

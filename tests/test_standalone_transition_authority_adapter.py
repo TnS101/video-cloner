@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.standalone.video_cloner_fcpxml import compile_fcpxml
+from video_cloner.captions.fcpxml import compile_fcpxml
 from scripts.standalone.video_cloner_transition_authority import (
     TransitionAuthorityError,
     build_transition_authority,

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.davinci import compile_davinci_textplus_fcpxml as canonical
-from scripts.standalone.video_cloner_textplus import (
+from video_cloner.resolve import fcpxml as canonical
+from video_cloner.captions.textplus import (
     StandaloneTextplusError,
     render_visual_compositions,
     resolve_visual_style_authority,

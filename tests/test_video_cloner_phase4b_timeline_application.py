@@ -8,7 +8,7 @@ import pytest
 from resolve_workspace.modules import video_cloner_phase4b_timeline_application as module
 from scripts.davinci.prepare_video_cloner_phase4b_timeline_application import publish
 from scripts.davinci.validate_video_cloner_phase4b_timeline_application import validate as validate_evidence
-from scripts.davinci import compile_davinci_textplus_fcpxml as canonical
+from video_cloner.resolve import fcpxml as canonical
 
 
 TARGET = "fixture_standalone_timeline"

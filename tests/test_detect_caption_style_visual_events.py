@@ -10,7 +10,7 @@ if "paddleocr" not in sys.modules:
     paddleocr.PaddleOCR = object
     sys.modules["paddleocr"] = paddleocr
 
-from scripts.analysis.detect_caption_style import build_caption_style_events
+from video_cloner.analysis.caption_style import build_caption_style_events
 
 
 VIDEO = {"width": 1080, "height": 1920}

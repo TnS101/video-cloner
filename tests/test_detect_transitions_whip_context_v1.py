@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import numpy as np
 
 
-MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "analysis" / "detect_transitions_proxy.py"
+MODULE_PATH = Path(__file__).resolve().parents[1] / "video_cloner" / "analysis" / "transitions.py"
 SPEC = importlib.util.spec_from_file_location("detect_transitions_proxy", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)

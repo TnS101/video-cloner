@@ -12,7 +12,7 @@ if "paddleocr" not in sys.modules:
     paddleocr.PaddleOCR = object
     sys.modules["paddleocr"] = paddleocr
 
-from scripts.analysis.detect_caption_style import box_to_bbox, refine_merged_ocr_regions
+from video_cloner.analysis.caption_style import box_to_bbox, refine_merged_ocr_regions
 
 
 def _box(x1: float, y1: float, x2: float, y2: float) -> list[list[float]]:
