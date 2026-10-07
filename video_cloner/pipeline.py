@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+import os
+from dataclasses import replace
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 from .analysis.pipeline import AnalysisOrchestrator
 from .config import RuntimeConfig, build_run_context
-from .contracts import InputSpec, RunContext
+from .contracts import ArtifactIdentity, InputSpec, RunContext, new_run_id
 from .ingestion.media import ingest as _ingest
 from .planning.pipeline import PlanningOrchestrator
 
@@ -110,13 +113,128 @@ def publish(
     manifest, contract = build_package(
         config.project_root, Path(generic), Path(proxy), Path(caption_style), Path(audio), Path(fcpxml), Path(compiler_report), target
     )
-    return publish_command(config.project_root, manifest, contract, project_name, target)
+    return publish_command(config.project_root, manifest, contract, project_name, target, config.state_root)
 
 
-def run_offline(run: RunContext, transition_authority: str | Path, *, force: bool = False, samples_per_shot: int = 5) -> dict[str, object]:
-    """Run analysis, planning, and profiles after media ingestion."""
-    return {
-        "analysis": analyze(run, force=force),
-        "planning": plan(run, transition_authority, force=force),
-        "profiles": profile(run, samples_per_shot=samples_per_shot),
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _artifact_inventory(run: RunContext) -> list[dict[str, object]]:
+    paths = {run.source_video_path, run.wav_path, run.proxy_path}
+    if run.video_data_root.is_dir():
+        paths.update(path for path in run.video_data_root.rglob("*") if path.is_file())
+    return [ArtifactIdentity.from_path(path).as_dict() for path in sorted(paths) if path.is_file()]
+
+
+def _write_manifest(run: RunContext, result: Mapping[str, object]) -> Path:
+    assert run.run_id is not None
+    path = run.config.state_root / "runs" / run.run_id / "manifest.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
+    return path
+
+
+def run_offline(
+    run: RunContext,
+    transition_authority: str | Path | None = None,
+    *,
+    force: bool = False,
+    samples_per_shot: int = 5,
+    target_timeline: str | None = None,
+) -> dict[str, object]:
+    """Run ingestion through offline FCPXML compilation without publishing."""
+    if run.run_id is None:
+        run = replace(run, run_id=new_run_id(run.video_id))
+    started = _utc_now()
+    reel = run.video_id
+    transitions = Path(transition_authority) if transition_authority else run.analysis_dir / f"{reel}_transitions.json"
+    timeline = target_timeline or run.config.target_timeline or f"VIDEO_CLONER_{reel}_MVP_V1"
+    fcpxml = run.davinci_dir / f"{reel}_mvp_timeline.fcpxml"
+    compiler_report = run.davinci_dir / f"{reel}_mvp_timeline_report.json"
+    stages: dict[str, object] = {}
+    result: dict[str, object] = {
+        "schema": "video_cloner.canonical_run.v1",
+        "run_id": run.run_id,
+        "video_id": reel,
+        "started_at_utc": started,
+        "configuration_identity": run.config.identity(),
+        "runtime_identity": run.config.public_runtime(),
+        "source": ArtifactIdentity.from_path(run.source_video_path).as_dict(),
+        "stages": stages,
+        "status": "running",
     }
+    try:
+        stages["ingest"] = {"status": "success", "result": ingest(run.input_spec, run.config, force=force, run_id=run.run_id)}
+        stages["analysis"] = {"status": "success", "result": analyze(run, force=force)}
+        stages["planning"] = {"status": "success", "result": plan(run, transitions, force=force)}
+        stages["profile"] = {"status": "success", "result": profile(run, samples_per_shot=samples_per_shot)}
+        code = compile(
+            run.planning_dir / f"{reel}_generic_edit_commands.json",
+            run.analysis_dir / f"{reel}_caption_style.json",
+            fcpxml,
+            compiler_report,
+            options={
+                "source": "subtitle_clips",
+                "timeline_name": timeline,
+                "timeline_mode": "full_timeline",
+                "video": run.proxy_path,
+                "audio": run.wav_path,
+                "include_transitions": False,
+                "transition_mode": "none",
+            },
+        )
+        if code:
+            raise RuntimeError(f"FCPXML compiler exited with code {code}")
+        stages["compile"] = {"status": "success", "fcpxml": str(fcpxml), "report": str(compiler_report)}
+        result.update(status="success", finished_at_utc=_utc_now(), artifacts=_artifact_inventory(run))
+    except Exception as error:
+        result.update(status="failed", finished_at_utc=_utc_now(), error=f"{type(error).__name__}: {error}", artifacts=_artifact_inventory(run))
+        result["manifest_path"] = str(_write_manifest(run, result))
+        raise
+    result["manifest_path"] = str(_write_manifest(run, result))
+    return result
+
+
+def run(
+    source: str | Path | InputSpec,
+    config: RuntimeConfig,
+    *,
+    run_id: str | None = None,
+    force: bool = False,
+    samples_per_shot: int = 5,
+    project: str | None = None,
+    target_timeline: str | None = None,
+) -> dict[str, object]:
+    """Run the full canonical workflow and publish one bounded Resolve import command."""
+    spec = source if isinstance(source, InputSpec) else InputSpec.from_url(source) if str(source).startswith(("http://", "https://")) else InputSpec.from_local(source)
+    run_context = context(spec, config, run_id or new_run_id(spec.video_id))
+    result = run_offline(run_context, force=force, samples_per_shot=samples_per_shot, target_timeline=target_timeline)
+    reel = run_context.video_id
+    stages = result["stages"]
+    assert isinstance(stages, dict)
+    try:
+        receipt = publish(
+            config,
+            generic=run_context.planning_dir / f"{reel}_generic_edit_commands.json",
+            proxy=run_context.proxy_path,
+            caption_style=run_context.analysis_dir / f"{reel}_caption_style.json",
+            audio=run_context.wav_path,
+            fcpxml=run_context.davinci_dir / f"{reel}_mvp_timeline.fcpxml",
+            compiler_report=run_context.davinci_dir / f"{reel}_mvp_timeline_report.json",
+            project=project,
+            target_timeline=target_timeline,
+        )
+    except Exception as error:
+        stages["publish"] = {"status": "failed", "error": f"{type(error).__name__}: {error}"}
+        result.update(status="failed", finished_at_utc=_utc_now(), artifacts=_artifact_inventory(run_context))
+        result["manifest_path"] = str(_write_manifest(run_context, result))
+        raise
+    stages["publish"] = {"status": "success", "receipt": receipt}
+    result["publish_command"] = receipt
+    result["artifacts"] = _artifact_inventory(run_context)
+    result["finished_at_utc"] = _utc_now()
+    result["manifest_path"] = str(_write_manifest(run_context, result))
+    return result

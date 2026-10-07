@@ -180,10 +180,22 @@ def build_package(
     return manifest_path, contract
 
 
-def publish(root: Path, manifest_path: Path, contract: Mapping[str, Any], project: str, target: str) -> dict[str, Any]:
+def publish(
+    root: Path,
+    manifest_path: Path,
+    contract: Mapping[str, Any],
+    project: str,
+    target: str,
+    state_root: Path | None = None,
+) -> dict[str, Any]:
     if not project or not target:
         raise ValueError("explicit_target_identity")
-    queue = root / ".agent" / "commands"
+    state = (state_root or root / ".agent").resolve()
+    try:
+        state_relative = state.relative_to(root.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("state_root_outside_repository") from exc
+    queue = state / "commands"
     for state in ("pending", "running", "completed", "failed"):
         (queue / state).mkdir(parents=True, exist_ok=True)
     active = [(state, path) for state in ("pending", "running") for path in sorted((queue / state).glob("*.json"))]
@@ -192,7 +204,7 @@ def publish(root: Path, manifest_path: Path, contract: Mapping[str, Any], projec
     run_id = allocate_run_id()
     if re.fullmatch(r"\d{8}T\d{9}Z_[0-9a-f]{32}", run_id) is None:
         raise ValueError("run_id")
-    relative_report = f".agent/reports/{TASK_ID}/{run_id}"
+    relative_report = f"{state_relative}/reports/{TASK_ID}/{run_id}"
     report_dir = root / relative_report
     report_dir.mkdir(parents=True, exist_ok=False)
     command = {

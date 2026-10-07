@@ -40,11 +40,16 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--transition-authority", required=True)
     plan.add_argument("--force", action="store_true")
     plan.add_argument("--force-stage", action="append", default=[])
-    offline = commands.add_parser("run-offline")
-    _source(offline)
-    offline.add_argument("--transition-authority", required=True)
-    offline.add_argument("--force", action="store_true")
-    offline.add_argument("--samples-per-shot", type=int, default=5)
+    for name in ("run-offline", "run"):
+        full = commands.add_parser(name)
+        _source(full)
+        full.add_argument("--run-id")
+        full.add_argument("--transition-authority")
+        full.add_argument("--force", action="store_true")
+        full.add_argument("--samples-per-shot", type=int, default=5)
+        full.add_argument("--target-timeline")
+        if name == "run":
+            full.add_argument("--project")
     compiler = commands.add_parser("compile")
     compiler.add_argument("--generic", required=True)
     compiler.add_argument("--caption-style", required=True)
@@ -78,17 +83,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "publish":
         result = pipeline.publish(config, generic=args.generic, proxy=args.proxy, caption_style=args.caption_style, audio=args.audio, fcpxml=args.fcpxml, compiler_report=args.compiler_report, project=args.project, target_timeline=args.target_timeline)
     else:
-        run = pipeline.context(_source_value(args), config)
-        if args.command == "ingest":
-            result = pipeline.ingest(run.input_spec, config, force=args.force)
+        run_context = pipeline.context(_source_value(args), config, getattr(args, "run_id", None))
+        if args.command == "run":
+            result = pipeline.run(_source_value(args), config, run_id=args.run_id, force=args.force, samples_per_shot=args.samples_per_shot, project=args.project, target_timeline=args.target_timeline)
+        elif args.command == "ingest":
+            result = pipeline.ingest(run_context.input_spec, config, force=args.force)
         elif args.command == "analyze":
-            result = pipeline.analyze(run, force=args.force, force_analyzers=args.force_analyzer)
+            result = pipeline.analyze(run_context, force=args.force, force_analyzers=args.force_analyzer)
         elif args.command == "plan":
-            result = pipeline.plan(run, args.transition_authority, force=args.force, force_stages=args.force_stage)
+            result = pipeline.plan(run_context, args.transition_authority, force=args.force, force_stages=args.force_stage)
         elif args.command == "profile":
-            result = pipeline.profile(run, samples_per_shot=args.samples_per_shot)
+            result = pipeline.profile(run_context, samples_per_shot=args.samples_per_shot)
         else:
-            result = pipeline.run_offline(run, args.transition_authority, force=args.force, samples_per_shot=args.samples_per_shot)
+            result = pipeline.run_offline(run_context, args.transition_authority, force=args.force, samples_per_shot=args.samples_per_shot, target_timeline=args.target_timeline)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 
