@@ -1,6 +1,6 @@
 # Current Pipeline Graph
 
-Updated: 2026-10-07 after Step 4 wrapper retirement.
+Updated: 2026-10-07 after Step 4.5 legacy-source distillation.
 
 ## Canonical operator path
 
@@ -48,7 +48,7 @@ The public API exposes a timeline-import operation, not a module filename. The q
 
 ## Deferred capability boundary
 
-Historical caption animation, font, opacity, stroke/shadow, lifecycle, camera-transform, transition/Flash, and occlusion sources remain outside the canonical operator graph. They are intentionally retained as `DEFERRED_CAPABILITY_SOURCE` until equivalent canonical behavior and tests exist. Their prepare/probe launchers are not automatically active merely because the source remains.
+Historical caption animation, font, opacity, stroke/shadow, lifecycle, camera-transform, transition/Flash, and occlusion sources remain outside the canonical operator graph. The complete retained closure is indexed in `docs/repo_hygiene/DEFERRED_CAPABILITIES_INDEX.md`; everything else was deleted. Indexed sources are intentionally retained as `DEFERRED_CAPABILITY_SOURCE` until equivalent canonical behavior and tests exist. Their prepare/probe launchers are not automatically active merely because the source remains.
 
 ## Machine-acceptance boundary
 
