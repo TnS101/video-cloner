@@ -1,0 +1,27 @@
+{
+  "schema": "video_cloner_f7_bounded_physical_track_placement",
+  "schema_version": 1,
+  "task_id": "VIDEO_CLONER_STEP5_F7_FRESH_RESOLVE_VALIDATION_REBUILD_V1",
+  "source_contract_sha256": "5fe73df43f1357f0fe59c7347f81e7ab282cf8eb9e9e9879d6569a9d5c9405c6",
+  "canonical_mapping": "lane = resolve_track - 1",
+  "corrections": [
+    {
+      "source_identity": "recovered_display_object_local_we_0002",
+      "expected_text": "We",
+      "before": {"resolve_track": 3, "effective_lane": 2},
+      "after": {"resolve_track": 4, "lane": 3}
+    },
+    {
+      "source_identity": "caption_tracklet_0092",
+      "expected_text": "our",
+      "before": {"resolve_track": 2, "effective_lane": 1},
+      "after": {"resolve_track": 3, "lane": 2}
+    },
+    {
+      "source_identity": "caption_tracklet_0093",
+      "expected_text": "database",
+      "before": {"resolve_track": 2, "effective_lane": 1},
+      "after": {"resolve_track": 3, "lane": 2}
+    }
+  ]
+}

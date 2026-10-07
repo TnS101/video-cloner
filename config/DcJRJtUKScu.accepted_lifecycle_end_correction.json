@@ -1,0 +1,68 @@
+{
+  "authority": "ACCEPTED_LIFECYCLE_END_CORRECTION",
+  "canonical_mapping": {
+    "expression": "round(source_end_exclusive / source_fps * timeline_fps)",
+    "reference": "scripts/standalone/video_cloner_caption_lifecycle.py:430",
+    "source_fps": 30.0,
+    "timeline_fps": 24.0
+  },
+  "records": [
+    {
+      "accepted_timeline_end_exclusive": 596,
+      "accepted_timeline_interval": [
+        542,
+        596
+      ],
+      "authority_reason": "Bounded source-pixel inspection proves the physical 6000 object remains partially visible during the transition at source frame 744 and is no longer visible at source frame 745.",
+      "evidence_refs": [
+        {
+          "classification": "VISIBLE",
+          "path": ".agent/tasks/inbox/VIDEO_CLONER_STEP5_F6_6000_LIFECYCLE_20261001_V1/fixtures/source_frame_743.png",
+          "sha256": "99ca676efff7c0885c792d947a36d6c1eccad13d3ee5a7ef619448514c6960ed",
+          "source_frame": 743
+        },
+        {
+          "classification": "TRANSITIONAL",
+          "object_visibility": "PARTIALLY_VISIBLE",
+          "path": ".agent/tasks/inbox/VIDEO_CLONER_STEP5_F6_6000_LIFECYCLE_20261001_V1/fixtures/source_frame_744.png",
+          "sha256": "00add5d949f61689bd72f648f377d708631481943d43b137a4af0ef366275d16",
+          "source_frame": 744
+        },
+        {
+          "classification": "NOT_VISIBLE",
+          "path": ".agent/tasks/inbox/VIDEO_CLONER_STEP5_F6_6000_LIFECYCLE_20261001_V1/fixtures/source_frame_745.png",
+          "sha256": "e9d8422f0236cc5a1bf864b34c21b49e3ce550b0556b2d1150af1bc83d4f17f5",
+          "source_frame": 745
+        },
+        {
+          "classification": "NOT_VISIBLE",
+          "path": ".agent/tasks/inbox/VIDEO_CLONER_STEP5_F6_6000_LIFECYCLE_20261001_V1/fixtures/source_frame_746.png",
+          "sha256": "66294e1d8bbe30bebeb69c336da386a7575e43a6e40a00a5a32a6f3049f64cc4",
+          "source_frame": 746
+        },
+        {
+          "classification": "BOUNDED_WINDOW_730_755",
+          "path": ".agent/tasks/inbox/VIDEO_CLONER_STEP5_F6_6000_LIFECYCLE_20261001_V1/fixtures/source_frames_730_755_contact_sheet.png",
+          "sha256": "4870c815ad88dd0e527085e84413dbfc29fddbf6dff1d2c1cfe9cd33de5608c4"
+        }
+      ],
+      "first_nonvisible_source_frame": 745,
+      "last_visible_source_frame": 744,
+      "object_id": "caption_tracklet_0089",
+      "original_timeline_interval": [
+        542,
+        570
+      ],
+      "reproduction_authority": true,
+      "source_end_exclusive": 745
+    }
+  ],
+  "reproduction_authority": true,
+  "resolve_mutated": false,
+  "schema": "video_cloner_accepted_lifecycle_end_correction",
+  "schema_version": 1,
+  "source_video": {
+    "path": "input/DcJRJtUKScu.mp4",
+    "sha256": "729c47a74fe015fd45c22a76974c0c824234352ca90c42b5689dc7468b87a279"
+  }
+}

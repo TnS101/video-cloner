@@ -11,6 +11,7 @@ from scripts.standalone.video_cloner_textplus import (
     StandaloneTextplusError,
     derive_caption_authority,
     prepare_textplus_authority,
+    render_visual_compositions,
     validate_caption_authority,
 )
 
@@ -41,9 +42,12 @@ def _cue(index: int, text: str) -> dict:
 def test_reel2_source_corrections_and_coverage_are_exact():
     generic, prepared = _reel2()
     cues = prepared["caption_authority"]["cues"]
+    we_dont = next(cue for cue in cues if cue["source_cue_ids"] == ["sub_001", "sub_002"])
     launching = next(cue for cue in cues if cue["source_cue_ids"] == ["sub_088"])
     six_thousand = next(cue for cue in cues if cue["source_cue_ids"] == ["sub_065", "sub_066"])
 
+    assert we_dont["text"] == "We don't"
+    assert we_dont["reconciliation"]["decision"] == "source_composite"
     assert launching["text"] == "launching"
     assert launching["reconciliation"]["decision"] == "source_corrected"
     assert six_thousand["text"] == "6000"
@@ -52,6 +56,19 @@ def test_reel2_source_corrections_and_coverage_are_exact():
         row["subtitle_id"] for row in generic["subtitle_clips"]
     ]
     assert prepared["caption_authority"]["summary"]["source_coverage_exact"] is True
+
+
+def test_stable_multiword_ocr_composes_adjacent_semantic_cues():
+    cues = [_cue(1, "We"), _cue(2, "don't")]
+    style = {"caption_style_events": [{
+        "event_id": "event_2", "cue_id": "sub_0002",
+        "observed_text": "We don't", "observed_texts": ["We don't"] * 5,
+        "start": 10 / 24, "end": 25 / 24,
+    }]}
+    authority, _ = derive_caption_authority(cues, style, 24.0)
+    assert len(authority) == 1
+    assert authority[0]["text"] == "We don't"
+    assert authority[0]["source_cue_ids"] == ["sub_001", "sub_002"]
 
 
 def test_ambiguous_ocr_falls_back_to_transcript():
@@ -105,6 +122,107 @@ def test_semantic_correction_without_source_evidence_fails_closed():
     cue = {**_cue(1, "changed"), "source_cue_ids": ["sub_001"], "reconciliation": {"decision": "source_corrected", "evidence": []}}
     with pytest.raises(StandaloneTextplusError, match="no source evidence"):
         validate_caption_authority([cue], ["sub_001"])
+
+
+def test_visual_token_is_not_expanded_per_semantic_id():
+    compositions = [{
+        "composition_id": "visual_composition_sub_065",
+        "window": [538, 554],
+        "relation": {"mode": "single", "predecessor_token_ids": []},
+        "authority": {"kind": "visual_primary", "evidence_ids": ["event_66"]},
+        "tokens": [{
+            "token_id": "visual_token_sub_065", "text": "6000",
+            "semantic_ids": ["sub_065", "sub_066"], "window": [542, 554],
+            "visual_event_identity": "caption_tracklet_0088",
+        }],
+    }]
+    cues, info = render_visual_compositions(compositions, ["sub_065", "sub_066"], 24.0)
+    assert [(cue["id"], cue["text"], cue["source_cue_ids"]) for cue in cues] == [
+        ("visual_token_sub_065", "6000", ["sub_065", "sub_066"])
+    ]
+    assert info["render_token_count"] == 1
+
+
+def test_unresolved_visual_composition_does_not_silently_fallback():
+    compositions = [{
+        "composition_id": "visual_composition_sub_001", "window": [0, 5],
+        "authority": {"kind": "unresolved", "evidence_ids": ["event_a", "event_b"]},
+        "tokens": [{
+            "token_id": "visual_token_sub_001", "text": "one",
+            "semantic_ids": ["sub_001"], "window": [0, 5],
+            "visual_event_identity": "caption_tracklet_0001",
+        }],
+    }]
+    with pytest.raises(StandaloneTextplusError, match="unresolved visual composition"):
+        render_visual_compositions(compositions, ["sub_001"], 24.0)
+
+
+def test_visual_composition_unknown_semantic_reference_fails_closed():
+    compositions = [{
+        "composition_id": "visual_composition_sub_001", "window": [0, 5],
+        "authority": {"kind": "transcript_fallback", "evidence_ids": []},
+        "tokens": [{
+            "token_id": "visual_token_sub_001", "text": "one",
+            "semantic_ids": ["sub_002"], "window": [0, 5],
+            "visual_event_identity": "caption_tracklet_0001",
+        }],
+    }]
+    with pytest.raises(StandaloneTextplusError, match="semantic reference is unknown"):
+        render_visual_compositions(compositions, ["sub_001"], 24.0)
+
+
+def test_empty_semantic_references_require_visual_identity_but_are_allowed():
+    compositions = [{
+        "composition_id": "visual_composition_hits", "window": [0, 5],
+        "authority": {"kind": "visual_primary", "evidence_ids": []},
+        "tokens": [{
+            "token_id": "visual_token_hits", "text": "hits",
+            "semantic_ids": [], "window": [0, 5],
+            "visual_event_identity": "caption_tracklet_0029",
+        }],
+    }]
+    cues, info = render_visual_compositions(compositions, ["sub_019"], 24.0)
+    assert cues[0]["source_cue_ids"] == []
+    assert cues[0]["semantic_reference_ids"] == []
+    assert info["render_token_count"] == 1
+
+
+def test_missing_visual_identity_fails_closed():
+    compositions = [{
+        "composition_id": "visual_composition_missing_identity", "window": [0, 5],
+        "authority": {"kind": "visual_primary", "evidence_ids": []},
+        "tokens": [{"token_id": "visual_token_missing_identity", "text": "word", "semantic_ids": [], "window": [0, 5]}],
+    }]
+    with pytest.raises(StandaloneTextplusError, match="token is malformed"):
+        render_visual_compositions(compositions, ["sub_001"], 24.0)
+
+
+def test_duplicate_semantic_reference_within_one_token_fails_closed():
+    compositions = [{
+        "composition_id": "visual_composition_dup", "window": [0, 5],
+        "authority": {"kind": "visual_primary", "evidence_ids": []},
+        "tokens": [{
+            "token_id": "visual_token_dup", "text": "word",
+            "semantic_ids": ["sub_001", "sub_001"], "window": [0, 5],
+            "visual_event_identity": "caption_tracklet_dup",
+        }],
+    }]
+    with pytest.raises(StandaloneTextplusError, match="semantic references are duplicated"):
+        render_visual_compositions(compositions, ["sub_001"], 24.0)
+
+
+def test_shared_semantic_reference_keeps_visual_tokens_separate():
+    compositions = [{
+        "composition_id": "visual_composition_shared", "window": [0, 5],
+        "authority": {"kind": "visual_primary", "evidence_ids": []},
+        "tokens": [
+            {"token_id": "visual_token_a", "text": "the", "semantic_ids": ["sub_017"], "window": [0, 5], "visual_event_identity": "caption_tracklet_0026"},
+            {"token_id": "visual_token_b", "text": "the", "semantic_ids": ["sub_017"], "window": [0, 5], "visual_event_identity": "caption_tracklet_0030"},
+        ],
+    }]
+    cues, info = render_visual_compositions(compositions, ["sub_017"], 24.0)
+    assert [cue["visual_event_identity"] for cue in cues] == ["caption_tracklet_0026", "caption_tracklet_0030"]
+    assert info["semantic_reference_distinct_count"] == 1
 
 
 def test_reel1_lifecycle_regression_remains_exact():

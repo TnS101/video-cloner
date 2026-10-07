@@ -1029,6 +1029,138 @@ def input_targets_are_correct(
     )
 
 
+def apply_authorized_animation(
+    comp: Any,
+    tool: Any,
+    payload: Optional[Dict[str, Any]],
+    duration_frames: int,
+) -> Dict[str, Any]:
+    """Apply one already-authorized STEP 4A payload and prove temporal readback."""
+    if payload is None:
+        return {
+            "ok": True,
+            "selected": False,
+            "modified": False,
+            "keyframes_written": 0,
+            "readback": [],
+        }
+    if not isinstance(payload, dict):
+        raise ValueError("animation_payload_type")
+
+    allowed_keys = {
+        "authority",
+        "source_evidence_id",
+        "source_type",
+        "property",
+        "keyframes",
+    }
+    if set(payload) - allowed_keys:
+        raise ValueError("animation_payload_unexpected_fields")
+    if payload.get("authority") != "visual_observed":
+        raise ValueError("animation_authority")
+
+    input_name = str(payload.get("property") or "")
+    source_type = str(payload.get("source_type") or "")
+    if (input_name, source_type) not in {("Center", "slide"), ("Size", "scale")}:
+        raise ValueError("animation_property_or_type")
+    if not str(payload.get("source_evidence_id") or ""):
+        raise ValueError("animation_source_evidence_id")
+    if not isinstance(duration_frames, int) or isinstance(duration_frames, bool) or duration_frames <= 0:
+        raise ValueError("animation_duration_frames")
+
+    raw_keyframes = payload.get("keyframes")
+    if not isinstance(raw_keyframes, list) or not raw_keyframes:
+        raise ValueError("animation_keyframes")
+
+    targets: List[Dict[str, Any]] = []
+    seen: Dict[int, Any] = {}
+    previous_frame = -1
+    for keyframe in raw_keyframes:
+        if not isinstance(keyframe, dict) or set(keyframe) != {"frame", "relative_time", "value"}:
+            raise ValueError("animation_keyframe_shape")
+        frame = keyframe.get("frame")
+        relative_time = as_float(keyframe.get("relative_time"))
+        value = normalize_value(input_name, keyframe.get("value"))
+        if (
+            not isinstance(frame, int)
+            or isinstance(frame, bool)
+            or relative_time is None
+            or not 0.0 <= relative_time <= 1.0
+            or value is None
+        ):
+            raise ValueError("animation_keyframe_value")
+        if frame < 0 or frame >= duration_frames:
+            raise ValueError("animation_keyframe_out_of_range")
+        if frame in seen:
+            if not values_match(input_name, seen[frame], value):
+                raise ValueError("animation_duplicate_frame_conflict")
+            raise ValueError("animation_duplicate_frame")
+        if frame <= previous_frame:
+            raise ValueError("animation_keyframe_order")
+        seen[frame] = value
+        previous_frame = frame
+        targets.append({"input": input_name, "local_frame": frame, "expected": value})
+
+    if find_input(tool, input_name) is None:
+        raise RuntimeError(f"animation_input_not_found:{input_name}")
+    if input_targets_are_correct(tool, input_name, targets):
+        return {
+            "ok": True,
+            "selected": True,
+            "modified": False,
+            "already_correct": True,
+            "property": input_name,
+            "keyframes_written": 0,
+            "readback": [
+                {**target, "actual": normalize_value(input_name, read_input(tool, input_name, target["local_frame"])), "matched": True}
+                for target in targets
+            ],
+        }
+
+    try:
+        comp.Lock()
+    except Exception:
+        pass
+    writes: List[Dict[str, Any]] = []
+    try:
+        modifier = ensure_modifier(comp, tool, input_name)
+        if modifier.get("ok") is not True:
+            raise RuntimeError(f"animation_modifier_not_connected:{input_name}")
+        for target in targets:
+            write = write_key(tool, input_name, target["local_frame"], target["expected"])
+            writes.append({**target, "write": write})
+            if write.get("ok") is not True:
+                raise RuntimeError(f"animation_keyframe_write:{input_name}@{target['local_frame']}")
+    finally:
+        try:
+            comp.Unlock()
+        except Exception:
+            pass
+
+    readback = [
+        {
+            **target,
+            "actual": normalize_value(input_name, read_input(tool, input_name, target["local_frame"])),
+            "modifier_connected": connected_output(find_input(tool, input_name)) is not None,
+            "matched": values_match(input_name, read_input(tool, input_name, target["local_frame"]), target["expected"]),
+        }
+        for target in targets
+    ]
+    if not input_targets_are_correct(tool, input_name, targets) or not all(row["matched"] for row in readback):
+        raise RuntimeError(f"animation_temporal_readback:{input_name}")
+    return {
+        "ok": True,
+        "selected": True,
+        "modified": True,
+        "already_correct": False,
+        "property": input_name,
+        "modifier": modifier,
+        "keyframes_written": len(writes),
+        "writes": writes,
+        "readback": readback,
+    }
+
+
 def run() -> Dict[str, Any]:
     source_payload = load_source_targets()
     source_items = source_payload["items"]

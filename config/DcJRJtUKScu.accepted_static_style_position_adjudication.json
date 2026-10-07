@@ -1,0 +1,43 @@
+{
+  "schema": "video_cloner_accepted_static_style_position_adjudication",
+  "schema_version": 1,
+  "authority": "ACCEPTED_STATIC_STYLE_POSITION_ADJUDICATION",
+  "result": "BLOCKED_F5B_HUMAN_STATIC_STYLE_APPROVAL",
+  "source_video": {
+    "path": "input/DcJRJtUKScu.mp4",
+    "sha256": "729c47a74fe015fd45c22a76974c0c824234352ca90c42b5689dc7468b87a279"
+  },
+  "auto_authorized_property_count": 2,
+  "records": [
+    {
+      "object_id": "recovered_display_object_listing_0003",
+      "authorized_properties": [
+        "static_size",
+        "resolve_center"
+      ],
+      "static_size": 0.113888889,
+      "resolve_center": [
+        0.50555556,
+        0.603125
+      ],
+      "property_authority": {
+        "static_size": "NO_CHANGE_REQUIRED",
+        "resolve_center": "NO_CHANGE_REQUIRED"
+      },
+      "confidence": {
+        "static_size": "SOURCE_AUTHORIZED",
+        "resolve_center": "SOURCE_AUTHORIZED"
+      },
+      "evidence_refs": [
+        "config/DcJRJtUKScu.accepted_listing_display_object_recovery.json",
+        ".agent/reports/VIDEO_CLONER_STEP5A_F5A_LISTING_OBJECT_LIFECYCLE_RECOVERY_20260930_V1/20260930T171039690Z_luna_resume/first/step5a_f5a_compile_contract.json"
+      ]
+    }
+  ],
+  "human_pending_properties": 8,
+  "production_literal_branches": 0,
+  "production_identity_branches": 0,
+  "production_reel_branches": 0,
+  "f5_overlay_authorized": false,
+  "resolve_mutated": false
+}

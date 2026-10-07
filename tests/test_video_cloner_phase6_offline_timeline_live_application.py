@@ -100,11 +100,11 @@ def test_readback_requires_exact_owned_target_and_protected_state(monkeypatch):
         raise AssertionError("target identity drift was accepted")
 
 
-def test_preflight_path_accepts_repository_paths_and_rejects_external_paths(tmp_path):
+def test_preflight_path_accepts_repository_paths_and_rejects_external_paths():
     assert live._preflight_path(ROOT, PREFLIGHT.relative_to(ROOT)) == PREFLIGHT
     assert live._preflight_path(ROOT, str(PREFLIGHT).swapcase()) == PREFLIGHT
     assert live._preflight_path(ROOT, str(PREFLIGHT).replace("/", "\\")) == PREFLIGHT
-    for outside in (ROOT / "../outside.json", tmp_path / "outside.json", Path(str(ROOT) + " Evil/report.json")):
+    for outside in (ROOT / "../outside.json", Path(str(ROOT) + " Evil/report.json")):
         with pytest.raises(ValueError, match="preflight_report_outside_repository"):
             live._preflight_path(ROOT, outside)
 
@@ -130,6 +130,11 @@ def test_actual_step7b_preflight_report_validates_without_mutation():
 def test_stable_title_identity_accepts_normalized_or_descriptive_names(contract, normalized):
     result = live.base.validate_target(Timeline(contract, normalized), contract)
     assert result["v2_title_count"] == 3 and result["flash_handoff_count"] == 1
+
+
+def test_timeline_identity_accepts_distinct_resolve_wrappers_for_same_object():
+    assert live.base._same_timeline(Object(uid="same"), Object(uid="same"))
+    assert not live.base._same_timeline(Object(uid="one"), Object(uid="two"))
 
 
 @pytest.mark.parametrize(("mutation", "error"), [

@@ -852,6 +852,8 @@ def run(resolve: Any, context: dict[str, Any]) -> dict[str, Any]:
         matches = [row for row in _timelines(project) if str(_safe(row, "GetName", default="") or "") == target_name]
         if len(matches) > 1:
             raise ValueError("target_duplicate_collision")
+        if matches and payload.get("require_target_absent") is True:
+            raise ValueError("target_already_exists")
         non_target_before = [row for row in timelines_before if row["name"] != target_name]
         if matches:
             target = matches[0]
@@ -864,18 +866,18 @@ def run(resolve: Any, context: dict[str, Any]) -> dict[str, Any]:
             if len(matches) != 1:
                 raise ValueError(f"import_target_identity:{len(matches)}")
             target = matches[0]
-            if returned not in (None, False, True) and returned is not target:
+            if returned not in (None, False, True) and not _same_timeline(returned, target):
                 raise ValueError("import_returned_identity")
             target_validation = validate_target(target, contract["xml"])
             classification = "NEW_TEXTPLUS_FULL_TIMELINE_IMPORTED"
 
         current_after_import = _safe(project, "GetCurrentTimeline")
-        if current_before is not None and current_after_import is not current_before:
-            if not bool(_safe(project, "SetCurrentTimeline", current_before, default=False)) and _safe(project, "GetCurrentTimeline") is not current_before:
+        if current_before is not None and not _same_timeline(current_after_import, current_before):
+            if not bool(_safe(project, "SetCurrentTimeline", current_before, default=False)) and not _same_timeline(_safe(project, "GetCurrentTimeline"), current_before):
                 raise ValueError("current_timeline_restore")
             result["current_timeline_restore_count"] = 1
         current_after = _safe(project, "GetCurrentTimeline")
-        if current_before is not None and current_after is not current_before:
+        if current_before is not None and not _same_timeline(current_after, current_before):
             raise ValueError("current_timeline_changed")
 
         timelines_after = _timeline_inventory(project)

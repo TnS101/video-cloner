@@ -6154,10 +6154,9 @@ def probe_safe_textplus_shading(
     """Configure Text+ outline/shadow with verified hidden-input support.
 
     Resolve 21 can expose only Enabled2..Enabled8 while a secondary shading
-    element is disabled. The remaining controls are still addressable by their
-    Text+ setting IDs. This function writes all geometry/color controls while the
-    element remains disabled, verifies every readback, and enables the element
-    last. A comp lock is used when available to prevent intermediate rendering.
+    element is disabled. Requested elements are enabled under the comp lock so
+    their controls become addressable, then every property is written and read
+    back. Unrequested elements remain disabled.
     """
     inventory_before = textplus_input_inventory(text_tool)
     outline_element = max(2, min(8, get_int(getattr(args, "caption_outline_element", 2), 2)))
@@ -6250,8 +6249,8 @@ def probe_safe_textplus_shading(
 
     result["comp_lock"] = _fusion_comp_lock_best_effort(comp)
     try:
-        # Always disable secondary elements first. The rest of each element is
-        # configured and verified while disabled, then EnabledN is written last.
+        # Reset every secondary element first. Requested elements are enabled
+        # again under the comp lock before their newly exposed controls are used.
         for element in range(2, 9):
             result["secondary_reset"].append(
                 probe_write_textplus_candidate_input(
@@ -6262,36 +6261,38 @@ def probe_safe_textplus_shading(
 
         if outline_requested:
             e = outline_element
-            outline_rows: List[Dict[str, Any]] = []
+            outline_rows: List[Dict[str, Any]] = [
+                probe_write_textplus_candidate_input(
+                    text_tool, inventory_before, [f"Enabled{e}"], 1,
+                )
+            ]
+            outline_inventory = textplus_input_inventory(text_tool)
+            result["outline"]["inventory_after_enable"] = outline_inventory
             outline_rows.append(
                 probe_write_textplus_candidate_input(
-                    text_tool, inventory_before,
+                    text_tool, outline_inventory,
                     [f"ElementShape{e}", f"Appearance{e}"], 1,
                 )
             )
 
             sr, sg, sb = parse_hex_color(style.get("stroke_color"), fallback=(0.0, 0.0, 0.0))
             outline_rows.extend([
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Red{e}"], sr),
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Green{e}"], sg),
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Blue{e}"], sb),
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Alpha{e}"], 1.0),
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Thickness{e}"], outline_thickness),
+                probe_write_textplus_candidate_input(text_tool, outline_inventory, [f"Red{e}"], sr),
+                probe_write_textplus_candidate_input(text_tool, outline_inventory, [f"Green{e}"], sg),
+                probe_write_textplus_candidate_input(text_tool, outline_inventory, [f"Blue{e}"], sb),
+                probe_write_textplus_candidate_input(text_tool, outline_inventory, [f"Alpha{e}"], 1.0),
+                probe_write_textplus_candidate_input(text_tool, outline_inventory, [f"Thickness{e}"], outline_thickness),
             ])
             outline_rows.append(
                 probe_write_textplus_candidate_input(
-                    text_tool, inventory_before, [f"OutsideOnly{e}"], 1,
+                    text_tool, outline_inventory, [f"OutsideOnly{e}"], 1,
                     required=False,
                 )
             )
 
             required_ok = _all_required_shading_rows_ok(outline_rows)
             if required_ok:
-                enable_row = probe_write_textplus_candidate_input(
-                    text_tool, inventory_before, [f"Enabled{e}"], 1
-                )
-                outline_rows.append(enable_row)
-                result["outline"]["applied"] = bool(enable_row.get("ok"))
+                result["outline"]["applied"] = True
             else:
                 result["outline"]["warnings"].append(
                     "Outline remained disabled because one or more required hidden/inventoried inputs failed verification."
@@ -6307,40 +6308,42 @@ def probe_safe_textplus_shading(
 
         if shadow_requested:
             e = shadow_element
-            shadow_rows: List[Dict[str, Any]] = []
+            shadow_rows: List[Dict[str, Any]] = [
+                probe_write_textplus_candidate_input(
+                    text_tool, inventory_before, [f"Enabled{e}"], 1,
+                )
+            ]
+            shadow_inventory = textplus_input_inventory(text_tool)
+            result["shadow"]["inventory_after_enable"] = shadow_inventory
             shadow_rows.append(
                 probe_write_textplus_candidate_input(
-                    text_tool, inventory_before,
+                    text_tool, shadow_inventory,
                     [f"ElementShape{e}", f"Appearance{e}"], 0,
                 )
             )
             rr, rg, rb = parse_hex_color(style.get("shadow_color"), fallback=(0.0, 0.0, 0.0))
             shadow_rows.extend([
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Red{e}"], rr),
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Green{e}"], rg),
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Blue{e}"], rb),
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Alpha{e}"], shadow_opacity),
-                probe_write_textplus_candidate_input(text_tool, inventory_before, [f"Offset{e}"], shadow_offset),
+                probe_write_textplus_candidate_input(text_tool, shadow_inventory, [f"Red{e}"], rr),
+                probe_write_textplus_candidate_input(text_tool, shadow_inventory, [f"Green{e}"], rg),
+                probe_write_textplus_candidate_input(text_tool, shadow_inventory, [f"Blue{e}"], rb),
+                probe_write_textplus_candidate_input(text_tool, shadow_inventory, [f"Alpha{e}"], shadow_opacity),
+                probe_write_textplus_candidate_input(text_tool, shadow_inventory, [f"Offset{e}"], shadow_offset),
             ])
             if shadow_softness is not None:
                 shadow_rows.extend([
                     probe_write_textplus_candidate_input(
-                        text_tool, inventory_before, [f"SoftnessX{e}", f"Softness{e}"],
+                        text_tool, shadow_inventory, [f"SoftnessX{e}", f"Softness{e}"],
                         shadow_softness, required=False,
                     ),
                     probe_write_textplus_candidate_input(
-                        text_tool, inventory_before, [f"SoftnessY{e}"],
+                        text_tool, shadow_inventory, [f"SoftnessY{e}"],
                         shadow_softness, required=False,
                     ),
                 ])
 
             required_ok = _all_required_shading_rows_ok(shadow_rows)
             if required_ok:
-                enable_row = probe_write_textplus_candidate_input(
-                    text_tool, inventory_before, [f"Enabled{e}"], 1
-                )
-                shadow_rows.append(enable_row)
-                result["shadow"]["applied"] = bool(enable_row.get("ok"))
+                result["shadow"]["applied"] = True
             else:
                 result["shadow"]["warnings"].append(
                     "Shadow remained disabled because one or more required hidden/inventoried inputs failed verification."
@@ -7784,6 +7787,8 @@ def provision_textplus_media_carrier(
         "media_pool_item": source["media_pool_item"],
         "source_start": source["source_start"],
         "source_end_inclusive": source["source_end_inclusive"],
+        "source_end_frame_api": source["source_start"] + duration,
+        "api_end_semantics": "exclusive",
         "record_start": start_frame,
         "record_end": end_frame,
         "duration": duration,

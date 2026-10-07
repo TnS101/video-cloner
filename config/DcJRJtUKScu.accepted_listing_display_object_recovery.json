@@ -1,0 +1,95 @@
+{
+  "schema": "video_cloner_accepted_display_object_recovery",
+  "schema_version": 1,
+  "authority": "ACCEPTED_DISPLAY_OBJECT_RECOVERY",
+  "source_video": {
+    "path": "input/DcJRJtUKScu.mp4",
+    "sha256": "729c47a74fe015fd45c22a76974c0c824234352ca90c42b5689dc7468b87a279",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30.0
+  },
+  "timeline_semantics": {
+    "fps": 24.0,
+    "start": "inclusive",
+    "end": "exclusive",
+    "last_visible_frame": "end_exclusive_minus_one",
+    "timestamp_conversion": "round(seconds * timeline_fps)"
+  },
+  "recovery_objects": [
+    {
+      "recovery_object_id": "recovered_display_object_listing_0003",
+      "accepted_display_text": "listing",
+      "source_existence": "PROVEN",
+      "source_visible_start_frame": 413,
+      "source_visible_end_frame": 432,
+      "timeline_start_frame": 330,
+      "timeline_end_frame": 347,
+      "source_bbox": [414, 721, 678, 803],
+      "resolve_center": [0.50555556, 0.603125],
+      "source_height_px": 82.0,
+      "resolve_size": 0.113888889,
+      "static_style_source": {
+        "classification": "STYLE_UNRESOLVED_PENDING_F5",
+        "representative_source_frame": 426,
+        "font_family": "Arial",
+        "font_style": "Bold",
+        "fill_rgb": [255, 255, 255],
+        "fill_authority": "OPERATIONAL_RENDER_DEFAULT",
+        "f5_review_required": true
+      },
+      "composition_relationship": {
+        "relationship": "SEQUENTIAL_NO_OVERLAP",
+        "neighbor_identity": "caption_tracklet_0061",
+        "neighbor_source_text": "reels",
+        "ownership": "INDEPENDENT_DISPLAY_OBJECT",
+        "z_order": "NOT_APPLICABLE_SEQUENTIAL"
+      },
+      "motion": {
+        "classification": "SOURCE_MOTION_PRESENT_UNCOMPILED_F5A",
+        "position_keyframes": [],
+        "scale_keyframes": [],
+        "rotation_keyframes": [],
+        "relative_visibility_keyframes": []
+      },
+      "authority_reason": "Bounded source pixels prove listing first visible at source frame 413, last visible at 432, followed by reels at 433 without overlap or gap. The accepted frame-426 bbox independently measures listing geometry; no frozen identity owns this object.",
+      "source_provenance": {
+        "entry_contact_sheet": ".agent/tasks/inbox/VIDEO_CLONER_STEP5A_F5A_LISTING_OBJECT_LIFECYCLE_RECOVERY_20260930_V1/fixtures/source_review/listing_entry_exact_407_414.jpg",
+        "entry_contact_sheet_sha256": "49242e4b0a4e1ffc41bf042f3e28cc1c2b778716309489541b0490b617e83888",
+        "geometry_contact_sheet": ".agent/tasks/inbox/VIDEO_CLONER_STEP5A_F5A_LISTING_OBJECT_LIFECYCLE_RECOVERY_20260930_V1/fixtures/source_review/listing_geometry_exact.jpg",
+        "geometry_contact_sheet_sha256": "d3c7c78c0a0fcfe0fa41399f5a3dc99f8d79feebc0213f38669aeaeb7e7f8367",
+        "geometry_evidence_path": ".agent/reports/VIDEO_CLONER_STEP2B1_VISUAL_IDENTITY_SCORING_TEXT_LINKAGE_REPAIR_20260926/20260926T233000000Z_bounded/reel2_glyph_evidence_v2_visual_identity_linkage_corrected.json",
+        "geometry_evidence_sha256": "5236f24cd83cd445ef6a206131b04c189f8500e512a998cc482be1b04c00aa14",
+        "geometry_evidence_identity": "caption_tracklet_0061",
+        "geometry_evidence_frame": 426,
+        "following_object_first_source_frame": 433
+      },
+      "human_evidence_used": true,
+      "renderable": true
+    }
+  ],
+  "evidence_artifacts": [
+    {
+      "path": "input/DcJRJtUKScu.mp4",
+      "sha256": "729c47a74fe015fd45c22a76974c0c824234352ca90c42b5689dc7468b87a279"
+    },
+    {
+      "path": ".agent/reports/VIDEO_CLONER_STEP5A_F4_MISSING_DUPLICATE_CAPTION_RECOVERY_20260930_V1/20260930T142346380Z_luna_execute/first/step5a_f4_compile_contract.json",
+      "sha256": "cd4c4f56e160777d8260712b2cadf8e7f3a98a7b96d1a62435ad8b07c3531179"
+    },
+    {
+      "path": ".agent/reports/VIDEO_CLONER_STEP2B1_VISUAL_IDENTITY_SCORING_TEXT_LINKAGE_REPAIR_20260926/20260926T233000000Z_bounded/reel2_glyph_evidence_v2_visual_identity_linkage_corrected.json",
+      "sha256": "5236f24cd83cd445ef6a206131b04c189f8500e512a998cc482be1b04c00aa14"
+    },
+    {
+      "path": ".agent/tasks/inbox/VIDEO_CLONER_STEP5A_F5A_LISTING_OBJECT_LIFECYCLE_RECOVERY_20260930_V1/fixtures/source_review/listing_entry_exact_407_414.jpg",
+      "sha256": "49242e4b0a4e1ffc41bf042f3e28cc1c2b778716309489541b0490b617e83888"
+    },
+    {
+      "path": ".agent/tasks/inbox/VIDEO_CLONER_STEP5A_F5A_LISTING_OBJECT_LIFECYCLE_RECOVERY_20260930_V1/fixtures/source_review/listing_geometry_exact.jpg",
+      "sha256": "d3c7c78c0a0fcfe0fa41399f5a3dc99f8d79feebc0213f38669aeaeb7e7f8367"
+    }
+  ],
+  "upstream_artifacts_changed": false,
+  "resolve_mutated": false
+}

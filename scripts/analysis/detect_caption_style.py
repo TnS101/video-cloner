@@ -52,9 +52,21 @@ import numpy as np
 from paddleocr import PaddleOCR
 
 
-ANALYSIS_VERSION = "caption_style_v5_4_gpu_device_control_caption_animation"
+ANALYSIS_VERSION = "caption_style_v5_5_temporal_authority"
 SCHEMA = "video_cloner_caption_style"
 SCHEMA_VERSION = "3.3"
+OBSERVATION_FLOOR_FPS = 10.0
+CONTINUATION_MAX_GAP_SEC = 0.2
+CONTINUATION_MIN_IOU = 0.45
+CONTINUATION_MAX_CENTER_DISTANCE = 0.06
+CONTINUATION_MAX_AREA_RATIO = 2.0
+CONTINUATION_MAX_ASPECT_RATIO = 1.6
+CONTINUOUS_IDENTITY_MAX_GAP_SEC = 0.6
+CONTINUOUS_IDENTITY_MAX_FILL_DISTANCE = 0.15
+CONTINUOUS_IDENTITY_MAX_STROKE_DISTANCE = 0.15
+CONTINUOUS_IDENTITY_MAX_FONT_HEIGHT_RATIO = 1.5
+CONTINUOUS_IDENTITY_MIN_OCR_SIMILARITY = 0.6
+CONTINUOUS_IDENTITY_COLOR_DISTANCE_SCALE = math.sqrt(3.0 * (255.0 ** 2))
 
 
 # -----------------------------
@@ -251,6 +263,33 @@ def even_cap_timestamps(timestamps: List[float], max_frames: int) -> List[float]
     return [timestamps[i] for i in sorted(set(idxs))]
 
 
+def observation_timestamps(
+    duration: float,
+    source_fps: float,
+    total_frames: int,
+    preferred_timestamps: Optional[Iterable[float]] = None,
+    observation_fps: float = OBSERVATION_FLOOR_FPS,
+) -> List[float]:
+    """Union preferred samples with a source-frame-quantized observation floor."""
+    if duration <= 0 or source_fps <= 0 or total_frames <= 0 or observation_fps <= 0:
+        return []
+    last_frame = total_frames - 1
+    floor_count = max(1, int(math.ceil(duration * observation_fps - 1e-9)))
+    frame_indexes = {
+        min(last_frame, max(0, int(round((index / observation_fps) * source_fps))))
+        for index in range(floor_count)
+    }
+    for value in preferred_timestamps or []:
+        try:
+            timestamp = float(value)
+        except (TypeError, ValueError):
+            continue
+        if math.isnan(timestamp) or math.isinf(timestamp):
+            continue
+        frame_indexes.add(min(last_frame, max(0, int(round(timestamp * source_fps)))))
+    return [round(frame_index / source_fps, 6) for frame_index in sorted(frame_indexes)]
+
+
 def sample_frames(
     video_path: str,
     output_dir: str,
@@ -275,17 +314,14 @@ def sample_frames(
     if duration <= 0:
         raise RuntimeError("Could not read video duration.")
 
-    safe_duration = max(0.1, duration - 0.05)
-    uniform_count = max(1, int(duration / max(0.05, every_seconds)))
-    uniform_count = min(max_frames, uniform_count)
-    uniform = np.linspace(0, safe_duration, uniform_count).tolist()
-
-    timestamps = uniform
-    if preferred_timestamps:
-        timestamps = list(preferred_timestamps) + list(uniform)
-
-    timestamps = unique_sorted_timestamps(timestamps, duration)
-    timestamps = even_cap_timestamps(timestamps, max_frames)
+    # max_frames still bounds cue-derived preferences upstream. The validated
+    # uniform floor is never globally recapped, which previously discarded it.
+    timestamps = observation_timestamps(
+        duration=duration,
+        source_fps=fps,
+        total_frames=total,
+        preferred_timestamps=preferred_timestamps,
+    )
 
     frames = []
     for i, ts in enumerate(timestamps):
@@ -604,6 +640,53 @@ def choose_fill_stroke_shadow(
 
     is_large_or_hook_like = bool(font_ratio >= 0.052 or width_ratio >= 0.36)
 
+    # Large display captions often contain more crop/background pixels than
+    # glyph pixels. Rank plausible foreground colors by visual prominence in
+    # the OCR text region instead of allowing the largest saturated cluster to
+    # win by area alone. Keep the legacy resolver below when the foreground
+    # evidence is not clearly separated.
+    def foreground_score(cluster: Dict[str, Any]) -> float:
+        return (
+            safe_float(cluster.get("brightness"), 0.0)
+            + (0.25 * min(180.0, safe_float(cluster.get("saturation"), 0.0)))
+            + (200.0 * safe_float(cluster.get("ratio"), 0.0))
+        )
+
+    if is_large_or_hook_like:
+        plausible_foreground = [
+            c for c in clusters
+            if c.get("brightness", 0) >= 170
+            and c.get("ratio", 0) >= 0.025
+        ]
+        accent_foreground = [c for c in plausible_foreground if c.get("saturation", 0) >= 30]
+        white_foreground = [c for c in plausible_foreground if c.get("saturation", 255) <= 30]
+        accent = max(accent_foreground, key=foreground_score, default=None)
+        white = max(white_foreground, key=foreground_score, default=None)
+
+        selected = None
+        if accent is not None and (white is None or foreground_score(accent) >= foreground_score(white) + 3.0):
+            selected = accent
+        elif white is not None and strong_saturated:
+            saturated_default = max(strong_saturated, key=lambda c: (c.get("ratio", 0), c.get("saturation", 0)))
+            if saturated_default.get("brightness", 255) < 150:
+                selected = white
+
+        if selected is not None:
+            dark_edge = max(dark, key=lambda c: c.get("ratio", 0), default=None)
+            edge = dark_edge or next(
+                (c for c in sorted(clusters, key=foreground_score, reverse=True) if c is not selected),
+                {"hex": "#000000"},
+            )
+            shadow = dark_edge or edge
+            return {
+                "fill": selected.get("hex", "#ffffff"),
+                "stroke": edge.get("hex", "#000000"),
+                "shadow": shadow.get("hex", "#000000"),
+                "stroke_enabled": bool(dark_edge is not None or dark_ratio > 0.035),
+                "shadow_enabled": bool(dark_ratio > 0.025),
+                "color_model": "large_foreground_fill_dark_edge",
+            }
+
     # Large hook captions: red/yellow/etc. fill + white outline + dark shadow.
     if strong_saturated and is_large_or_hook_like:
         fill = sorted(strong_saturated, key=lambda c: (c.get("ratio", 0), c.get("saturation", 0)), reverse=True)[0]
@@ -853,6 +936,100 @@ def run_ocr(ocr: Any, frame_path: str) -> Any:
     return ocr.ocr(frame_path, cls=False)
 
 
+def _perspective_crop(image: np.ndarray, box: Any) -> Optional[np.ndarray]:
+    points = normalize_box(box)
+    if not points:
+        return None
+    source = np.asarray(points, dtype=np.float32)
+    width = max(np.linalg.norm(source[0] - source[1]), np.linalg.norm(source[2] - source[3]))
+    height = max(np.linalg.norm(source[0] - source[3]), np.linalg.norm(source[1] - source[2]))
+    target_w, target_h = max(1, int(round(width))), max(1, int(round(height)))
+    target = np.asarray(
+        [[0, 0], [target_w - 1, 0], [target_w - 1, target_h - 1], [0, target_h - 1]],
+        dtype=np.float32,
+    )
+    crop = cv2.warpPerspective(image, cv2.getPerspectiveTransform(source, target), (target_w, target_h))
+    if crop.size == 0:
+        return None
+    if crop.shape[0] / max(1, crop.shape[1]) >= 1.5:
+        crop = np.rot90(crop)
+    return crop
+
+
+def _smaller_bbox_coverage(left: List[int], right: List[int]) -> float:
+    x1, y1 = max(left[0], right[0]), max(left[1], right[1])
+    x2, y2 = min(left[2], right[2]), min(left[3], right[3])
+    intersection = max(0, x2 - x1) * max(0, y2 - y1)
+    left_area = max(1, left[2] - left[0]) * max(1, left[3] - left[1])
+    right_area = max(1, right[2] - right[0]) * max(1, right[3] - right[1])
+    return float(intersection) / min(left_area, right_area)
+
+
+def refine_merged_ocr_regions(
+    ocr: Any,
+    frame: np.ndarray,
+    parsed_lines: Sequence[Tuple[List[List[float]], str, float]],
+    scale: int = 3,
+    child_min_confidence: float = 0.5,
+    duplicate_coverage: float = 0.8,
+    include_provenance: bool = False,
+) -> List[Tuple[Any, ...]]:
+    """Replace a parent only when crop re-OCR proves at least two child regions."""
+    frame_h, frame_w = frame.shape[:2]
+    direct: List[Tuple[List[List[float]], str, float]] = []
+    refined: List[Tuple[List[List[float]], str, float]] = []
+    for parent_box, parent_text, parent_confidence in parsed_lines:
+        parent_bbox = box_to_bbox(parent_box, frame_w, frame_h)
+        if not parent_bbox or not hasattr(ocr, "text_detector") or not hasattr(ocr, "text_recognizer"):
+            direct.append((parent_box, parent_text, parent_confidence))
+            continue
+        x1, y1, x2, y2 = parent_bbox
+        crop = frame[y1:y2, x1:x2]
+        try:
+            enlarged = cv2.resize(crop, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+            detector_result = ocr.text_detector(enlarged)
+            child_boxes = detector_result[0] if isinstance(detector_result, tuple) else detector_result
+            child_boxes = [] if child_boxes is None else list(child_boxes)
+            child_crops = [_perspective_crop(enlarged, box) for box in child_boxes]
+            usable = [(box, child) for box, child in zip(child_boxes, child_crops) if child is not None]
+            recognizer_result = ocr.text_recognizer([child for _, child in usable]) if usable else ([], 0.0)
+            recognized = recognizer_result[0] if isinstance(recognizer_result, tuple) else recognizer_result
+            children = []
+            for (child_box, _), result in zip(usable, recognized or []):
+                text = clean_text(result[0] if isinstance(result, (list, tuple)) and result else "")
+                confidence = safe_float(result[1] if isinstance(result, (list, tuple)) and len(result) > 1 else 0.0, 0.0)
+                normalized = normalize_box(child_box)
+                if not text or confidence < child_min_confidence or not normalized:
+                    continue
+                mapped = [[x1 + point[0] / scale, y1 + point[1] / scale] for point in normalized]
+                children.append((mapped, text, confidence))
+        except Exception:
+            children = []
+        if len(children) < 2:
+            direct.append((parent_box, parent_text, parent_confidence))
+        else:
+            refined.extend(children)
+
+    direct_bboxes = [box_to_bbox(box, frame_w, frame_h) for box, _, _ in direct]
+    kept_refined: List[Tuple[List[List[float]], str, float]] = []
+    kept_bboxes: List[List[int]] = []
+    for child in sorted(refined, key=lambda row: safe_float(row[2], 0.0), reverse=True):
+        child_bbox = box_to_bbox(child[0], frame_w, frame_h)
+        if not child_bbox:
+            continue
+        if any(box and _smaller_bbox_coverage(child_bbox, box) >= duplicate_coverage for box in direct_bboxes):
+            continue
+        if any(_smaller_bbox_coverage(child_bbox, box) >= duplicate_coverage for box in kept_bboxes):
+            continue
+        kept_refined.append(child)
+        kept_bboxes.append(child_bbox)
+    if include_provenance:
+        return [(*row, "direct") for row in direct] + [
+            (*row, "crop_refined_child") for row in kept_refined
+        ]
+    return direct + kept_refined
+
+
 # -----------------------------
 # Style estimation from OCR boxes
 # -----------------------------
@@ -1039,6 +1216,24 @@ def classify_caption_candidate(det: Dict[str, Any], context: Dict[str, Any], arg
     hook = hook_visual_score(det)
     transcript_text = context.get("text") or ""
     transcript_match = fuzzy_similarity(text, transcript_text) if transcript_text else 0.0
+    # A compact context can dilute a valid OCR-to-cue match with unrelated
+    # nearby words. Preserve that match, but only admit an individual subtitle
+    # cue when it is temporally nearby; the existing classifier gates remain
+    # authoritative.
+    context_timestamp = safe_float(context.get("timestamp"), safe_float(det.get("timestamp"), 0.0))
+    best_nearby_individual_match = 0.0
+    for cue in context.get("cues") or []:
+        if not isinstance(cue, dict) or cue.get("source") != "subtitle_candidates":
+            continue
+        cue_start = safe_float(cue.get("start"), 0.0)
+        cue_end = safe_float(cue.get("end"), cue_start)
+        interval_distance = max(0.0, cue_start - context_timestamp, context_timestamp - cue_end)
+        if interval_distance <= 0.5:
+            best_nearby_individual_match = max(
+                best_nearby_individual_match,
+                fuzzy_similarity(text, cue.get("text")),
+            )
+    transcript_match = max(transcript_match, best_nearby_individual_match)
 
     center = det.get("center") or {}
     cy = safe_float(center.get("y"), 0.0)
@@ -1122,6 +1317,321 @@ def classify_caption_candidate(det: Dict[str, Any], context: Dict[str, Any], arg
     }
 
 
+def _continuation_geometry(left: Dict[str, Any], right: Dict[str, Any]) -> Tuple[float, float, float, float]:
+    left_bbox = left.get("normalized_bbox") or []
+    right_bbox = right.get("normalized_bbox") or []
+    if len(left_bbox) != 4 or len(right_bbox) != 4:
+        return 0.0, float("inf"), float("inf"), float("inf")
+    lx1, ly1, lx2, ly2 = [safe_float(value) for value in left_bbox]
+    rx1, ry1, rx2, ry2 = [safe_float(value) for value in right_bbox]
+    intersection = max(0.0, min(lx2, rx2) - max(lx1, rx1)) * max(0.0, min(ly2, ry2) - max(ly1, ry1))
+    left_width, left_height = max(0.0, lx2 - lx1), max(0.0, ly2 - ly1)
+    right_width, right_height = max(0.0, rx2 - rx1), max(0.0, ry2 - ry1)
+    left_area, right_area = left_width * left_height, right_width * right_height
+    union = left_area + right_area - intersection
+    iou = intersection / union if union > 0 else 0.0
+    center_distance = math.hypot(((lx1 + lx2) - (rx1 + rx2)) / 2.0, ((ly1 + ly2) - (ry1 + ry2)) / 2.0)
+    area_ratio = max(left_area, right_area) / min(left_area, right_area) if min(left_area, right_area) > 0 else float("inf")
+    left_aspect = left_width / left_height if left_height > 0 else 0.0
+    right_aspect = right_width / right_height if right_height > 0 else 0.0
+    aspect_ratio = max(left_aspect, right_aspect) / min(left_aspect, right_aspect) if min(left_aspect, right_aspect) > 0 else float("inf")
+    return iou, center_distance, area_ratio, aspect_ratio
+
+
+def _compatible_continuation(left: Dict[str, Any], right: Dict[str, Any]) -> bool:
+    iou, center_distance, area_ratio, aspect_ratio = _continuation_geometry(left, right)
+    return bool(
+        iou >= CONTINUATION_MIN_IOU
+        and center_distance <= CONTINUATION_MAX_CENTER_DISTANCE
+        and area_ratio <= CONTINUATION_MAX_AREA_RATIO
+        and aspect_ratio <= CONTINUATION_MAX_ASPECT_RATIO
+    )
+
+
+def apply_short_caption_continuations(
+    frame_results: List[Dict[str, Any]],
+    observation_period_sec: float,
+    video_duration: float,
+) -> None:
+    """Annotate accepted observations and admit only compatible low-score tails."""
+    active: Dict[str, Dict[str, Any]] = {}
+    next_identity = 1
+    for frame_result in sorted(frame_results, key=lambda row: safe_float(row.get("timestamp"), 0.0)):
+        timestamp = safe_float(frame_result.get("timestamp"), 0.0)
+        active = {
+            identity: state
+            for identity, state in active.items()
+            if timestamp - safe_float(state.get("timestamp"), timestamp) <= CONTINUATION_MAX_GAP_SEC + 1e-9
+        }
+        claimed = set()
+        detections = frame_result.get("detections") or []
+        ordered = sorted(detections, key=lambda det: not bool(det.get("classifier_accepted")))
+        for det in ordered:
+            accepted = bool(det.get("classifier_accepted"))
+            reason = (det.get("caption_score") or {}).get("reason")
+            if not accepted and reason != "low_caption_score":
+                continue
+            matches = []
+            for identity, state in active.items():
+                if identity in claimed or not _compatible_continuation(state, det):
+                    continue
+                iou, center_distance, _, _ = _continuation_geometry(state, det)
+                matches.append((-iou, center_distance, identity))
+            identity = min(matches)[2] if matches else None
+            if identity is None:
+                if not accepted:
+                    continue
+                identity = f"caption_tracklet_{next_identity:04d}"
+                next_identity += 1
+
+            provenance = (
+                "accepted_refined"
+                if accepted and det.get("source_provenance") == "crop_refined_child"
+                else "accepted_direct"
+                if accepted
+                else "rejected_visual_continuation"
+            )
+            role = det.get("caption_role") or active.get(identity, {}).get("role") or "spoken_caption"
+            det.update({
+                "tracklet_id": identity,
+                "observation_provenance": provenance,
+                "observed_bbox": list(det.get("bbox") or []),
+                "observed_timestamp": round(timestamp, 6),
+                "inferred_visibility_end": round(min(video_duration, timestamp + observation_period_sec), 6),
+                "visibility_interval_semantics": "half_open",
+                "caption_role": role,
+            })
+            if not accepted:
+                det["is_caption_candidate"] = True
+                det["is_subtitle_candidate"] = True
+            active[identity] = {
+                "timestamp": timestamp,
+                "normalized_bbox": det.get("normalized_bbox"),
+                "role": role,
+            }
+            claimed.add(identity)
+        frame_result["caption_candidates"] = [det for det in detections if det.get("is_caption_candidate")]
+        frame_result["subtitle_candidates"] = frame_result["caption_candidates"]
+
+
+def _continuous_identity_style_compatible(left: Dict[str, Any], right: Dict[str, Any]) -> bool:
+    required = ("estimated_text_color", "estimated_stroke_color", "estimated_font_height_ratio")
+    if any(left.get(field) is None or right.get(field) is None for field in required):
+        return False
+    left_fill, right_fill = hex_to_rgb(left.get("estimated_text_color")), hex_to_rgb(right.get("estimated_text_color"))
+    left_stroke, right_stroke = hex_to_rgb(left.get("estimated_stroke_color")), hex_to_rgb(right.get("estimated_stroke_color"))
+    if not left_fill or not right_fill or not left_stroke or not right_stroke:
+        return False
+    fill_distance = math.dist(left_fill, right_fill) / CONTINUOUS_IDENTITY_COLOR_DISTANCE_SCALE
+    stroke_distance = math.dist(left_stroke, right_stroke) / CONTINUOUS_IDENTITY_COLOR_DISTANCE_SCALE
+    left_font = safe_float(left.get("estimated_font_height_ratio"), 0.0)
+    right_font = safe_float(right.get("estimated_font_height_ratio"), 0.0)
+    if min(left_font, right_font) <= 0:
+        return False
+    font_ratio = max(left_font, right_font) / min(left_font, right_font)
+    return bool(
+        fill_distance <= CONTINUOUS_IDENTITY_MAX_FILL_DISTANCE
+        and stroke_distance <= CONTINUOUS_IDENTITY_MAX_STROKE_DISTANCE
+        and font_ratio <= CONTINUOUS_IDENTITY_MAX_FONT_HEIGHT_RATIO
+    )
+
+
+def _continuous_identity_roles_compatible(left: Sequence[Tuple[float, Dict[str, Any]]], right: Sequence[Tuple[float, Dict[str, Any]]]) -> bool:
+    left_roles = {item.get("caption_role") for _, item in left if item.get("caption_role")}
+    right_roles = {item.get("caption_role") for _, item in right if item.get("caption_role")}
+    return bool(left_roles and right_roles and left_roles & right_roles)
+
+
+def _continuous_identity_ocr_similarity(left: Sequence[Tuple[float, Dict[str, Any]]], right: Sequence[Tuple[float, Dict[str, Any]]]) -> float:
+    left_variants = {normalize_match_text(item.get("text")) for _, item in left if normalize_match_text(item.get("text"))}
+    right_variants = {normalize_match_text(item.get("text")) for _, item in right if normalize_match_text(item.get("text"))}
+    return max(
+        (difflib.SequenceMatcher(None, left_text, right_text).ratio() for left_text in left_variants for right_text in right_variants),
+        default=0.0,
+    )
+
+
+def apply_continuous_visual_identity_relations(frame_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Relate unambiguous fragmented tracklets without merging their evidence."""
+    started = time.perf_counter()
+    tracklets: Dict[str, List[Tuple[float, Dict[str, Any]]]] = {}
+    for frame_result in frame_results:
+        frame_timestamp = safe_float(frame_result.get("timestamp"), 0.0)
+        for det in frame_result.get("detections") or []:
+            tracklet_id = det.get("tracklet_id")
+            if not tracklet_id:
+                continue
+            timestamp = safe_float(det.get("observed_timestamp"), frame_timestamp)
+            tracklets.setdefault(str(tracklet_id), []).append((timestamp, det))
+    for observations in tracklets.values():
+        observations.sort(key=lambda row: row[0])
+
+    windows: Dict[str, Dict[str, Any]] = {}
+    for tracklet_id, observations in tracklets.items():
+        windows[tracklet_id] = {
+            "observed_start": observations[0][0],
+            "last_observed": observations[-1][0],
+            "inferred_visibility_end": max(
+                safe_float(item.get("inferred_visibility_end"), timestamp) for timestamp, item in observations
+            ),
+            "first": observations[0][1],
+            "last": observations[-1][1],
+        }
+
+    temporally_eligible_count = 0
+    geometry_compatible_count = 0
+    visual_compatible_count = 0
+    compatible_pairs: List[Dict[str, Any]] = []
+    # ponytail: O(n²) over caption tracklets; add spatial indexing only if measured reel-scale cost requires it.
+    for predecessor_id, predecessor in tracklets.items():
+        predecessor_window = windows[predecessor_id]
+        for successor_id, successor in tracklets.items():
+            if predecessor_id == successor_id:
+                continue
+            successor_window = windows[successor_id]
+            gap = successor_window["observed_start"] - predecessor_window["inferred_visibility_end"]
+            if gap < -1e-9 or gap > CONTINUOUS_IDENTITY_MAX_GAP_SEC + 1e-9:
+                continue
+            temporally_eligible_count += 1
+            left, right = predecessor_window["last"], successor_window["first"]
+            if not _compatible_continuation(left, right):
+                continue
+            geometry_compatible_count += 1
+            if not _continuous_identity_style_compatible(left, right) or not _continuous_identity_roles_compatible(predecessor, successor):
+                continue
+            visual_compatible_count += 1
+            ocr_similarity = _continuous_identity_ocr_similarity(predecessor, successor)
+            if ocr_similarity < CONTINUOUS_IDENTITY_MIN_OCR_SIMILARITY:
+                continue
+            iou, center_distance, area_ratio, aspect_ratio = _continuation_geometry(left, right)
+            compatible_pairs.append({
+                "predecessor_tracklet_id": predecessor_id,
+                "successor_tracklet_id": successor_id,
+                "inferred_end_gap_sec": round(float(gap), 6),
+                "endpoint_iou": round(float(iou), 6),
+                "normalized_center_distance": round(float(center_distance), 6),
+                "area_ratio": round(float(area_ratio), 6),
+                "aspect_ratio_ratio": round(float(aspect_ratio), 6),
+                "ocr_similarity": round(float(ocr_similarity), 6),
+            })
+
+    outgoing = {}
+    for pair in compatible_pairs:
+        outgoing.setdefault(pair["predecessor_tracklet_id"], set()).add(pair["successor_tracklet_id"])
+    shortcut_pairs = {
+        (predecessor_id, successor_id)
+        for predecessor_id, middle_ids in outgoing.items()
+        for middle_id in middle_ids
+        for successor_id in outgoing.get(middle_id, set())
+    }
+    compatible_pairs = [
+        pair for pair in compatible_pairs
+        if (pair["predecessor_tracklet_id"], pair["successor_tracklet_id"]) not in shortcut_pairs
+    ]
+
+    successors: Dict[str, List[Dict[str, Any]]] = {}
+    predecessors: Dict[str, List[Dict[str, Any]]] = {}
+    for pair in compatible_pairs:
+        successors.setdefault(pair["predecessor_tracklet_id"], []).append(pair)
+        predecessors.setdefault(pair["successor_tracklet_id"], []).append(pair)
+    linked_pairs = [
+        pair for pair in compatible_pairs
+        if len(successors.get(pair["predecessor_tracklet_id"], [])) == 1
+        and len(predecessors.get(pair["successor_tracklet_id"], [])) == 1
+    ]
+
+    parent = {tracklet_id: tracklet_id for tracklet_id in tracklets}
+
+    def find(tracklet_id: str) -> str:
+        while parent[tracklet_id] != tracklet_id:
+            parent[tracklet_id] = parent[parent[tracklet_id]]
+            tracklet_id = parent[tracklet_id]
+        return tracklet_id
+
+    def union(left_id: str, right_id: str) -> None:
+        left_root, right_root = find(left_id), find(right_id)
+        if left_root != right_root:
+            parent[right_root] = left_root
+
+    for pair in linked_pairs:
+        union(pair["predecessor_tracklet_id"], pair["successor_tracklet_id"])
+
+    components: Dict[str, List[str]] = {}
+    for tracklet_id in tracklets:
+        components.setdefault(find(tracklet_id), []).append(tracklet_id)
+
+    relations = []
+    for component in components.values():
+        if len(component) < 2:
+            continue
+        ordered_tracklets = sorted(component, key=lambda tracklet_id: (windows[tracklet_id]["observed_start"], tracklet_id))
+        first_tracklet = ordered_tracklets[0]
+        identity_id = f"continuous_visual_identity_{first_tracklet.rsplit('_', 1)[-1]}"
+        observed_start = min(windows[tracklet_id]["observed_start"] for tracklet_id in ordered_tracklets)
+        last_observed = max(windows[tracklet_id]["last_observed"] for tracklet_id in ordered_tracklets)
+        inferred_end = max(windows[tracklet_id]["inferred_visibility_end"] for tracklet_id in ordered_tracklets)
+        relation_links = [
+            pair for pair in linked_pairs
+            if pair["predecessor_tracklet_id"] in component and pair["successor_tracklet_id"] in component
+        ]
+        tracklet_windows = [
+            {
+                "tracklet_id": tracklet_id,
+                "observed_start": round(float(windows[tracklet_id]["observed_start"]), 6),
+                "last_observed": round(float(windows[tracklet_id]["last_observed"]), 6),
+                "inferred_visibility_end": round(float(windows[tracklet_id]["inferred_visibility_end"]), 6),
+            }
+            for tracklet_id in ordered_tracklets
+        ]
+        for tracklet_id in ordered_tracklets:
+            for _, det in tracklets[tracklet_id]:
+                det.update({
+                    "continuous_visual_identity_id": identity_id,
+                    "continuous_visual_identity_tracklet_ids": list(ordered_tracklets),
+                    "continuous_visual_identity_observed_start": round(float(observed_start), 6),
+                    "continuous_visual_identity_last_observed": round(float(last_observed), 6),
+                    "continuous_visual_identity_inferred_end": round(float(inferred_end), 6),
+                    "continuous_visual_identity_interval_semantics": "half_open",
+                })
+        relations.append({
+            "continuous_visual_identity_id": identity_id,
+            "tracklet_ids": ordered_tracklets,
+            "observed_start": round(float(observed_start), 6),
+            "last_observed": round(float(last_observed), 6),
+            "inferred_visibility_end": round(float(inferred_end), 6),
+            "visibility_interval_semantics": "half_open",
+            "tracklet_windows": tracklet_windows,
+            "links": relation_links,
+        })
+
+    elapsed_ms = (time.perf_counter() - started) * 1000.0
+    return {
+        "tracklet_count": len(tracklets),
+        "temporally_eligible_pair_count": temporally_eligible_count,
+        "geometry_compatible_pair_count": geometry_compatible_count,
+        "visual_compatible_pair_count": visual_compatible_count,
+        "ocr_compatible_pair_count": len(compatible_pairs),
+        "transitive_shortcut_pair_count": len(shortcut_pairs),
+        "ambiguous_pair_count": len(compatible_pairs) - len(linked_pairs),
+        "linked_pair_count": len(linked_pairs),
+        "continuous_visual_identity_count": len(relations),
+        "relations": sorted(relations, key=lambda relation: relation["continuous_visual_identity_id"]),
+        "runtime_ms": round(float(elapsed_ms), 3),
+        "transcript_used_for_eligibility": False,
+        "thresholds": {
+            "max_gap_sec": CONTINUOUS_IDENTITY_MAX_GAP_SEC,
+            "min_iou": CONTINUATION_MIN_IOU,
+            "max_center_distance": CONTINUATION_MAX_CENTER_DISTANCE,
+            "max_area_ratio": CONTINUATION_MAX_AREA_RATIO,
+            "max_aspect_ratio": CONTINUATION_MAX_ASPECT_RATIO,
+            "max_fill_distance": CONTINUOUS_IDENTITY_MAX_FILL_DISTANCE,
+            "max_stroke_distance": CONTINUOUS_IDENTITY_MAX_STROKE_DISTANCE,
+            "max_font_height_ratio": CONTINUOUS_IDENTITY_MAX_FONT_HEIGHT_RATIO,
+            "min_ocr_similarity": CONTINUOUS_IDENTITY_MIN_OCR_SIMILARITY,
+        },
+    }
+
+
 def merge_bboxes(bboxes: Sequence[List[int]]) -> Optional[List[int]]:
     if not bboxes:
         return None
@@ -1177,6 +1687,50 @@ def group_caption_candidates(candidates: List[Dict[str, Any]], frame_shape: Tupl
         roles = [item.get("caption_role", "spoken_caption") for item in items]
         role = max(set(roles), key=roles.count) if roles else "spoken_caption"
         reasons = [((item.get("caption_score") or {}).get("reason")) for item in items]
+        members = []
+        for member_index, item in enumerate(items, start=1):
+            member_score = item.get("caption_score") or {}
+            members.append({
+                "member_id": f"member_{member_index:02d}",
+                "text": clean_text(item.get("text")),
+                "confidence": round(safe_float(item.get("confidence"), 0.0), 4),
+                "caption_score": safe_float(member_score.get("score"), 0.0),
+                "transcript_match_score": safe_float(member_score.get("transcript_match_score"), 0.0),
+                "hook_score": safe_float(member_score.get("hook_score"), 0.0),
+                "candidate_reason": member_score.get("reason"),
+                "role": item.get("caption_role", "spoken_caption"),
+                "tracklet_id": item.get("tracklet_id"),
+                "continuous_visual_identity_id": item.get("continuous_visual_identity_id"),
+                "continuous_visual_identity_tracklet_ids": item.get("continuous_visual_identity_tracklet_ids", []),
+                "continuous_visual_identity_observed_start": item.get("continuous_visual_identity_observed_start"),
+                "continuous_visual_identity_last_observed": item.get("continuous_visual_identity_last_observed"),
+                "continuous_visual_identity_inferred_end": item.get("continuous_visual_identity_inferred_end"),
+                "continuous_visual_identity_interval_semantics": item.get("continuous_visual_identity_interval_semantics"),
+                "observation_provenance": item.get("observation_provenance"),
+                "observed_bbox": item.get("observed_bbox"),
+                "observed_timestamp": item.get("observed_timestamp"),
+                "inferred_visibility_end": item.get("inferred_visibility_end"),
+                "bbox": item.get("bbox"),
+                "normalized_bbox": item.get("normalized_bbox"),
+                "center": item.get("center"),
+                "position": item.get("position"),
+                "estimated_font_height_px": item.get("estimated_font_height_px"),
+                "estimated_font_height_ratio": item.get("estimated_font_height_ratio"),
+                "estimated_box_width_ratio": item.get("estimated_box_width_ratio"),
+                "estimated_box_height_ratio": item.get("estimated_box_height_ratio"),
+                "estimated_text_color": item.get("estimated_text_color"),
+                "estimated_stroke_color": item.get("estimated_stroke_color"),
+                "estimated_shadow_color": item.get("estimated_shadow_color"),
+                "has_dark_stroke": item.get("has_dark_stroke"),
+                "has_shadow": item.get("has_shadow"),
+                "has_bright_text": item.get("has_bright_text"),
+                "has_saturated_text": item.get("has_saturated_text"),
+                "text_area_ratio": item.get("text_area_ratio"),
+                "dark_area_ratio": item.get("dark_area_ratio"),
+                "saturated_area_ratio": item.get("saturated_area_ratio"),
+                "contrast_area_ratio": item.get("contrast_area_ratio"),
+                "matched_cue_ids": member_score.get("matched_cue_ids", []),
+            })
 
         final.append({
             "text": text,
@@ -1186,6 +1740,12 @@ def group_caption_candidates(candidates: List[Dict[str, Any]], frame_shape: Tupl
             "hook_score": round(float(np.mean(hook_scores)), 4) if hook_scores else 0.0,
             "candidate_reason": max(set(reasons), key=reasons.count) if reasons else None,
             "role": role,
+            "tracklet_ids": sorted({item.get("tracklet_id") for item in items if item.get("tracklet_id")}),
+            "continuous_visual_identity_ids": sorted({item.get("continuous_visual_identity_id") for item in items if item.get("continuous_visual_identity_id")}),
+            "observation_provenance": sorted({item.get("observation_provenance") for item in items if item.get("observation_provenance")}),
+            "observed_bbox": bbox,
+            "observed_timestamp": max((safe_float(item.get("observed_timestamp"), 0.0) for item in items), default=None),
+            "inferred_visibility_end": max((safe_float(item.get("inferred_visibility_end"), 0.0) for item in items), default=None),
             "bbox": bbox,
             "normalized_bbox": bbox_to_normalized(bbox, frame_w, frame_h),
             "center": center,
@@ -1208,6 +1768,7 @@ def group_caption_candidates(candidates: List[Dict[str, Any]], frame_shape: Tupl
             "contrast_area_ratio": round(float(np.mean(contrast_area_ratios)), 5) if contrast_area_ratios else None,
             "items_count": len(items),
             "matched_cue_ids": sorted(set(sum([(item.get("caption_score") or {}).get("matched_cue_ids", []) for item in items], []))),
+            "members": members,
         })
     return final
 
@@ -1801,6 +2362,7 @@ def aggregate_style_event(
     profile_id: str,
     cue: Optional[Dict[str, Any]],
     match_info: Dict[str, Any],
+    visual_identity: Dict[str, Any],
     video_info: Dict[str, Any],
     visual_index: int,
     args: Optional[argparse.Namespace] = None,
@@ -1844,23 +2406,23 @@ def aggregate_style_event(
     shadow_ratio = float(np.mean([1 if g.get("has_shadow") else 0 for g in observations]))
     sat_ratio = float(np.mean([1 if g.get("has_saturated_text") else 0 for g in observations]))
 
-    if cue:
-        start = safe_float(cue.get("start"), safe_float(best.get("timestamp"), 0.0))
-        end = safe_float(cue.get("end"), start + 0.25)
-        text = clean_text(cue.get("text") or best.get("text"))
-        cue_id = cue.get("id")
-        source = "transcript_matched_visual_style_event"
-    else:
-        ts = safe_float(best.get("timestamp"), 0.0)
-        dur = max(0.15, min(1.0, safe_float(best.get("duration"), 0.35) or 0.35))
-        start = max(0.0, ts - dur / 2.0)
-        end = ts + dur / 2.0
-        text = clean_text(best.get("text"))
-        cue_id = None
-        source = "visual_style_event_without_transcript_cue"
-
+    observed_timestamps = [
+        safe_float(g.get("observed_timestamp"), safe_float(g.get("timestamp"), 0.0))
+        for g in observations
+    ]
+    start = safe_float(visual_identity.get("observed_start"), min(observed_timestamps))
+    last_observed = safe_float(visual_identity.get("last_observed"), max(observed_timestamps))
+    inferred_ends = [
+        safe_float(g.get("inferred_visibility_end"), 0.0)
+        for g in observations
+        if g.get("inferred_visibility_end") is not None
+    ]
+    end = safe_float(visual_identity.get("inferred_end"), max(inferred_ends, default=last_observed))
     if end <= start:
-        end = start + 0.15
+        end = start + max(0.15, min(1.0, safe_float(best.get("duration"), 0.35) or 0.35))
+    text = clean_text(cue.get("text") if cue else best.get("text"))
+    cue_id = cue.get("id") if cue else None
+    source = "transcript_annotated_visual_event" if cue else "visual_event_without_transcript_cue"
 
     role = safe_mode([g.get("role") for g in observations], best.get("role") or "spoken_caption")
     observed_texts = [clean_text(g.get("text")) for g in observations if clean_text(g.get("text"))]
@@ -1882,9 +2444,10 @@ def aggregate_style_event(
     return {
         "event_id": event_id,
         "schema": "caption_style_event",
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "source": source,
         "cue_id": cue_id,
+        "label_source": "transcript_cue" if cue else "image_ocr",
         "text": text,
         "observed_text": clean_text(safe_mode(observed_texts, best.get("text"))),
         "observed_texts": observed_texts[:8],
@@ -1892,6 +2455,21 @@ def aggregate_style_event(
         "end": round(float(end), 4),
         "mid": round(float((start + end) / 2.0), 4),
         "duration": round(float(end - start), 4),
+        "visual_event_identity": visual_identity.get("visual_event_identity"),
+        "continuous_visual_identity_id": visual_identity.get("continuous_visual_identity_id"),
+        "tracklet_ids": visual_identity.get("tracklet_ids", []),
+        "observation_provenance": visual_identity.get("observation_provenance", []),
+        "observed_start": round(float(start), 4),
+        "last_observed": round(float(last_observed), 4),
+        "inferred_visual_end": round(float(end), 4),
+        "visibility_interval_semantics": "half_open",
+        "semantic_reference": {
+            "cue_id": cue_id,
+            "cue_text": clean_text(cue.get("text")) if cue else None,
+            "cue_start": cue.get("start") if cue else None,
+            "cue_end": cue.get("end") if cue else None,
+            "label_source": "transcript_cue" if cue else "image_ocr",
+        },
         "style_profile_id": profile_id,
         "role": role,
         "confidence": {
@@ -1960,6 +2538,12 @@ def aggregate_style_event(
                 "transcript_match_score": g.get("transcript_match_score"),
                 "hook_score": g.get("hook_score"),
                 "candidate_reason": g.get("candidate_reason"),
+                "tracklet_id": g.get("tracklet_id"),
+                "continuous_visual_identity_id": g.get("continuous_visual_identity_id"),
+                "observation_provenance": g.get("observation_provenance"),
+                "observed_timestamp": g.get("observed_timestamp"),
+                "inferred_visibility_end": g.get("inferred_visibility_end"),
+                "composition": g.get("composition"),
             }
             for g in observations[:12]
         ],
@@ -1980,12 +2564,7 @@ def build_caption_style_events(
     video_info: Dict[str, Any],
     args: argparse.Namespace,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    """
-    Build per-cue style events from sampled OCR caption groups.
-
-    This is the Phase 3 contract. It keeps backward-compatible global profiles
-    but additionally tells downstream compilers which style applies at which time.
-    """
+    """Build one visual event per finalized tracklet or continuous identity."""
     if not groups:
         return [], {
             "enabled": bool(getattr(args, "emit_caption_style_events", True)),
@@ -2008,45 +2587,108 @@ def build_caption_style_events(
     min_score = safe_float(getattr(args, "style_event_min_match_score", 0.18), 0.18)
 
     buckets: Dict[str, Dict[str, Any]] = {}
-    visual_counter = 0
+    legacy_counter = 0
     for group in sorted(groups, key=lambda g: safe_float(g.get("timestamp"), 0.0)):
-        cue, match_info = choose_best_cue_for_group(group, transcript_cues, max_window_sec=max_window, min_score=min_score)
-        profile_id = choose_profile_id_for_group(group, profiles)
+        members = group.get("members") or [group]
+        for member in members:
+            observation = dict(member)
+            observation["timestamp"] = group.get("timestamp")
+            observation["frame_index"] = group.get("frame_index")
+            observation["composition"] = {
+                "text": group.get("text"),
+                "bbox": group.get("bbox"),
+                "tracklet_ids": group.get("tracklet_ids", []),
+            }
 
-        if cue:
-            key = f"cue:{cue.get('id')}"
-            event_id = f"style_event_{str(cue.get('id')).replace(' ', '_')}"
-        else:
-            # No transcript match: preserve visual style samples as standalone
-            # events because hook graphics often are not verbatim speech.
-            visual_counter += 1
-            ts = safe_float(group.get("timestamp"), 0.0)
-            key = f"visual:{visual_counter:04d}:{ts:.2f}"
-            event_id = f"style_event_visual_{visual_counter:04d}"
+            continuous_id = observation.get("continuous_visual_identity_id")
+            tracklet_id = observation.get("tracklet_id")
+            if continuous_id:
+                key = f"continuous:{continuous_id}"
+                visual_event_identity = str(continuous_id)
+            elif tracklet_id:
+                key = f"tracklet:{tracklet_id}"
+                visual_event_identity = str(tracklet_id)
+            else:
+                # Backward-compatible fallback for callers with pre-tracklet fixtures.
+                legacy_counter += 1
+                key = f"legacy:{legacy_counter:04d}"
+                visual_event_identity = f"legacy_visual_{legacy_counter:04d}"
 
-        if key not in buckets:
-            buckets[key] = {
-                "event_id": event_id,
+            cue, match_info = choose_best_cue_for_group(
+                observation, transcript_cues, max_window_sec=max_window, min_score=min_score
+            )
+            profile_id = choose_profile_id_for_group(observation, profiles)
+            bucket = buckets.setdefault(key, {
+                "event_id": f"style_event_{visual_event_identity}",
+                "visual_event_identity": visual_event_identity,
+                "continuous_visual_identity_id": continuous_id,
                 "cue": cue,
                 "match_info": match_info,
                 "profile_id": profile_id,
                 "observations": [],
-            }
-
-        buckets[key]["observations"].append(group)
-        # Prefer the strongest profile if mixed observations land on same cue.
-        current_profile = buckets[key].get("profile_id")
-        if current_profile == "style_00_unknown" and profile_id != "style_00_unknown":
-            buckets[key]["profile_id"] = profile_id
+            })
+            bucket["observations"].append(observation)
+            if safe_float((match_info or {}).get("score"), 0.0) > safe_float((bucket.get("match_info") or {}).get("score"), 0.0):
+                bucket["cue"] = cue
+                bucket["match_info"] = match_info
+            if bucket.get("profile_id") == "style_00_unknown" and profile_id != "style_00_unknown":
+                bucket["profile_id"] = profile_id
 
     events: List[Dict[str, Any]] = []
     for idx, bucket in enumerate(buckets.values(), start=1):
+        observations = bucket.get("observations") or []
+        continuous_id = bucket.get("continuous_visual_identity_id")
+        observed_times = [
+            safe_float(item.get("observed_timestamp"), safe_float(item.get("timestamp"), 0.0))
+            for item in observations
+        ]
+        continuous_starts = [
+            safe_float(item.get("continuous_visual_identity_observed_start"), 0.0)
+            for item in observations
+            if item.get("continuous_visual_identity_observed_start") is not None
+        ]
+        continuous_lasts = [
+            safe_float(item.get("continuous_visual_identity_last_observed"), 0.0)
+            for item in observations
+            if item.get("continuous_visual_identity_last_observed") is not None
+        ]
+        continuous_ends = [
+            safe_float(item.get("continuous_visual_identity_inferred_end"), 0.0)
+            for item in observations
+            if item.get("continuous_visual_identity_inferred_end") is not None
+        ]
+        inferred_ends = [
+            safe_float(item.get("inferred_visibility_end"), 0.0)
+            for item in observations
+            if item.get("inferred_visibility_end") is not None
+        ]
+        tracklet_ids = sorted({
+            str(tracklet_id)
+            for item in observations
+            for tracklet_id in (
+                item.get("continuous_visual_identity_tracklet_ids")
+                if continuous_id else [item.get("tracklet_id")]
+            ) or []
+            if tracklet_id
+        })
+        visual_identity = {
+            "visual_event_identity": bucket.get("visual_event_identity"),
+            "continuous_visual_identity_id": continuous_id,
+            "tracklet_ids": tracklet_ids,
+            "observation_provenance": sorted({
+                str(item.get("observation_provenance")) for item in observations if item.get("observation_provenance")
+            }),
+            "observed_start": min(continuous_starts) if continuous_starts else min(observed_times),
+            "last_observed": max(continuous_lasts) if continuous_lasts else max(observed_times),
+            "inferred_end": max(continuous_ends) if continuous_ends else max(inferred_ends, default=max(observed_times)),
+        }
         event = aggregate_style_event(
             event_id=bucket.get("event_id") or f"style_event_{idx:04d}",
-            observations=bucket.get("observations") or [],
+            observations=observations,
             profile_id=bucket.get("profile_id") or "style_00_unknown",
             cue=bucket.get("cue"),
             match_info=bucket.get("match_info") or {},
+            visual_identity=visual_identity,
             video_info=video_info,
             visual_index=idx,
             args=args,
@@ -2081,6 +2723,9 @@ def build_caption_style_events(
         "events_by_profile": by_profile,
         "animation_detected_count": animation_detected_count,
         "events_by_animation_type": by_animation,
+        "visual_identity_authority": True,
+        "continuous_identity_event_count": sum(1 for event in events if event.get("continuous_visual_identity_id")),
+        "standalone_tracklet_event_count": sum(1 for event in events if not event.get("continuous_visual_identity_id")),
         "animation_min_samples": safe_int(getattr(args, "animation_min_samples", 3), 3),
         "animation_max_samples": safe_int(getattr(args, "animation_max_samples", 7), 7),
         "match_window_sec": max_window,
@@ -2150,6 +2795,12 @@ def compact_group_for_output(frame_result: Dict[str, Any], group: Dict[str, Any]
         "hook_score": group.get("hook_score"),
         "candidate_reason": group.get("candidate_reason"),
         "role": group.get("role"),
+        "tracklet_ids": group.get("tracklet_ids", []),
+        "continuous_visual_identity_ids": group.get("continuous_visual_identity_ids", []),
+        "observation_provenance": group.get("observation_provenance", []),
+        "observed_bbox": group.get("observed_bbox"),
+        "observed_timestamp": group.get("observed_timestamp"),
+        "inferred_visibility_end": group.get("inferred_visibility_end"),
         "bbox": group.get("bbox"),
         "normalized_bbox": group.get("normalized_bbox"),
         "center": group.get("center"),
@@ -2171,6 +2822,7 @@ def compact_group_for_output(frame_result: Dict[str, Any], group: Dict[str, Any]
         "saturated_area_ratio": group.get("saturated_area_ratio"),
         "contrast_area_ratio": group.get("contrast_area_ratio"),
         "matched_cue_ids": group.get("matched_cue_ids", []),
+        "members": group.get("members", []),
     }
     return out
 
@@ -2222,6 +2874,13 @@ def build_summary(groups: List[Dict[str, Any]], frames_analyzed: int, cfg: Dict[
 def build_filter_config(args: argparse.Namespace, frames_analyzed: int = 0) -> Dict[str, Any]:
     return {
         "mode": args.mode,
+        "observation_floor_fps": OBSERVATION_FLOOR_FPS,
+        "continuation_max_gap_sec": CONTINUATION_MAX_GAP_SEC,
+        "continuation_min_iou": CONTINUATION_MIN_IOU,
+        "continuation_max_center_distance": CONTINUATION_MAX_CENTER_DISTANCE,
+        "continuation_max_area_ratio": CONTINUATION_MAX_AREA_RATIO,
+        "continuation_max_aspect_ratio": CONTINUATION_MAX_ASPECT_RATIO,
+        "inferred_lifetime_grace_sec": 1.0 / OBSERVATION_FLOOR_FPS,
         "transcript": args.transcript,
         "transcript_match_threshold": args.transcript_match_threshold,
         "regular_caption_score_threshold": args.regular_caption_score_threshold,
@@ -2349,7 +3008,11 @@ def run(args: argparse.Namespace) -> None:
         context = build_transcript_context(transcript_cues, timestamp=timestamp, window_sec=args.match_window_sec, max_chars=args.context_max_chars)
         try:
             result = run_ocr(ocr, frame_path)
-            parsed_lines = parse_paddle_result(result)
+            parsed_lines = [
+                line for line in parse_paddle_result(result)
+                if safe_float(line[2], 0.0) >= args.min_confidence
+            ]
+            parsed_lines = refine_merged_ocr_regions(ocr, frame, parsed_lines, include_provenance=True)
         except Exception as exc:
             err = {"timestamp": timestamp, "frame_path": frame_path, "error": str(exc)}
             errors.append(err)
@@ -2357,9 +3020,7 @@ def run(args: argparse.Namespace) -> None:
             continue
 
         detections: List[Dict[str, Any]] = []
-        for box, text, confidence in parsed_lines:
-            if safe_float(confidence, 0.0) < args.min_confidence:
-                continue
+        for box, text, confidence, source_provenance in parsed_lines:
             try:
                 style = estimate_caption_style(frame, box)
                 if not style:
@@ -2367,8 +3028,9 @@ def run(args: argparse.Namespace) -> None:
             except Exception as exc:
                 errors.append({"timestamp": timestamp, "frame_path": frame_path, "text": text, "confidence": round(float(confidence), 4), "error": f"Style estimation failed: {str(exc)}"})
                 continue
-            det: Dict[str, Any] = {"text": clean_text(text), "confidence": round(float(confidence), 4), **style}
+            det: Dict[str, Any] = {"text": clean_text(text), "confidence": round(float(confidence), 4), "source_provenance": source_provenance, **style}
             is_candidate, score_info = classify_caption_candidate(det, context, args)
+            det["classifier_accepted"] = bool(is_candidate)
             det["is_caption_candidate"] = bool(is_candidate)
             det["is_subtitle_candidate"] = bool(is_candidate)  # backward-compatible alias
             det["caption_score"] = score_info
@@ -2377,26 +3039,35 @@ def run(args: argparse.Namespace) -> None:
                 det["caption_role"] = "hook_caption" if score_info.get("reason") == "visual_hook_caption" else "spoken_caption"
             detections.append(det)
 
-        caption_candidates = [d for d in detections if d.get("is_caption_candidate")]
-        subtitle_groups = group_caption_candidates(caption_candidates, frame.shape, y_tolerance=args.subtitle_group_y_tolerance)
-        for group in subtitle_groups:
-            group["timestamp"] = round(timestamp, 4)
-            group["frame_index"] = item.get("index")
-
         frame_result = {
             "timestamp": round(timestamp, 4),
             "frame_index": item.get("index"),
             "frame_path": frame_path,
             "transcript_context": context,
             "detections": detections,
-            "caption_candidates": caption_candidates,
-            # Backward-compatible aliases.
-            "subtitle_candidates": caption_candidates,
-            "subtitle_groups": subtitle_groups,
+            "caption_candidates": [],
+            "subtitle_candidates": [],
+            "subtitle_groups": [],
         }
-        if args.save_debug:
-            frame_result["debug_frame_path"] = save_debug_frame(frame, frame_result, args.debug_dir, args.debug_mode)
         frame_results.append(frame_result)
+
+    source_fps = safe_float(video_info.get("fps"), OBSERVATION_FLOOR_FPS)
+    observation_period_sec = 1.0 / min(OBSERVATION_FLOOR_FPS, source_fps)
+    apply_short_caption_continuations(
+        frame_results,
+        observation_period_sec=observation_period_sec,
+        video_duration=safe_float(video_info.get("duration_seconds"), 0.0),
+    )
+    continuous_visual_identity_diagnostics = apply_continuous_visual_identity_relations(frame_results)
+    frame_shape = (safe_int(video_info.get("height"), 0), safe_int(video_info.get("width"), 0), 3)
+    for frame_result in frame_results:
+        frame_result["subtitle_groups"] = group_caption_candidates(frame_result["caption_candidates"], frame_shape, y_tolerance=args.subtitle_group_y_tolerance)
+        for group in frame_result["subtitle_groups"]:
+            group.update(timestamp=frame_result["timestamp"], frame_index=frame_result["frame_index"])
+        if args.save_debug:
+            debug_frame = cv2.imread(frame_result["frame_path"])
+            if debug_frame is not None:
+                frame_result["debug_frame_path"] = save_debug_frame(debug_frame, frame_result, args.debug_dir, args.debug_mode)
 
     compact_groups: List[Dict[str, Any]] = []
     for frame_result in frame_results:
@@ -2446,6 +3117,7 @@ def run(args: argparse.Namespace) -> None:
         "caption_style_events": caption_style_events,
         "style_events": caption_style_events,
         "caption_style_event_diagnostics": style_event_diagnostics,
+        "continuous_visual_identity_diagnostics": continuous_visual_identity_diagnostics,
         "subtitle_groups": compact_groups,
         "caption_groups": compact_groups,
         "debug": {

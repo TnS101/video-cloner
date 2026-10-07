@@ -1,0 +1,19 @@
+{
+  "schema": "video_cloner_step4b_motion_ir_controls",
+  "schema_version": 1,
+  "controls": [
+    {"control_id":"A_entry","identity":"caption_tracklet_0045","boundary":"entry","analysis_interval":[250,255],"human_expectation":"fast vertical entry slide","required_channels":["position"],"forbidden_channels":["scale"],"dominant_axis":"y"},
+    {"control_id":"B_entry","identity":"caption_tracklet_0026","boundary":"entry","analysis_interval":[125,130],"human_expectation":"smooth vertical movement plus relative visibility fade-in; false scale rejected","required_channels":["position","relative_visibility"],"forbidden_channels":["scale"],"dominant_axis":"y"},
+    {"control_id":"B_exit","identity":"caption_tracklet_0026","boundary":"exit","analysis_interval":[148,154],"human_expectation":"movement plus relative visibility fade-out","required_channels":["position","relative_visibility"],"forbidden_channels":["scale"]},
+    {"control_id":"C_exit","identity":"caption_tracklet_0061","boundary":"exit","analysis_interval":[349,355],"human_expectation":"fast vertical exit plus relative visibility reduction; false scale rejected","required_channels":["position","relative_visibility"],"forbidden_channels":["scale"],"dominant_axis":"y"},
+    {"control_id":"D_entry","identity":"caption_tracklet_0001","boundary":"entry","analysis_interval":[3,12],"human_expectation":"left-to-right motion plus visibility and hold","required_channels":["position","relative_visibility"],"required_features":["hold_intervals"],"dominant_axis":"x"},
+    {"control_id":"D_exit","identity":"caption_tracklet_0001","boundary":"exit","analysis_interval":[27,36],"human_expectation":"asymmetric sharper exit with continued rightward motion and visibility reduction","required_channels":["position","relative_visibility"],"dominant_axis":"x"},
+    {"control_id":"E_we_entry","identity":"caption_tracklet_0007","boundary":"entry","analysis_interval":[44,53],"human_expectation":"same general multi-property family as D without fabricated wobble","required_channels":["position","relative_visibility"],"forbidden_features":["oscillation"]},
+    {"control_id":"E_launch","identity":"caption_tracklet_0009","boundary":"entry","analysis_interval":[44,58],"human_expectation":"multi-directional bouncy or wobble-like raw trajectory","required_channels":["position"],"required_features":["oscillation"]},
+    {"control_id":"E_it","identity":null,"boundary":"entry","analysis_interval":[44,63],"human_expectation":"later static it behavior is not fabricated","expect_no_fabricated_motion":true},
+    {"control_id":"F_entry","identity":"continuous_visual_identity_0014","boundary":"entry","analysis_interval":[66,78],"human_expectation":"corroborated scale overshoot and settling","required_channels":["position","scale"],"required_features":["overshoot"]},
+    {"control_id":"F_exit","identity":"continuous_visual_identity_0014","boundary":"exit","analysis_interval":[100,108],"human_expectation":"early-cut sharp exit remains independently measured","required_channels":["position"]},
+    {"control_id":"G_entry","identity":"caption_tracklet_0023","boundary":"entry","analysis_interval":[118,132],"human_expectation":"eased vertical movement plus relative visibility","required_channels":["position","relative_visibility"],"dominant_axis":"y"},
+    {"control_id":"G_exit","identity":"continuous_visual_identity_0028","boundary":"exit","analysis_interval":[143,151],"human_expectation":"approximately reversed vertical movement plus fade-out","required_channels":["position","relative_visibility"],"dominant_axis":"y"}
+  ]
+}

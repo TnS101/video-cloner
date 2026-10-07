@@ -100,6 +100,23 @@ def test_generic_commands_compile_to_cut_only_fcpxml(tmp_path: Path):
     assert asset.attrib["src"] == canonical.path_to_file_url(str(video.resolve()))
 
 
+def test_cut_only_audio_is_emitted_without_caption_titles(tmp_path: Path):
+    generic, video, output, report_path = _fixture(tmp_path)
+    audio = tmp_path / "source.wav"
+    audio.write_bytes(b"audio")
+    data = json.loads(generic.read_text(encoding="utf-8"))
+    data["source"]["source_audio"] = str(audio)
+    generic.write_text(json.dumps(data), encoding="utf-8")
+
+    report = compile_fcpxml(generic, output, report_path, audio_path=audio)
+    root = ET.parse(output).getroot()
+    assert report["structure"]["clip_count"] == 3
+    assert report["structure"]["audio_asset_count"] == 1
+    assert report["structure"]["caption_count"] == 0
+    assert root.findall(".//title") == []
+    assert len(root.findall(".//asset-clip")) == 4
+
+
 def test_clip_timing_and_order_match_generic_frames(tmp_path: Path):
     generic, _, output, report = _fixture(tmp_path)
     compile_fcpxml(generic, output, report)

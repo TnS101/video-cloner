@@ -1,0 +1,22 @@
+{
+  "schema": "video_cloner_step4d_source_effect_review_selection",
+  "schema_version": 1,
+  "selection_policy": "strongest_usable_candidates_in_frozen_score_order_plus_lowest_score_clean_control_where_available; clipping_uses_two_accepted_temporal_controls_plus_the_retained_unresolved_candidate",
+  "cases": [
+    {"effect_class": "shadow", "identity": "caption_tracklet_0090", "role": "strongest_usable_candidate"},
+    {"effect_class": "shadow", "identity": "caption_tracklet_0026", "role": "accepted_repaired_candidate"},
+    {"effect_class": "shadow", "identity": "caption_tracklet_0013", "role": "clean_zero_score_control"},
+    {"effect_class": "glow", "identity": "caption_tracklet_0097", "role": "accepted_repaired_candidate"},
+    {"effect_class": "glow", "identity": "caption_tracklet_0107", "role": "strongest_preexisting_usable_candidate"},
+    {"effect_class": "glow", "identity": "caption_tracklet_0022", "role": "clean_zero_score_control"},
+    {"effect_class": "texture", "identity": "caption_tracklet_0082", "role": "strongest_usable_candidate"},
+    {"effect_class": "texture", "identity": "caption_tracklet_0001", "role": "valid_candidate_control"},
+    {"effect_class": "texture", "identity": "caption_tracklet_0077", "role": "valid_candidate_control"},
+    {"effect_class": "gradient", "identity": "caption_tracklet_0106", "role": "strongest_preexisting_usable_candidate"},
+    {"effect_class": "gradient", "identity": "caption_tracklet_0095", "role": "accepted_repaired_candidate"},
+    {"effect_class": "gradient", "identity": "caption_tracklet_0073", "role": "clean_low_score_control"},
+    {"effect_class": "clipping", "identity": "caption_tracklet_0002", "role": "accepted_temporal_control"},
+    {"effect_class": "clipping", "identity": "continuous_visual_identity_0113", "role": "accepted_temporal_control"},
+    {"effect_class": "clipping", "identity": "caption_tracklet_0102", "role": "retained_unresolved_candidate"}
+  ]
+}

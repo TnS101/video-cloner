@@ -1,0 +1,22 @@
+{
+  "schema": "video_cloner_step4d_effect_evidence_repair_review_manifest",
+  "schema_version": 1,
+  "cases": [
+    {"identity": "caption_tracklet_0026", "effect_class": "shadow", "primary_blocker": "EXTERIOR_CONTEXT_DEFECT", "old_validity": "INVALID_FOR_EFFECT"},
+    {"identity": "caption_tracklet_0097", "effect_class": "glow", "primary_blocker": "SOURCE_MASK_DISAGREEMENT", "old_validity": "INVALID_FOR_EFFECT"},
+    {"identity": "caption_tracklet_0100", "effect_class": "glow", "primary_blocker": "EXTERIOR_CONTEXT_DEFECT", "old_validity": "INVALID_FOR_EFFECT"},
+    {"identity": "caption_tracklet_0032", "effect_class": "gradient", "primary_blocker": "FOREGROUND_OWNERSHIP_DEFECT", "old_validity": "INVALID_FOR_EFFECT"},
+    {"identity": "caption_tracklet_0095", "effect_class": "gradient", "primary_blocker": "SOURCE_MASK_DISAGREEMENT", "old_validity": "INVALID_FOR_EFFECT"},
+    {"identity": "caption_tracklet_0102", "effect_class": "clipping", "primary_blocker": "SOURCE_MASK_DISAGREEMENT", "old_validity": "INVALID_FOR_EFFECT"},
+    {"identity": "caption_tracklet_0002", "effect_class": "clipping", "primary_blocker": "TEMPORAL_EVIDENCE_MISSING", "old_validity": "INSUFFICIENT_EVIDENCE"},
+    {"identity": "continuous_visual_identity_0113", "effect_class": "clipping", "primary_blocker": "TEMPORAL_EVIDENCE_MISSING", "old_validity": "INSUFFICIENT_EVIDENCE"},
+    {"identity": "continuous_visual_identity_0098", "effect_class": "caption_occlusion", "primary_blocker": "OBJECT_OWNERSHIP_MISSING", "old_validity": "INVALID_FOR_EFFECT"},
+    {"identity": "caption_tracklet_0049", "effect_class": "caption_occlusion", "primary_blocker": "OBJECT_OWNERSHIP_MISSING", "old_validity": "INVALID_FOR_EFFECT"},
+    {"identity": "caption_tracklet_0038", "effect_class": "caption_occlusion", "primary_blocker": "OBJECT_OWNERSHIP_MISSING", "old_validity": "INVALID_FOR_EFFECT"}
+  ],
+  "regression_controls": [
+    {"identity": "caption_tracklet_0001", "effect_class": "texture"},
+    {"identity": "caption_tracklet_0077", "effect_class": "texture"},
+    {"identity": "caption_tracklet_0090", "effect_class": "shadow"}
+  ]
+}

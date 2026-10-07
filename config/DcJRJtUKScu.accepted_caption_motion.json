@@ -1,0 +1,30 @@
+{
+  "schema": "video_cloner_accepted_caption_motion",
+  "schema_version": 1,
+  "cue_id": "sub_045",
+  "visual_event_identity": "caption_tracklet_0064",
+  "style_evidence_id": "style_event_sub_0045",
+  "window": [359, 383],
+  "animation": {
+    "authority": "visual_observed",
+    "source_type": "scale",
+    "property": "Size",
+    "keyframes": [
+      {
+        "frame": 0,
+        "relative_time": 0.0,
+        "value": 0.080528214
+      },
+      {
+        "frame": 23,
+        "relative_time": 1.0,
+        "value": 0.10833333333333332
+      }
+    ]
+  },
+  "acceptance_evidence": {
+    "source_style_sha256": "cbf463b0d86bb621af40076221e5a180716c442e6cc02af28485b54b9adb03a8",
+    "source_lifecycle_sha256": "bfbf42a7320936479203221d64f838a8480eaf512910784f22dcb79a05f385e6",
+    "resolve_readback_sha256": "4e763273188f28169bdf34887447983517ae209279a2556d95cfbff2428a6c5c"
+  }
+}

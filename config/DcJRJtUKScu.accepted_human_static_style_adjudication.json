@@ -1,0 +1,130 @@
+{
+  "schema": "video_cloner_accepted_human_static_style_adjudication",
+  "schema_version": 2,
+  "authority": "ACCEPTED_HUMAN_STATIC_STYLE_ADJUDICATION",
+  "result": "PASS_F5_HUMAN_APPROVED_STATIC_STYLE_IMPLEMENTATION",
+  "human_decision_count": 9,
+  "human_approved_count": 9,
+  "pending_human_decisions": 0,
+  "records": [
+    {
+      "object_id": "continuous_visual_identity_0028",
+      "property": "font",
+      "selected_value": {"family": "Tahoma", "style": "Bold"},
+      "human_approved": true,
+      "approval_phase": "F5B",
+      "source_evidence_refs": [".agent/reports/VIDEO_CLONER_STEP5A_F5B_STATIC_STYLE_ADJUDICATION_20260930_V1/20260930T174904043Z_luna_execute/first/step5a_f5b_human_static_style_review_manifest.json"]
+    },
+    {
+      "object_id": "continuous_visual_identity_0028",
+      "property": "fill",
+      "selected_value": {"type": "solid", "rgb": [205, 139, 99]},
+      "human_approved": true,
+      "approval_phase": "F5B",
+      "source_evidence_refs": [".agent/reports/VIDEO_CLONER_STEP5A_F5B_STATIC_STYLE_ADJUDICATION_20260930_V1/20260930T174904043Z_luna_execute/first/step5a_f5b_human_static_style_review_manifest.json"]
+    },
+    {
+      "object_id": "recovered_display_object_listing_0003",
+      "property": "font",
+      "selected_value": {"family": "Arial", "style": "Black"},
+      "human_approved": true,
+      "approval_phase": "F5B",
+      "source_evidence_refs": [".agent/reports/VIDEO_CLONER_STEP5A_F5B_STATIC_STYLE_ADJUDICATION_20260930_V1/20260930T174904043Z_luna_execute/first/step5a_f5b_human_static_style_review_manifest.json"]
+    },
+    {
+      "object_id": "recovered_display_object_listing_0003",
+      "property": "fill",
+      "selected_value": {"type": "solid", "rgb": [250, 218, 172]},
+      "human_approved": true,
+      "approval_phase": "F5B",
+      "source_evidence_refs": [
+        ".agent/reports/VIDEO_CLONER_STEP5A_F5B_STATIC_STYLE_ADJUDICATION_20260930_V1/20260930T174904043Z_luna_execute/first/step5a_f5b_human_static_style_review_manifest.json",
+        "config/DcJRJtUKScu.accepted_static_style_position_adjudication.json"
+      ]
+    },
+    {
+      "object_id": "caption_tracklet_0097",
+      "property": "font",
+      "selected_value": {
+        "family": "Arial",
+        "style": "Black",
+        "italic": true,
+        "italic_treatment": {
+          "type": "textplus_transform_shear",
+          "input": "TransformShear",
+          "value": 0.08393,
+          "authority": "SOURCE_MEASURED_VERTICAL_SLANT_PROXY"
+        }
+      },
+      "human_approved": true,
+      "approval_phase": "F5B",
+      "source_evidence_refs": [
+        ".agent/reports/VIDEO_CLONER_STEP5A_F5B_STATIC_STYLE_ADJUDICATION_20260930_V1/20260930T174904043Z_luna_execute/first/step5a_f5b_human_static_style_review_manifest.json",
+        ".agent/reports/VIDEO_CLONER_STEP2B1_FINAL_MULTI_OBJECT_MASK_ISOLATION_REPAIR_20260927/20260927T000000000Z_bounded/reel2_glyph_evidence_v2_mask_isolation_corrected.json",
+        ".agent/reports/VIDEO_CLONER_STEP5_TARGETED_HUMAN_REVIEW_V1/20260919T125540282Z_fresh_reel2_cardinality/resolve_report.json"
+      ]
+    },
+    {
+      "object_id": "recovered_display_object_why_0001",
+      "property": "font",
+      "selected_value": {"family": "Tahoma", "style": "Bold"},
+      "human_approved": true,
+      "approval_phase": "F5B",
+      "source_evidence_refs": [".agent/reports/VIDEO_CLONER_STEP5A_F5B_STATIC_STYLE_ADJUDICATION_20260930_V1/20260930T174904043Z_luna_execute/first/step5a_f5b_human_static_style_review_manifest.json"]
+    },
+    {
+      "object_id": "recovered_display_object_why_0001",
+      "property": "fill",
+      "selected_value": {
+        "type": "linear_gradient",
+        "orientation": "HORIZONTAL",
+        "direction": "LEFT_TO_RIGHT_A_TO_B",
+        "stops": [
+          {"position": 0.0, "rgb": [190, 68, 78]},
+          {"position": 1.0, "rgb": [169, 50, 115]}
+        ]
+      },
+      "human_approved": true,
+      "approval_phase": "F5B",
+      "source_evidence_refs": [
+        ".agent/reports/VIDEO_CLONER_STEP5A_F5B_STATIC_STYLE_ADJUDICATION_20260930_V1/20260930T174904043Z_luna_execute/first/step5a_f5b_human_static_style_review_manifest.json",
+        ".agent/reports/VIDEO_CLONER_STEP5C_WHY_GRADIENT_PARAMETERIZATION_20261001_V1/20261001T073008554Z/first/step5c_why_gradient_parameterization_review.json"
+      ]
+    },
+    {
+      "object_id": "recovered_display_object_why_0001",
+      "property": "opacity",
+      "selected_value": {"mode": "constant", "value": 0.75},
+      "human_approved": true,
+      "approval_phase": "F5D",
+      "source_evidence_refs": [
+        ".agent/reports/VIDEO_CLONER_STEP5C_WHY_GRADIENT_PARAMETERIZATION_20261001_V1/20261001T073008554Z/first/step5c_why_gradient_parameterization_review.json",
+        ".agent/reports/VIDEO_CLONER_STEP5C_WHY_GRADIENT_PARAMETERIZATION_20261001_V1/20261001T073008554Z/first/why_gradient_parameterization_preview.png"
+      ]
+    },
+    {
+      "object_id": "recovered_display_object_local_we_0002",
+      "property": "font",
+      "selected_value": {"family": "Segoe UI", "style": "Regular"},
+      "human_approved": true,
+      "approval_phase": "F5B",
+      "source_evidence_refs": [".agent/reports/VIDEO_CLONER_STEP5A_F5B_STATIC_STYLE_ADJUDICATION_20260930_V1/20260930T174904043Z_luna_execute/first/step5a_f5b_human_static_style_review_manifest.json"]
+    }
+  ],
+  "why_parameterization": {
+    "orientation_authority": "SOURCE_SUPPORTED_BOUNDED_PIXELS",
+    "opacity_authority": "HUMAN_APPROVED_CONSTANT_0_75",
+    "review_required": false
+  },
+  "automatic_authority_preserved": {
+    "object_id": "recovered_display_object_listing_0003",
+    "static_size": 0.113888889,
+    "resolve_center": [0.50555556, 0.603125]
+  },
+  "production_literal_branches": 0,
+  "production_identity_branches": 0,
+  "production_reel_branches": 0,
+  "production_human_choice_branches": 0,
+  "f5_compile_authorized": true,
+  "resolve_mutated": false
+}

@@ -370,6 +370,7 @@ def extract_style_contract(style_data: Dict[str, Any], profile_id: str = "primar
 
     outline_px = safe_float(overrides.get("outline_px") or stroke.get("width_px_estimate") or resolved.get("outline_px"), 3.0)
     shadow_px = safe_float(overrides.get("shadow_px") or shadow.get("blur_px_estimate") or resolved.get("shadow_px"), 2.0)
+    shadow_opacity = clamp(safe_float(overrides.get("shadow_opacity", shadow.get("opacity_estimate")), 0.85), 0.0, 1.0)
 
     anchor = placement.get("anchor") or resolved.get("anchor") or {}
     x = safe_float(anchor.get("x"), 0.5)
@@ -391,9 +392,10 @@ def extract_style_contract(style_data: Dict[str, Any], profile_id: str = "primar
         "shadow": shadow_color,
         "fill_fcpxml": rgb01_to_fcpxml(hex_to_rgb01(fill), 1.0),
         "outline_fcpxml": rgb01_to_fcpxml(hex_to_rgb01(outline, (0.0, 0.0, 0.0)), 1.0),
-        "shadow_fcpxml": rgb01_to_fcpxml(hex_to_rgb01(shadow_color, (0.0, 0.0, 0.0)), 0.85),
+        "shadow_fcpxml": rgb01_to_fcpxml(hex_to_rgb01(shadow_color, (0.0, 0.0, 0.0)), shadow_opacity),
         "outline_px": round(max(0.0, outline_px * outline_scale), 3),
         "shadow_px": round(max(0.0, shadow_px * shadow_scale), 3),
+        "shadow_opacity": round(shadow_opacity, 4),
         "anchor": {"x": round(clamp(x, 0.0, 1.0), 5), "y": round(clamp(y, 0.0, 1.0), 5)},
         "placement": placement,
         "typography": typography,
@@ -548,7 +550,12 @@ def extract_caption_style_events(style_data: Dict[str, Any], fps: float) -> List
         event = normalize_style_event(raw, i, fps)
         if not event:
             continue
-        key = (round(event["start"], 2), round(event["end"], 2), normalize_style_match_text(event.get("text") or event.get("observed_text")))
+        visual_identity = raw.get("visual_event_identity")
+        key = (
+            ("visual_event_identity", visual_identity.strip())
+            if isinstance(visual_identity, str) and visual_identity.strip()
+            else (round(event["start"], 2), round(event["end"], 2), normalize_style_match_text(event.get("text") or event.get("observed_text")))
+        )
         if key in seen:
             continue
         seen.add(key)
@@ -1810,13 +1817,14 @@ def build_vfx_placeholders_xml(
 
 
 def fcpxml_text_style_attrs(style: Dict[str, Any]) -> str:
+    alignment = str(style.get("alignment") or "").strip().lower()
     attrs = {
         "font": style["font_name"],
         "fontSize": str(style["font_size_px"]),
         "fontColor": style["fill_fcpxml"],
         "bold": "1" if style.get("bold") else "0",
         "italic": "1" if style.get("italic") else "0",
-        "alignment": "center",
+        "alignment": alignment if alignment in {"left", "center", "right"} else "center",
         "strokeColor": style["outline_fcpxml"],
         "strokeWidth": str(style["outline_px"]),
         "shadowColor": style["shadow_fcpxml"],
@@ -1867,11 +1875,15 @@ def build_title_xml(
     title_name = xml_escape(f"{title_prefix} {idx:04d} - {cue.get('text', '')}"[:120])
     text_style_id = f"ts{idx}"
 
-    pos_x, pos_y, mode = compute_position(style, width, height, position_mode, position_x, position_y)
+    cue_position_mode = str(cue.get("position_mode") or "").strip().lower()
+    effective_position_mode = "detected_fcpx" if cue_position_mode == "detected_fcpx" else position_mode
+    pos_x, pos_y, mode = compute_position(style, width, height, effective_position_mode, position_x, position_y)
     if mode == "none":
         transform_line = ""
     else:
-        transform_line = f'{indent}  <adjust-transform position="{pos_x:.3f} {pos_y:.3f}" anchor="0 0" scale="1 1"/>\n'
+        rotation = safe_float(style.get("static_rotation_degrees"), 0.0)
+        rotation_attr = f' rotation="{rotation:.3f}"' if rotation else ""
+        transform_line = f'{indent}  <adjust-transform position="{pos_x:.3f} {pos_y:.3f}" anchor="0 0" scale="1 1"{rotation_attr}/>\n'
 
     style_attrs = fcpxml_text_style_attrs(style)
 

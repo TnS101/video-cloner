@@ -1,0 +1,127 @@
+{
+  "schema": "video_cloner_accepted_display_object_recovery",
+  "schema_version": 1,
+  "authority": "ACCEPTED_DISPLAY_OBJECT_RECOVERY",
+  "source_video": {
+    "path": "input/DcJRJtUKScu.mp4",
+    "sha256": "729c47a74fe015fd45c22a76974c0c824234352ca90c42b5689dc7468b87a279",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30.0
+  },
+  "timeline_semantics": {
+    "fps": 24.0,
+    "start": "inclusive",
+    "end": "exclusive",
+    "last_visible_frame": "end_exclusive_minus_one",
+    "timestamp_conversion": "round(seconds * timeline_fps)"
+  },
+  "recovery_objects": [
+    {
+      "recovery_object_id": "recovered_display_object_why_0001",
+      "accepted_display_text": "why?",
+      "source_existence": "PROVEN",
+      "source_visible_start_frame": 277,
+      "source_visible_end_frame": 290,
+      "timeline_start_frame": 222,
+      "timeline_end_frame": 233,
+      "source_bbox": [212, 290, 918, 520],
+      "resolve_center": [0.52314815, 0.7890625],
+      "source_height_px": 230.0,
+      "resolve_size": 0.319444444,
+      "static_style_source": {
+        "classification": "STYLE_UNRESOLVED_OPERATIONAL_FALLBACK",
+        "representative_source_frame": 284,
+        "font_family": "Arial",
+        "font_style": "Bold",
+        "fill_rgb": [255, 255, 255],
+        "fill_authority": "OPERATIONAL_RENDER_DEFAULT",
+        "f5_review_required": true
+      },
+      "composition_relationship": {
+        "relationship": "CO_VISIBLE_BACKGROUND_SIBLING",
+        "neighbor_identity": "caption_tracklet_0043",
+        "neighbor_source_text": "your",
+        "ownership": "INDEPENDENT_DISPLAY_OBJECT",
+        "z_order": "BEHIND_NEIGHBOR"
+      },
+      "motion": {
+        "classification": "SOURCE_MOTION_PRESENT_UNCOMPILED_F4",
+        "position_keyframes": [],
+        "scale_keyframes": [],
+        "rotation_keyframes": [],
+        "relative_visibility_keyframes": []
+      },
+      "authority_reason": "Bounded source pixels prove a large colored why? object independent of the overlapping white your object. No frozen identity owns the large object's geometry.",
+      "source_provenance": {
+        "representative_frame": "fixtures/source_review/why_source_frame_284.jpg",
+        "edge_contact_sheet": "fixtures/source_review/why_edges.jpg",
+        "prior_style_event_path": ".agent/reports/VIDEO_CLONER_STEP2_TEMPORAL_AUTHORITY_V1_20260920/20260922T_fresh_source_acceptance_01/caption_style.json",
+        "prior_style_event_id": "style_event_sub_0029"
+      },
+      "human_evidence_used": true,
+      "renderable": true
+    },
+    {
+      "recovery_object_id": "recovered_display_object_local_we_0002",
+      "accepted_display_text": "We",
+      "source_existence": "PROVEN",
+      "source_visible_start_frame": 297,
+      "source_visible_end_frame": 358,
+      "timeline_start_frame": 238,
+      "timeline_end_frame": 287,
+      "source_bbox": [420, 735, 514, 781],
+      "resolve_center": [0.43240741, 0.60520833],
+      "source_height_px": 46.0,
+      "resolve_size": 0.063888889,
+      "static_style_source": {
+        "classification": "SOURCE_SUPPORTED_BOUNDED_STYLE_WITH_OPERATIONAL_FONT_FALLBACK",
+        "representative_source_frame": 330,
+        "font_family": "Arial",
+        "font_style": "Regular",
+        "fill_rgb": [249, 238, 211],
+        "fill_authority": "SOURCE_SUPPORTED_VALUE",
+        "f5_review_required": true
+      },
+      "composition_relationship": {
+        "relationship": "CO_VISIBLE_SIBLING",
+        "neighbor_identity": "caption_tracklet_0045",
+        "neighbor_source_text": "invest",
+        "ownership": "INDEPENDENT_DISPLAY_OBJECT",
+        "z_order": "ABOVE_NEIGHBOR"
+      },
+      "motion": {
+        "classification": "SOURCE_MOTION_PRESENT_UNCOMPILED_F4",
+        "position_keyframes": [],
+        "scale_keyframes": [],
+        "rotation_keyframes": [],
+        "relative_visibility_keyframes": []
+      },
+      "authority_reason": "Bounded source pixels show a small We object simultaneously above the large invest object. Accepted 0044/0045 boxes own only invest, so We requires an independent downstream recovery object.",
+      "source_provenance": {
+        "representative_frame": "fixtures/source_review/local_we_source_frame_330.jpg",
+        "edge_contact_sheet": "fixtures/source_review/we_edges.jpg",
+        "prior_style_event_path": ".agent/reports/VIDEO_CLONER_STEP2_TEMPORAL_AUTHORITY_V1_20260920/20260922T_fresh_source_acceptance_01/caption_style.json",
+        "prior_style_event_id": "style_event_sub_0030"
+      },
+      "human_evidence_used": true,
+      "renderable": true
+    }
+  ],
+  "regression_controls": [
+    {"identity": "caption_tracklet_0064", "renderable": true, "display_text": "social"},
+    {"identity": "caption_tracklet_0066", "renderable": false, "display_text": null},
+    {"identity": "continuous_visual_identity_0113", "renderable": true, "display_text": "PAMELA"},
+    {"identity": "caption_tracklet_0114", "renderable": false, "display_text": null},
+    {"identity": "caption_tracklet_0115", "renderable": false, "display_text": null},
+    {"identity": "caption_tracklet_0045", "renderable": true, "display_text": "invest"},
+    {"identity": "caption_tracklet_0044", "renderable": false, "display_text": null}
+  ],
+  "evidence_artifacts": [
+    {"path": "input/DcJRJtUKScu.mp4", "sha256": "729c47a74fe015fd45c22a76974c0c824234352ca90c42b5689dc7468b87a279"},
+    {"path": ".agent/reports/VIDEO_CLONER_STEP2_TEMPORAL_AUTHORITY_V1_20260920/20260922T_fresh_source_acceptance_01/caption_style.json", "sha256": "1509bc51b3ac4abf5e80e47dd94a0c0db84237817cfc486bef2980e753a17e90"},
+    {"path": ".agent/reports/VIDEO_CLONER_STEP5A_F3_GENERIC_SCALE_SIZE_REPAIR_20260930_V1/20260930T130023481Z_luna_execute/first/step5a_f3_compile_contract.json", "sha256": "97a663e705854e5880fb8bdbf2c1b5ec9c135eba1bba6c54b2c85572af7f5775"}
+  ],
+  "upstream_artifacts_changed": false,
+  "resolve_mutated": false
+}

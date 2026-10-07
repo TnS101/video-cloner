@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.pytest-tmp-*/
+.benchmark-inspect-*/
+_browser_evidence_*/
 .mypy_cache/
 .ruff_cache/
 .coverage

@@ -1,0 +1,177 @@
+{
+  "schema": "video_cloner_accepted_canonical_display_ownership",
+  "schema_version": 1,
+  "authority": "F9_HUMAN_FAILURE_SOURCE_BACKED_CANONICAL_OWNERSHIP",
+  "inputs": {
+    "f7_contract": {
+      "path": ".agent/reports/VIDEO_CLONER_STEP5_F7_FRESH_RESOLVE_VALIDATION_REBUILD_V1/20261002T093228130622Z_8a43be1aa99a4e2fa6ec66203b559cbd/step5_f7_compile_contract.json",
+      "sha256": "55126992d02f1db9d105025db9e8ce9987ba08915c120ba1a5614ad82dad354b"
+    },
+    "composition_graph": {
+      "path": ".agent/reports/VIDEO_CLONER_STEP2E_COMPOSITION_RELATIONSHIPS_20260925/20260925T220000000Z_source_graph/step2e_composition_relationships.json",
+      "sha256": "f7a56375a3a78e8c7e041159a0c9e0aae78ded85e06c15d1fb1145dc8c4da004"
+    },
+    "text_mask_linkage": {
+      "path": ".agent/reports/VIDEO_CLONER_STEP2B1_FINAL_MULTI_OBJECT_MASK_ISOLATION_REPAIR_20260927/20260927T000000000Z_bounded/whole_reel_text_mask_linkage_audit_after_mask_isolation_repair.json",
+      "sha256": "b3034b359237bc19f5565a57e73c92882ab1374b958c2cbe1262833e51004e41"
+    },
+    "static_style": {
+      "path": ".agent/reports/VIDEO_CLONER_STEP2F_FONT_AUTHORITY_CALIBRATION_20260927/20260927T020000000Z_calibrated/whole_reel_static_style_contract_calibrated.json",
+      "sha256": "a3842fef0692ff4dadddf7cb354ac5f1ee24eb504cd441e5850e5581b106a29b"
+    },
+    "source_video": {
+      "path": "input/DcJRJtUKScu.mp4",
+      "sha256": "729c47a74fe015fd45c22a76974c0c824234352ca90c42b5689dc7468b87a279"
+    },
+    "f7_drt": {
+      "path": "C:/Users/User/Downloads/VIDEO_CLONER_STEP5A_TEXTPLUS_VALIDATION_F7_66203b559cbd.drt",
+      "sha256": "db54c4433b183ab639418363c5edef1edd009a984e2d0833f6e1d664842b802a"
+    },
+    "f8_drt": {
+      "path": "C:/Users/User/Downloads/VIDEO_CLONER_STEP5_F8_GENERATED_ONLY_REVIEW_edd28d1877d1.drt",
+      "sha256": "dbd872049ec50d389baa120ded682b7f7c28a29afe061f4db5fa72739fa003e7"
+    }
+  },
+  "composition_audit": [
+    {"composition_id": "composition_0001", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0002", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0003", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0004", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0005", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0006", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0007", "classification": "ONE_VISUAL_OBJECT_ASSEMBLED_FROM_MULTIPLE_FRAGMENTS"},
+    {"composition_id": "composition_0008", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0009", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0010", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0011", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0012", "classification": "ONE_VISUAL_OBJECT_ASSEMBLED_FROM_MULTIPLE_FRAGMENTS"},
+    {"composition_id": "composition_0013", "classification": "ONE_VISUAL_OBJECT_ASSEMBLED_FROM_MULTIPLE_FRAGMENTS"},
+    {"composition_id": "composition_0014", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"},
+    {"composition_id": "composition_0015", "classification": "MULTIPLE_SIMULTANEOUS_DISTINCT_VISUAL_OBJECTS"}
+  ],
+  "decisions": [
+    {
+      "identity": "caption_tracklet_0013",
+      "role": "TEMPORAL_ALIAS_NON_RENDERING",
+      "canonical_owner_identity": "continuous_visual_identity_0014",
+      "reason": "Adjacent source frames 85-134 show one continuous Selling display object; the short tracklet is its entry alias.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=85,90,113,134"]
+    },
+    {
+      "identity": "continuous_visual_identity_0014",
+      "role": "CANONICAL_DISPLAY_OWNER",
+      "selected_display_text": "Selling",
+      "lifecycle": [68, 108],
+      "reason": "Source continuity spans both adjacent intervals without disappearance or a supported style reset.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=85,90,113,134"]
+    },
+    {
+      "identity": "caption_tracklet_0043",
+      "role": "DISTINCT_VISUAL_MEMBER",
+      "selected_display_text": "your",
+      "reason": "Source frame 284 proves the smaller white your object is co-visible and independent behind why?.",
+      "evidence": [".agent/reports/VIDEO_CLONER_STEP5_F8A_ATTRIBUTION_SIZE_DIAGNOSTIC_V1/20261002T_F8A_SOURCE_ATTRIBUTION/source_frames/why_source_frame_0284.png"]
+    },
+    {
+      "identity": "caption_tracklet_0082",
+      "role": "CANONICAL_DISPLAY_OWNER",
+      "selected_display_text": "calling",
+      "composition_members": ["caption_tracklet_0082", "caption_tracklet_0083"],
+      "geometry_rule": "COMPOSITION_UNION_ACCEPTED_BBOX",
+      "position_keyframe_rule": "MEAN_MEMBER_POSITION_BY_TIMELINE_FRAME",
+      "reason": "Composition 0012 is one source-visible word assembled from prefix and suffix observations.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=619,625,630"]
+    },
+    {
+      "identity": "caption_tracklet_0083",
+      "role": "FRAGMENT_MEMBER_NON_RENDERING",
+      "canonical_owner_identity": "caption_tracklet_0082",
+      "reason": "The prefix evidence is owned by the composition-level calling object.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=619,625,630"]
+    },
+    {
+      "identity": "caption_tracklet_0090",
+      "role": "CANONICAL_DISPLAY_OWNER",
+      "selected_display_text": "buyers",
+      "composition_members": ["caption_tracklet_0090", "caption_tracklet_0091"],
+      "geometry_rule": "COMPOSITION_UNION_ACCEPTED_BBOX",
+      "position_keyframe_rule": "MEAN_MEMBER_POSITION_BY_TIMELINE_FRAME",
+      "reason": "Composition 0013 is one source-visible buyers word; this owner preserves the source-supported small white style.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=711,720,725"]
+    },
+    {
+      "identity": "caption_tracklet_0091",
+      "role": "FRAGMENT_MEMBER_NON_RENDERING",
+      "canonical_owner_identity": "caption_tracklet_0090",
+      "reason": "The buy fragment is owned by the composition-level buyers object.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=711,720,725"]
+    },
+    {
+      "identity": "caption_tracklet_0094",
+      "role": "CANONICAL_DISPLAY_OWNER",
+      "selected_display_text": "Matching",
+      "lifecycle": [599, 629],
+      "reason": "Frames 749-786 show one continuous Matching object and no source-supported font/style reset at frame 626.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=749,762,783,786"]
+    },
+    {
+      "identity": "caption_tracklet_0096",
+      "role": "TEMPORAL_ALIAS_NON_RENDERING",
+      "canonical_owner_identity": "caption_tracklet_0094",
+      "reason": "The adjacent interval is the exit phase of the same Matching object.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=762,783,786"]
+    },
+    {
+      "identity": "caption_tracklet_0100",
+      "role": "DISTINCT_VISUAL_MEMBER",
+      "selected_display_text": "the",
+      "reason": "Source frames contain one the companion word above buyers.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=789,797,803"]
+    },
+    {
+      "identity": "caption_tracklet_0101",
+      "role": "DISTINCT_VISUAL_MEMBER",
+      "selected_display_text": "with",
+      "reason": "Accepted geometry and source frames prove a distinct with companion object.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=789,797,803"]
+    },
+    {
+      "identity": "caption_tracklet_0102",
+      "role": "FRAGMENT_MEMBER_NON_RENDERING",
+      "canonical_owner_identity": "caption_tracklet_0100",
+      "reason": "Its interval and geometry overlap the same single source-visible the object already owned by 0100.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=789,797,803"]
+    },
+    {
+      "identity": "caption_tracklet_0105",
+      "role": "DISTINCT_VISUAL_MEMBER",
+      "selected_display_text": "have",
+      "reason": "The early large member is the entering have object, not a second we.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=812,814"]
+    },
+    {
+      "identity": "caption_tracklet_0106",
+      "role": "DISTINCT_VISUAL_MEMBER",
+      "selected_display_text": "we",
+      "reason": "Composition 0015 proves the later small we object is independently co-visible.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=816,819,822,825,826"]
+    },
+    {
+      "identity": "caption_tracklet_0107",
+      "role": "DISTINCT_VISUAL_MEMBER",
+      "selected_display_text": "have",
+      "reason": "Composition 0015 proves the later large have object is independently co-visible.",
+      "evidence": ["input/DcJRJtUKScu.mp4#frames=816,819,822,825,826"]
+    }
+  ],
+  "targeted_cases": [
+    {"case": "calling", "expected": [{"identity": "caption_tracklet_0082", "text": "calling", "interval": [495, 506]}], "must_not_render": ["caption_tracklet_0083"]},
+    {"case": "buyers", "expected": [{"identity": "caption_tracklet_0090", "text": "buyers", "interval": [569, 583]}], "must_not_render": ["caption_tracklet_0091"]},
+    {"case": "with_the_buyers", "expected": [{"identity": "caption_tracklet_0097", "text": "buyers"}, {"identity": "caption_tracklet_0100", "text": "the"}, {"identity": "caption_tracklet_0101", "text": "with"}], "must_not_render": ["caption_tracklet_0102"]},
+    {"case": "we_have", "expected": [{"identity": "caption_tracklet_0104", "text": "we"}, {"identity": "caption_tracklet_0105", "text": "have"}, {"identity": "caption_tracklet_0106", "text": "we"}, {"identity": "caption_tracklet_0107", "text": "have"}], "must_not_render": []},
+    {"case": "your_why", "expected": [{"identity": "caption_tracklet_0043", "text": "your"}, {"identity": "recovered_display_object_why_0001", "text": "why?"}], "must_not_render": []},
+    {"case": "Selling", "expected": [{"identity": "continuous_visual_identity_0014", "text": "Selling", "interval": [68, 108]}], "must_not_render": ["caption_tracklet_0013"]},
+    {"case": "Matching", "expected": [{"identity": "caption_tracklet_0094", "text": "Matching", "interval": [599, 629]}], "must_not_render": ["caption_tracklet_0096"]}
+  ],
+  "resolve_mutated": false
+}

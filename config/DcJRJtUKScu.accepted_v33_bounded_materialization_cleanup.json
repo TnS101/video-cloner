@@ -1,0 +1,38 @@
+{
+  "schema": "video_cloner_accepted_v33_bounded_materialization_cleanup",
+  "schema_version": 1,
+  "authority": "SOURCE_ADJUDICATED_CURRENT_95_OBJECT_MATERIALIZATION",
+  "source_drt": "C:/Users/User/Downloads/VIDEO_CLONER_STEP5A_V33_RECONCILED_APPLIED_3d0af9c36f19.drt",
+  "current_object_count": 95,
+  "timing_corrections": [
+    {"source_identity": "caption_tracklet_0035", "before": [154, 156], "after": [154, 155], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "caption_tracklet_0070", "before": [413, 434], "after": [413, 422], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "canonical_source_object_90eba3f3e2e6edac", "before": [443, 448], "after": [443, 444], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "caption_tracklet_0074", "before": [444, 458], "after": [444, 457], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "caption_tracklet_0077", "before": [473, 482], "after": [473, 475], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "caption_tracklet_0108", "before": [667, 713], "after": [667, 670], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "canonical_source_object_bf613000dcf5bf66", "before": [670, 679], "after": [670, 677], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "canonical_source_object_7b1caf84b262f694", "before": [686, 696], "after": [686, 694], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "canonical_source_object_12b50ada831cee01", "before": [694, 704], "after": [694, 701], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "caption_tracklet_0111", "before": [732, 761], "after": [732, 734], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "canonical_source_object_b9d8de67b84760fb", "before": [734, 745], "after": [734, 744], "reason": "SAME_AUTHORED_STATE_BOUNDARY"},
+    {"source_identity": "canonical_source_object_6e8f25314a4f01bf", "before": [744, 754], "after": [744, 753], "reason": "SAME_AUTHORED_STATE_BOUNDARY"}
+  ],
+  "text_corrections": [
+    {
+      "source_identity": "canonical_source_object_78a21bf538c0a0ac",
+      "before": "inhow",
+      "after": "in how",
+      "reason": "SOURCE_PIXELS_AND_ACCEPTED_TRANSCRIPT_WHITESPACE"
+    }
+  ],
+  "style_corrections": [],
+  "suppressions": [],
+  "independent_overlap_adjudications": [
+    {"left": "caption_tracklet_0030", "right": "caption_tracklet_0032", "reason": "SOURCE_PROVES_TWO_SIMULTANEOUS_INDEPENDENT_THE_CAPTIONS"},
+    {"left": "canonical_source_object_898068cce8992b54", "right": "canonical_source_object_883153c807737f18", "reason": "SOURCE_PROVES_SIMULTANEOUS_PROFESSIONAL_AND_PHOTOGRAPHY_OBJECTS"},
+    {"left": "recovered_display_object_local_we_0002", "right": "canonical_source_object_78a21bf538c0a0ac", "reason": "SOURCE_PROVES_SIMULTANEOUS_WE_AND_IN_HOW_OBJECTS"},
+    {"left": "caption_tracklet_0045", "right": "canonical_source_object_78a21bf538c0a0ac", "reason": "SOURCE_PROVES_SIMULTANEOUS_INVEST_AND_IN_HOW_OBJECTS"}
+  ],
+  "unknown": []
+}

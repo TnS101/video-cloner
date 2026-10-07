@@ -459,6 +459,8 @@ def compile_fcpxml(
             raise FcpxmlCompilationError("parity mode requires transition authority and run identity")
     if (caption_style_path is None) != (caption_lifecycle_path is None):
         raise FcpxmlCompilationError("caption style and lifecycle authority must be supplied together")
+    if audio_path is not None:
+        source_audio = _source_audio(generic, audio_path)
     if caption_style_path is not None and caption_lifecycle_path is not None:
         caption_style_file, style_data = _read_json(caption_style_path, "caption style")
         lifecycle_file, lifecycle = _read_json(caption_lifecycle_path, "caption lifecycle authority")
@@ -477,7 +479,6 @@ def compile_fcpxml(
             "metrics": prepared["caption_metrics"],
             "style_event_matches": prepared["style_event_matches"],
         }
-        source_audio = _source_audio(generic, audio_path)
 
     video_id = str(generic["video_id"])
     default_dir = generic_file.parent.parent / "davinci"

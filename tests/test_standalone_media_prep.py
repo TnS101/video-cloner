@@ -249,5 +249,6 @@ def test_tests_use_only_temporary_project_data(tmp_path: Path):
     video = tmp_path / "source.mp4"
     video.write_bytes(b"video")
     context = MEDIA.build_run_context(MEDIA.InputSpec.from_local(video), config(tmp_path / "project"))
-    assert ROOT not in context.video_data_root.parents
+    assert tmp_path in context.video_data_root.parents
+    assert context.video_data_root != ROOT / "data" / context.video_id
     assert context.video_id != "DZsqH7auhjt"
