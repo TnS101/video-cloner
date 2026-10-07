@@ -210,7 +210,7 @@ Wave 2 deleted 18 additional stale runtime/operations files (5,740 lines), inclu
 
 Git history and the immutable recovery tag are the archive. No replacement archive directory was created.
 
-Physical cleanup removed 48 top-level pytest/benchmark/browser/package-build scratch directories and 16 source-tree `__pycache__` directories. The successful isolated E2E directory was intentionally retained as bounded execution evidence. `*.egg-info/` was added to `.gitignore`.
+Physical cleanup removed 49 top-level pytest/benchmark/browser/package-build scratch directories and 22 source-tree `__pycache__` directories. The successful isolated E2E directory was intentionally retained as bounded execution evidence. `*.egg-info/` was added to `.gitignore`.
 
 ## Resolve boundary
 
