@@ -44,6 +44,7 @@ def test_full_run_gets_identity_and_publication_cannot_select_module(tmp_path: P
     run_context.proxy_path.write_bytes(b"proxy")
     monkeypatch.setattr(pipeline, "ingest", lambda *args, **kwargs: {"generated": []})
     monkeypatch.setattr(pipeline, "analyze", lambda *args, **kwargs: {"status": "success"})
+    monkeypatch.setattr(pipeline, "filter_transitions", lambda *args, **kwargs: "filtered.json")
     monkeypatch.setattr(pipeline, "plan", lambda *args, **kwargs: {"status": "success"})
     monkeypatch.setattr(pipeline, "profile", lambda *args, **kwargs: {})
     monkeypatch.setattr(pipeline, "compile", lambda *args, **kwargs: 0)

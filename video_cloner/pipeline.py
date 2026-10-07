@@ -34,12 +34,22 @@ def plan(run: RunContext, transition_authority: str | Path, *, force: bool = Fal
     return PlanningOrchestrator(run, transition_authority).run(force=force, force_stages=force_stages)
 
 
+def filter_transitions(run: RunContext) -> str:
+    """Apply the canonical bounded transition policy required by planning."""
+    from .transition_policy import filter_mvp_transitions
+
+    source = run.analysis_dir / f"{run.video_id}_transitions.json"
+    output = run.analysis_dir / f"{run.video_id}_transitions_mvp_resolve.json"
+    filtered = filter_mvp_transitions(json.loads(source.read_text(encoding="utf-8-sig")))
+    output.write_text(json.dumps(filtered, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return str(output)
+
+
 def profile(run: RunContext, *, samples_per_shot: int = 5) -> dict[str, str]:
     """Build the current camera, caption, style, and transition profile artifacts."""
     from .camera import build_camera_style_profile, collect_face_observations
     from .caption_grammar import build_grammar
     from .profiles import build_profile
-    from .transition_policy import filter_mvp_transitions
 
     reel = run.video_id
     analysis = run.analysis_dir
@@ -67,8 +77,7 @@ def profile(run: RunContext, *, samples_per_shot: int = 5) -> dict[str, str]:
         reel,
     )
     paths["style_profile"].write_text(json.dumps(style, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    filtered = filter_mvp_transitions(json.loads(transition_path.read_text(encoding="utf-8-sig")))
-    paths["transitions"].write_text(json.dumps(filtered, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    paths["transitions"] = Path(filter_transitions(run))
     return {name: str(path) for name, path in paths.items()}
 
 
@@ -150,7 +159,7 @@ def run_offline(
         run = replace(run, run_id=new_run_id(run.video_id))
     started = _utc_now()
     reel = run.video_id
-    transitions = Path(transition_authority) if transition_authority else run.analysis_dir / f"{reel}_transitions.json"
+    transitions = Path(transition_authority) if transition_authority else run.analysis_dir / f"{reel}_transitions_mvp_resolve.json"
     timeline = target_timeline or run.config.target_timeline or f"VIDEO_CLONER_{reel}_MVP_V1"
     fcpxml = run.davinci_dir / f"{reel}_mvp_timeline.fcpxml"
     compiler_report = run.davinci_dir / f"{reel}_mvp_timeline_report.json"
@@ -169,6 +178,7 @@ def run_offline(
     try:
         stages["ingest"] = {"status": "success", "result": ingest(run.input_spec, run.config, force=force, run_id=run.run_id)}
         stages["analysis"] = {"status": "success", "result": analyze(run, force=force)}
+        stages["transition_policy"] = {"status": "success", "output": filter_transitions(run)}
         stages["planning"] = {"status": "success", "result": plan(run, transitions, force=force)}
         stages["profile"] = {"status": "success", "result": profile(run, samples_per_shot=samples_per_shot)}
         code = compile(
