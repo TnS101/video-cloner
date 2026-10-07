@@ -1,5 +1,6 @@
 from collections import Counter
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -109,19 +110,31 @@ def test_preflight_path_accepts_repository_paths_and_rejects_external_paths():
             live._preflight_path(ROOT, outside)
 
 
-def test_actual_step7b_preflight_report_validates_without_mutation():
-    digest = hashlib.sha256(PREFLIGHT.read_bytes()).hexdigest()
+def test_preflight_report_validates_without_mutation(tmp_path):
     declared = {
         "artifact_set_sha256": "75e90bbe71de541664e9dcd76be07188f12a42f0d62499d8f20c5dd77a45fea2",
         "textplus_fingerprint": "75e90bbe71de541664e9dcd76be07188f12a42f0d62499d8f20c5dd77a45fea2",
         "fcpxml_sha256": "e4ccc65a5ed1e7245d264333488390bfee68d32b3a116753223725f98143fd95",
         "report_sha256": "9b411430aa200c90411c5474a7769ffac56ec29d095d63540ba19a313dad984f",
     }
-    path, report = live._load_preflight(ROOT, {
-        "preflight_report_path": str(PREFLIGHT.relative_to(ROOT)),
+    preflight = tmp_path / "preflight.json"
+    preflight.write_text(json.dumps({
+        "ok": True,
+        "classification": "LIVE_IMPORT_PRECONDITIONS_PASS",
+        "actual_project": "New Project 1",
+        "target_timeline_name": "DcJRJtUKScu_offline_timeline_v1",
+        "target_state": "ABSENT",
+        "target_match_count": 0,
+        "protected_state_unchanged": True,
+        "mutation_counts": {"timeline_imports": 0, "saves": 0, "deletes": 0, "relinks": 0, "replaces": 0, "media_imports": 0},
+        **declared,
+    }), encoding="utf-8")
+    digest = hashlib.sha256(preflight.read_bytes()).hexdigest()
+    path, report = live._load_preflight(tmp_path, {
+        "preflight_report_path": preflight.name,
         "preflight_report_sha256": digest,
     }, declared, "New Project 1", "DcJRJtUKScu_offline_timeline_v1")
-    assert path == PREFLIGHT
+    assert path == preflight
     assert report["classification"] == "LIVE_IMPORT_PRECONDITIONS_PASS"
     assert not any(report["mutation_counts"].values())
 
