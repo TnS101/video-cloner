@@ -1,0 +1,50 @@
+{
+  "plan_id": "P001_LIVE_RESOLVE_ACCEPTANCE",
+  "task_id": "T001",
+  "result": "BLOCKED",
+  "baseline": {
+    "branch": "main",
+    "head": "a42511469782c227f8b92f0cd982d06bf316787b",
+    "accepted_product_commit": "4516da32e6780a574e7d3904782bb1007def05e7",
+    "accepted_tag": "video-cloner-canonical-cleanup-20261007",
+    "accepted_commit_is_head_ancestor": true,
+    "head_delta_is_project_ops_only": true,
+    "initial_git_status": ""
+  },
+  "verification": {
+    "focused_tests": "46 passed in 0.73s",
+    "repository_launcher_sha256": "ce39ebd249963b67450e79d67435f6a9618eeaacc8700e9ed9d5fa2e35c98013",
+    "portable_launcher_match": true,
+    "appdata_launcher_match": true,
+    "repository_bridge_sha256": "c5d342d1b735a9e7862bf60aedb38c3bade391324d57e518d68b3b3b8578c85e",
+    "queue_pending_after_quarantine": 0,
+    "queue_running_after_quarantine": 0
+  },
+  "prepared_command": {
+    "run_id": "20261007T161023409Z_26f666947be04f14ab075d353662ede6",
+    "command_sha256": "6ee00034cca12bd390a46b7a2489508ceff0166da642660b02b2edaec6d4db4d",
+    "project": "New Project 1",
+    "target": "VIDEO_CLONER_P001_DZatr0EJt4B_20261007_E48443B0224C",
+    "protected_target": "DcJRJtUKScu_offline_timeline_v1",
+    "target_absent_from_local_command_report_and_artifact_evidence": true,
+    "require_target_absent": true,
+    "replace_existing_timeline": false,
+    "save_project": false,
+    "delete_permitted": false,
+    "manifest_sha256": "f2d2cf70059f348874169661180501648683c69e4f1369e7f1814cf3ece63a3c",
+    "fcpxml_sha256": "47e230c7081dc31126e3eb3a4311d0d89ae0a271157457b7b9e9d9de81a3f25d",
+    "artifact_set_sha256": "58d3d5a6a85bedf51b5623d6b7ce7db6e05131b8cec1da5f6f1de57ce07aefbe",
+    "state": "QUARANTINED_NOT_EXECUTABLE"
+  },
+  "blocker": {
+    "path": "PROJECT_TRACKER.xlsx",
+    "initial_blob": "f83b26bff102d044a7553d9d9069ea4187635ee8",
+    "current_blob": "55b406b05a3edd0170a2cef31a380e2ec66bcc9d",
+    "size_before": 18737,
+    "size_after": 27808,
+    "observed_last_write_local": "2026-10-07T19:08:15.078789+03:00",
+    "created_by_this_session": false
+  },
+  "resolve_mutation_performed": false,
+  "workspace_action_authorized": false
+}
