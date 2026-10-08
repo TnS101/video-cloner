@@ -66,7 +66,16 @@ Only decisions that materially constrain future work belong here.
 
 - DATE: 2026-10-08
 - PLAN: P002_LIVE_TARGET_FORENSIC_READBACK
-- STATUS: ACTIVE
-- DECISION: keep Resolve and the current project open with the P001 target untouched until one bounded read-only forensic capture classifies `target_title`. Do not save, close/revert, switch timeline, rename/delete/modify the target, import again, or run unrelated Resolve commands before capture. After capture, save/discard/close remains an explicit Browser Architect + human decision.
-- WHY: P001 aborted before recording the exact title text/media-path condition, target UID, and post-import inventories. Existing code already proves a tolerant structural/provenance route can be valid when direct title readback is genuinely unavailable, but the current save-capable regression-support runner requires prerequisite evidence P001 did not produce and is not safe as the first diagnostic action. The live unsaved target is therefore the highest-value evidence and must not be contaminated before zero-mutation inspection.
-- REVISIT IF: P002 T003 captures sufficient attributable evidence to retire the live state safely, or if independent evidence proves the live state was already saved/closed/modified.
+- STATUS: VALIDATED
+- DECISION: preserve the live P001 target and use exactly one bounded read-only forensic capture before repair or persistence. P002 accepted classification `DIRECT_TITLE_TEXT_UNOBSERVABLE_STRUCTURALLY_VALID`: 112/112 overlays mapped exactly, every direct title read was `null`, every title media path was empty, strict validation failed `ValueError: target_title`, and tolerant structural validation passed with all protected state unchanged and all mutation counters zero.
+- WHY: P002 removed the ambiguity without mutating Resolve. Existing structural/provenance evidence makes fallback evaluation eligible, while persistence, idempotency, visual acceptance, and product acceptance remain separate unproven gates.
+- REVISIT IF: a future approved Plan explicitly evaluates the eligible fallback or decides the live-state/save/close policy.
+
+## D010 — Retain Reel #2 advanced-caption lifecycle and human-cleaned GOLD
+
+- DATE: 2026-10-08
+- PLAN: P002_LIVE_TARGET_FORENSIC_READBACK
+- STATUS: VALIDATED
+- DECISION: retain the Reel #2 advanced-caption lifecycle and human-cleaned GOLD as baseline evidence to verify, reuse, adapt, and improve—not rebuild. The exact protected identity is timeline `DcJRJtUKScu_offline_timeline_v1`, UID `4ad2a3c3-031c-464d-96aa-76a045608ad6`, frozen DRT SHA-256 `99b11b92d55c40682f630fd4c52072e006c7e0b6494aef367bda175fb9d4af2e`.
+- WHY: P002's unchanged full inventory independently retained the historical Resolve identity, and repository GOLD provenance matches the same name, UID, and DRT hash.
+- REVISIT IF: direct evidence proves the retained GOLD identity is corrupted or superseded by an explicitly human-accepted replacement.

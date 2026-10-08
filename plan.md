@@ -2,10 +2,10 @@
 
 - PLAN ID: `P002_LIVE_TARGET_FORENSIC_READBACK`
 - PLAN NAME: Read-Only P001 Live Target Forensic Classification
-- STATUS: `READY_FOR_CODEX`
+- STATUS: `ACCEPTED / CLOSED`
 - PHASE: `PH1`
 - BROWSER SESSION: `BROW-P002_LIVE_TARGET_FORENSIC_READBACK`
-- CODEX SESSION: `NOT_STARTED`
+- CODEX SESSION: `CODEX-P002_LIVE_TARGET_FORENSIC_READBACK`
 - CREATED: 2026-10-08 Europe/Sofia
 - BASELINE BRANCH: `main`
 - BASELINE REPOSITORY HEAD: `41ff2537c8de610df71b502f071c00d919bf43b0`
@@ -15,6 +15,20 @@
 - PREDECESSOR: `P001_LIVE_RESOLVE_ACCEPTANCE` — `BLOCKED / CLOSED`
 
 > One Plan = one bounded result. P002 is DIAGNOSIS ONLY. It must classify the existing P001 live target without saving it, importing again, repairing it, or proving persistence/idempotency/visual acceptance.
+
+> **NO FURTHER P002 EXECUTION AUTHORIZED.** Product acceptance is not claimed.
+
+## Closure Summary
+
+- CLOSED: 2026-10-08 Europe/Sofia
+- RESULT: `PASS_FORENSIC_CLASSIFICATION_READY`
+- CLASSIFICATION: `DIRECT_TITLE_TEXT_UNOBSERVABLE_STRUCTURALLY_VALID`
+- FALLBACK ELIGIBILITY: `true`; product acceptance remains unproven.
+- LIVE EXECUTION COUNT: exactly one read-only P002 invocation.
+- EVIDENCE: 112/112 overlays mapped exactly; all direct title reads `null`; all title media paths empty; strict validation `ValueError: target_title`; tolerant structural validation PASS.
+- STATE: current timeline, 46-timeline inventory, 45 protected timelines, and 55 media items unchanged; all mutation counters zero.
+- RETENTION: Reel #2 GOLD name/UID/DRT hash retained exactly.
+- NOT PROVEN: persistence, save/reopen, idempotency, or human visual acceptance.
 
 ## 1. Objective — One Observable Result
 
@@ -165,7 +179,7 @@ Codex MUST STOP / escalate for:
 
 ### TASK T001 — Build + Prove the Read-Only Forensic Surface
 
-**Status:** `NOT_STARTED`
+**Status:** `PASS`
 
 **Objective:** create the smallest diagnostic adapter that exposes the evidence P001 discarded while statically and behaviorally proving it cannot mutate Resolve.
 
@@ -215,7 +229,7 @@ Codex MUST STOP / escalate for:
 
 ### TASK T002 — Prepare One Attributable Diagnostic Command
 
-**Status:** `NOT_STARTED`
+**Status:** `PASS`
 
 **Objective:** prove one exact read-only command is safe and ready for human execution against the still-open P001 state.
 
@@ -242,7 +256,7 @@ Codex MUST STOP / escalate for:
 
 ### TASK T003 — Capture + Classify the Existing P001 Target
 
-**Status:** `NOT_STARTED`
+**Status:** `PASS_FORENSIC_CLASSIFICATION_READY`
 
 **Objective:** consume the single diagnostic result and close P002 with an evidence-backed failure class.
 
