@@ -79,3 +79,16 @@ Only decisions that materially constrain future work belong here.
 - DECISION: retain the Reel #2 advanced-caption lifecycle and human-cleaned GOLD as baseline evidence to verify, reuse, adapt, and improve—not rebuild. The exact protected identity is timeline `DcJRJtUKScu_offline_timeline_v1`, UID `4ad2a3c3-031c-464d-96aa-76a045608ad6`, frozen DRT SHA-256 `99b11b92d55c40682f630fd4c52072e006c7e0b6494aef367bda175fb9d4af2e`.
 - WHY: P002's unchanged full inventory independently retained the historical Resolve identity, and repository GOLD provenance matches the same name, UID, and DRT hash.
 - REVISIT IF: direct evidence proves the retained GOLD identity is corrupted or superseded by an explicitly human-accepted replacement.
+
+## D011 — Operationalize the accepted fallback without changing importer semantics
+
+- DATE: 2026-10-08
+- PLAN: P003_FALLBACK_PERSISTENCE_ACCEPTANCE
+- STATUS: VALIDATED — P003 T001 AUTHORIZED OFFLINE ONLY
+- DECISION: adapt the existing Phase 6 save-capable acceptance support to consume the exact P001/P002 evidence and `PROVENANCE_STRUCTURAL_SEMANTIC_ACCEPTANCE_V1`; keep the frozen importer, public API/CLI, bridge, launcher, strict validator, and canonical same-target second-run behavior unchanged.
+- WHY: P002 proved direct title text is unobservable while exact structure, artifact provenance, per-overlay expected-text binding, empty title media paths, and zero-mutation state are valid. The smallest next move is to bind that accepted evidence to the existing fallback/save boundary, not redesign title validation or import again.
+- LIVE POLICY: after offline proof and explicit task gates, permit exactly one project save, one canonical same-target replay expected to fail `target_already_exists` before import, one human close/reopen, one read-only persistence verification, and one human visual APPROVE/REJECT. No retry or repair occurs inside P003.
+- PRE-SAVE BOUNDARY: T002 authenticates repository/evidence/artifact/queue/runtime identities and may publish one attributable save-capable finalizer command, but it does not directly observe current Resolve state. The finalizer re-reads and compares the exact live target, protected timelines, current timeline, and media pool to the accepted P002 baseline immediately before `SaveProject`; the single save is permitted only if that validation passes. Pre-save validation and `SaveProject` deliberately share one finalizer invocation.
+- AUTHORIZATION: P003 architecture is approved. T001 alone is authorized for offline implementation/tests within `plan.md` bounds and must stop with evidence before T002. T002–T007, command publication, every Resolve/live action, save/close/reopen, PH2, and OSS research remain unauthorized. Resolve stays open and unchanged.
+- ACCEPTANCE BOUNDARY: fallback eligibility is not product acceptance. `PH1_ACCEPTED` requires exact save/reopen persistence, protected/media preservation, declared zero-mutation second-run behavior, and human visual `APPROVE`.
+- REVISIT IF: T001 evidence proves the existing acceptance adapter cannot consume the P001/P002 evidence safely without changing a frozen/public contract.

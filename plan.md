@@ -1,378 +1,297 @@
 # plan.md — CURRENT PLAN PARTITION
 
-- PLAN ID: `P002_LIVE_TARGET_FORENSIC_READBACK`
-- PLAN NAME: Read-Only P001 Live Target Forensic Classification
-- STATUS: `ACCEPTED / CLOSED`
+- PLAN ID: `P003_FALLBACK_PERSISTENCE_ACCEPTANCE`
+- PLAN NAME: Evidence-Bound Fallback, Persistence, and PH1 Acceptance
+- STATUS: `READY_FOR_CODEX`
+- INITIAL AUTHORIZATION: `T001 ONLY — OFFLINE IMPLEMENTATION / TESTS; NO COMMAND PUBLICATION; NO RESOLVE ACTION`
 - PHASE: `PH1`
-- BROWSER SESSION: `BROW-P002_LIVE_TARGET_FORENSIC_READBACK`
-- CODEX SESSION: `CODEX-P002_LIVE_TARGET_FORENSIC_READBACK`
+- BROWSER SESSION: `BROW-P003_FALLBACK_PERSISTENCE_ACCEPTANCE`
+- CODEX SESSION: `CODEX-P003_FALLBACK_PERSISTENCE_ACCEPTANCE` (fresh session required)
 - CREATED: 2026-10-08 Europe/Sofia
 - BASELINE BRANCH: `main`
-- BASELINE REPOSITORY HEAD: `41ff2537c8de610df71b502f071c00d919bf43b0`
+- BASELINE REPOSITORY HEAD: `397148c02e05e803225dec8f2723e6702ce7355f`
 - BASELINE ACCEPTED PRODUCT COMMIT: `4516da32e6780a574e7d3904782bb1007def05e7`
 - BASELINE TAG: `video-cloner-canonical-cleanup-20261007`
 - ARCHITECTURE VERSION: `A001`
-- PREDECESSOR: `P001_LIVE_RESOLVE_ACCEPTANCE` — `BLOCKED / CLOSED`
+- PREDECESSOR: `P002_LIVE_TARGET_FORENSIC_READBACK` — `ACCEPTED / CLOSED`
 
-> One Plan = one bounded result. P002 is DIAGNOSIS ONLY. It must classify the existing P001 live target without saving it, importing again, repairing it, or proving persistence/idempotency/visual acceptance.
+> One Plan = one observable result: decide PH1 acceptance for the exact existing P001 target by operationalizing the accepted structural/provenance fallback, proving one project save plus reopen persistence, exercising the already-declared fail-closed second-run behavior, preserving protected state, and recording a human visual APPROVE/REJECT.
 
-> **NO FURTHER P002 EXECUTION AUTHORIZED.** Product acceptance is not claimed.
-
-## Closure Summary
-
-- CLOSED: 2026-10-08 Europe/Sofia
-- RESULT: `PASS_FORENSIC_CLASSIFICATION_READY`
-- CLASSIFICATION: `DIRECT_TITLE_TEXT_UNOBSERVABLE_STRUCTURALLY_VALID`
-- FALLBACK ELIGIBILITY: `true`; product acceptance remains unproven.
-- LIVE EXECUTION COUNT: exactly one read-only P002 invocation.
-- EVIDENCE: 112/112 overlays mapped exactly; all direct title reads `null`; all title media paths empty; strict validation `ValueError: target_title`; tolerant structural validation PASS.
-- STATE: current timeline, 46-timeline inventory, 45 protected timelines, and 55 media items unchanged; all mutation counters zero.
-- RETENTION: Reel #2 GOLD name/UID/DRT hash retained exactly.
-- NOT PROVEN: persistence, save/reopen, idempotency, or human visual acceptance.
+> P003 architecture is approved. **T001 only** is authorized for offline implementation and tests in a fresh Codex session. T001 must stop and return evidence before T002. No command publication, Resolve action, save, close, reopen, or visual gate is authorized.
 
 ## 1. Objective — One Observable Result
 
-Produce one attributable, zero-mutation forensic report for the **existing live P001 target** that distinguishes the `ValueError: target_title` failure into one of these evidence-backed classes:
+For the exact existing target `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B` in project `New Project 1`, produce one attributable PH1 acceptance result:
 
-1. `DIRECT_TITLE_TEXT_UNOBSERVABLE_STRUCTURALLY_VALID` — strict title text readback is unavailable, while target structure/timing/media/title-lane geometry remains compatible with the canonical contract and no contradictory direct evidence exists;
-2. `DIRECT_TITLE_TEXT_MISMATCH` — Resolve exposes title text and at least one observed value contradicts the canonical expected text;
-3. `TITLE_MEDIA_PATH_CONTAMINATION` — at least one title item exposes a non-empty media path, which independently triggers the current `target_title` guard;
-4. `STRUCTURAL_TARGET_MISMATCH` — `require_title_text=False` still fails a structural/timing/media/lane invariant;
-5. `FORENSIC_EVIDENCE_INSUFFICIENT` — the target/provenance/state cannot be attributed safely enough to classify without mutation.
+- `PH1_ACCEPTED` only if the accepted P002 fallback is applied without semantic or structural contradiction, `SaveProject` succeeds exactly once, the exact target and all protected state survive close/reopen, the canonical same-target second run fails closed exactly as already declared with zero mutation, and the human returns visual `APPROVE`;
+- `PH1_VISUAL_REJECTED` if all machine gates pass but the human returns visual `REJECT`;
+- otherwise stop at the first failed gate with a precise `BLOCKED_*` result and no retry.
 
-The Plan succeeds when the exact class, supporting per-item evidence, target identity, and zero-mutation state evidence are captured durably. It does **not** make the product PASS.
+Machine acceptance and human visual acceptance remain separate evidence fields. Fallback eligibility alone is not product acceptance.
 
-## 2. Current Bottleneck / Why Now
+## 2. Main Constraint / Why Now
 
-- MAIN BOTTLENECK: missing attributable read-only evidence from the unsaved live P001 target.
-- WHY: P001 proved one import occurred and the exact commanded target was created/found, but the frozen importer aborted at strict `target_title` validation before recording the observed title value/media-path condition, target UID, post-import inventory, or protected-state comparison.
-- CURRENT UNCERTAINTY: the same generic exception is consistent with materially different causes: unavailable TextPlus readback, genuine text mismatch, non-empty title media path, or a downstream structural contradiction not yet captured.
-- WHY NOW: persistence/save, second-run/idempotency, visual review, and any repair all depend on knowing which failure class is real. Re-running import or saving first would alter the evidence boundary.
+- P002 removed the only causal ambiguity: direct Resolve title-text readback is unobservable for all 112 overlays, while exact overlay geometry, title media-path emptiness, structural validation, artifact identity, and one-import provenance are valid.
+- The remaining PH1 blocker is not title diagnosis. It is that the eligible fallback is not yet bound to the current P001 evidence shape and used by the save-capable acceptance adapter.
+- Persistence across save/reopen, protected-state preservation through that boundary, the declared same-target second-run behavior, and human visual fidelity are still unproven.
+- PH2, OSS research, caption enhancement, and broader product work remain blocked until this PH1 acceptance decision exists.
 
-## 3. Existing-Mechanism Decision — REUSE / ADAPT, Not Reinvention
+## 3. Existing-Mechanism Decision — REUSE / ADAPT
 
-Existing repository mechanisms were inspected before selecting this Plan:
+### Reuse
 
-### Frozen Phase 6 base importer
+- `resolve_workspace/modules/video_cloner_phase6_textplus_application.py` remains the frozen import/structural authority.
+- `validate_target(..., require_title_text=False)`, snapshots, inventories, artifact loading, run IDs, manifests, queue publication, and the bridge contract remain authoritative.
+- `resolve_workspace/modules/video_cloner_phase6_offline_timeline_live_application.py` already owns the save-capable readback/protected-state boundary and `PROVENANCE_STRUCTURAL_SEMANTIC_ACCEPTANCE_V1` semantics.
+- P002's completed command/report/status/log provide the accepted direct-readback limitation, exact target UID, per-overlay evidence, and zero-mutation baseline.
+- The canonical importer's declared same-target second run remains: `require_target_absent=true` fails closed with `ValueError: target_already_exists`, zero import, and no duplicate.
 
-`resolve_workspace/modules/video_cloner_phase6_textplus_application.py`
+### Adapt
 
-- `_title_text(item)` already performs the intended read-only title/TextPlus lookup through item properties and existing Fusion compositions/tools.
-- `validate_target(..., require_title_text=False)` already preserves target name/timebase, track counts, lane placement, timing, V1/A1 media identity, no-extra-track, overlap, and duration guards while relaxing only direct title-text equality.
-- `_validate_item(..., title=True)` still rejects a non-empty title `media_path` even when title text is not required.
-- Its current `run()` is **not** suitable for P002 because strict validation happens immediately after import and the failure result discards the exact title evidence needed here.
+Adapt only the existing Phase 6 live-application acceptance support needed to consume the exact P001/P002 evidence schemas and current 112-title contract. Add the smallest read-only post-reopen verifier needed to compare the reopened state with the accepted pre-save/saved baseline.
 
-### Current Phase 6 live-application regression support
+### Do not redesign
 
-`resolve_workspace/modules/video_cloner_phase6_offline_timeline_live_application.py`
+- Do not weaken strict `validate_target(...)` or claim direct title text became observable.
+- Do not change the frozen importer, launcher, bridge, public `video_cloner.pipeline` API, normal `video-cloner run` flow, compiler, or FCPXML.
+- Do not invent a successful reuse/no-op second-run contract. P003 must test the already-declared fail-closed contract.
+- RESEARCH GATE: `NOT_APPLICABLE`; no new mechanism, dependency, renderer, or adapter is being selected.
 
-- already contains readback/protected-state comparison logic and `PROVENANCE_STRUCTURAL_SEMANTIC_ACCEPTANCE_V1`;
-- its tests explicitly prove that direct title text can be unavailable while `require_title_text=False` structural validation still passes;
-- its fallback fails closed on direct semantic contradiction, export contradiction, second-import provenance, canonical hash mismatch, and structural mismatch.
+## 4. Accepted Baseline and Exact Evidence Binding
 
-Its current `run()` must **not** be executed against the P001 state because it requires forensic/direct/export prerequisite reports not produced by P001 and it performs `SaveProject`. Its import-provenance loader also expects a different historical report schema (`ownership_classification` + `mutation_counts.timeline_imports`) than the frozen P001 importer result (`import_call_count`).
+P003 must bind before any live publication:
 
-### Decision
-
-- `REUSE`: existing `_title_text`, `timeline_snapshot`, inventory helpers, `validate_target(..., require_title_text=False)`, and relevant fail-closed test semantics.
-- `ADAPT`: add only the minimum dedicated **read-only diagnostic support** needed to bind those mechanisms to the existing P001 target and emit the missing evidence.
-- `DO NOT MODIFY`: frozen Phase 6 importer, frozen bridge, public `video_cloner` API/CLI, canonical FCPXML/compiler behavior.
-- RESEARCH GATE: `NOT_APPLICABLE`; this is diagnosis using already-approved repository mechanisms, not a new renderer/dependency/adapter decision.
-
-## 4. Live Resolve Preservation Decision
-
-The current Resolve process and project state are evidence. Until T003 captures the forensic report:
-
-- KEEP Resolve open;
-- KEEP the current project open;
-- DO NOT save;
-- DO NOT close/revert the project or Resolve;
-- DO NOT switch the current timeline;
-- DO NOT rename/delete/modify the P001 target;
-- DO NOT import again;
-- DO NOT run any other queued Resolve command.
-
-Reason: current save/discard/autosave state is not proven, and P001 did not prove persistence. Closing or saving before read-only capture can destroy or change the evidence we are trying to classify.
-
-**After P002 evidence is durably captured:** P002 still does not decide save/discard implicitly. Browser Architect + human must make an explicit closure decision from the report. No worker may assume that closing is safe or that Save/Discard preserves the required evidence.
-
-## 5. Accepted Baseline / P001 Evidence Binding
-
-The diagnostic must bind to all of the following before any live action:
-
-- repository `main` plan baseline: `41ff2537c8de610df71b502f071c00d919bf43b0`;
-- accepted product baseline: `4516da32e6780a574e7d3904782bb1007def05e7`;
+- repository `main`: `397148c02e05e803225dec8f2723e6702ce7355f`;
 - P001 run ID: `20261007T173351920Z_b031b0693f6f4c7d8f8d17c6d718ce41`;
-- expected project: `New Project 1`;
-- exact P001 target: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`;
-- P001 T002 report: `.project_ops/reports/P001_LIVE_RESOLVE_ACCEPTANCE/T002/REPORT.md`;
-- P001 command/report/status evidence identified by exact path + SHA-256 in the P002 report before publication;
-- canonical Phase 5/6 artifact identities loaded from the current accepted manifest, not copied by hand.
+- P002 run ID: `20261008T071035670Z_46adb9a1733448e3b6ff82b42b2e7de2`;
+- project: `New Project 1`;
+- target: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`;
+- target UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`;
+- classification: `DIRECT_TITLE_TEXT_UNOBSERVABLE_STRUCTURALLY_VALID`;
+- fallback eligibility: `true`;
+- P001 T002 and P002 T001/T002/T003 reports;
+- exact completed P001/P002 command/report/status/log identities recorded in those reports;
+- canonical manifest and artifact identities recorded by P002 T002;
+- P002 baseline: 46 timelines, 45 protected timelines, 55 media items, all inventories unchanged, all mutation counters zero;
+- protected Reel #2 GOLD: `DcJRJtUKScu_offline_timeline_v1`, UID `4ad2a3c3-031c-464d-96aa-76a045608ad6`, DRT SHA-256 `99b11b92d55c40682f630fd4c52072e006c7e0b6494aef367bda175fb9d4af2e`.
 
-If any binding is ambiguous or contradictory: STOP `BLOCKED_FORENSIC_IDENTITY` before Resolve execution.
+Any missing, changed, ambiguous, stale, or contradictory identity is a STOP before publication.
+
+## 5. Live-State Policy
+
+Until T002 explicitly reaches its human gate:
+
+- keep Resolve and `New Project 1` open;
+- keep the target and current timeline unchanged;
+- do not save, close, reopen, switch, rename, delete, edit, import, export, render, or run a Workspace script.
+
+P003 may later authorize only these state transitions, in order:
+
+1. one evidence-bound `SaveProject` call by the P003 finalizer;
+2. one canonical same-target second-run invocation expected to fail before import with `target_already_exists`;
+3. after both reports pass, one human close/reopen of Resolve/project for persistence proof;
+4. one read-only post-reopen verification invocation;
+5. after machine acceptance, human timeline selection/playback solely for visual review, with no edit or save.
+
+If Resolve presents a save/discard prompt during the authorized close after the successful P003 save, the human must cancel the close and report the prompt. Do not choose Save or Discard.
 
 ## 6. IN Scope
 
-- Read current repository/code/tests and closed P001 evidence.
-- Add the minimum dedicated read-only Resolve diagnostic support module necessary to inspect the existing P001 target.
-- Add focused offline tests for that diagnostic support.
-- Reuse frozen Phase 6 readback/validation helpers instead of duplicating their semantics.
-- Prepare exactly one bounded P002 diagnostic command only after offline verification passes.
-- Human executes Workspace → `VC_Run_Agent_Task` at most once under P002 after explicit READY gate.
-- Capture exact project/target identity, target UID, item-level title readback, structural validation, timeline/media inventories, current-timeline identity, and before/after zero-mutation evidence.
-- Classify the failure into the Objective taxonomy.
-- Record whether existing provenance/structural semantic fallback is **eligible for a future Plan**; do not execute persistence/save acceptance in P002.
+- Minimal adaptation of the current Phase 6 save-capable acceptance module to the exact P001/P002 evidence shape.
+- One minimal read-only post-reopen verifier, reusing existing snapshot/inventory/structural/fallback mechanisms.
+- Focused offline tests and the affected Phase 6/bridge/queue regressions.
+- Exact queue/provenance/frozen-identity gates before every live command.
+- One save-capable finalization invocation.
+- One canonical same-target fail-closed second-run invocation.
+- One read-only post-reopen verification invocation.
+- Human close/reopen and final visual APPROVE/REJECT only at explicit gates.
+- Required P003 reports under `.project_ops/reports/P003_FALLBACK_PERSISTENCE_ACCEPTANCE/`.
 
 ## 7. OUT of Scope
 
-- Modifying `resolve_workspace/modules/video_cloner_phase6_textplus_application.py`.
-- Modifying `resolve_workspace/VC_Agent_Bridge.py` or launcher copies/config.
-- Modifying `video_cloner/`, public CLI/API, compiler, FCPXML, captions, transition policy, profiles, or analysis behavior.
-- `SaveProject` or any persistence proof.
-- `ImportTimelineFromFile`, media import, export, render, relink, replace, delete, rename, title write, Fusion write, metadata write, or timeline selection change.
-- A second P002 diagnostic retry after any live invocation.
-- P001 second-run/idempotency acceptance.
-- Human visual acceptance.
-- Product repair, validator weakening, or accepting semantic mismatch by policy change.
-- New dependencies / OSS research.
+- A second import, duplicate target, replacement, deletion, rename, relink, media import, title/Fusion write, metadata write, export, render, or repair.
+- Changing the frozen importer, launcher, bridge, public API/CLI, compiler, FCPXML, analysis, planning, profiles, captions, transitions, fonts, animation, or Reel #2 GOLD.
+- Redefining the same-target second-run contract.
+- PH2 work, caption lifecycle changes, font/animation improvement, OSS research, benchmarks, datasets, or future Plan creation.
+- Visual self-approval by Codex.
+- Retrying any live action after its first invocation.
 
 ## 8. Preserve / Regression Guard
 
-Must remain unchanged:
+Must remain unchanged except for the single authorized project save:
 
-- P001 live target content/state during diagnosis;
-- current timeline selection;
-- every non-target timeline and its observable signature;
-- media-pool inventory;
-- project persistence state — no explicit save;
-- canonical artifact identities;
-- frozen launcher, bridge, and `video_cloner_phase6_textplus_application.py` hashes;
-- public API/CLI behavior;
-- P001 evidence files.
-
-The diagnostic module must be observational only. Any detected before/after inventory or current-timeline drift is a hard failure even if the intended title evidence was captured.
+- exact target name, UID, signature, 8 video clips, 1 audio clip, 112 overlays, 673-frame duration, overlay geometry, and empty title media paths;
+- all 45 non-target/protected timeline identities and observable signatures;
+- full 46-timeline inventory count;
+- all 55 media-pool items;
+- Reel #2 GOLD name and UID;
+- current timeline through machine tasks unless Resolve itself restores a different selection after reopen; selection variance must be recorded separately and may not hide content drift;
+- canonical artifacts, P001/P002 evidence, frozen importer, launcher, bridge, public queue contract, and repository architecture.
 
 ## 9. Worker Decision Boundary
 
 Codex MAY decide locally:
 
-- exact name/shape of the new diagnostic support module and focused test file, provided it remains dedicated, read-only, repository-relative, and outside the public product API;
-- exact `.project_ops/reports/P002_LIVE_TARGET_FORENSIC_READBACK/...` evidence layout;
-- how to normalize path case/separators for comparison without weakening identity;
-- how to format item-level forensic rows for clarity;
-- whether to import existing helper functions from the frozen base or regression-support module, provided no frozen file is modified.
+- the smallest compatible field-normalization needed to bind P001/P002 reports without weakening identity;
+- whether the post-reopen verifier is a small dedicated module or a strictly read-only mode in the adapted acceptance module, whichever yields the smaller auditable call surface;
+- exact P003 report/artifact filenames under the required namespaces;
+- path separator/case normalization that preserves exact file identity.
 
 Codex MUST STOP / escalate for:
 
-- any need to change product behavior or frozen files;
-- any requirement to save, import, export, render, select/switch timeline, or mutate Resolve;
-- inability to bind the live target to exact P001 provenance;
-- stale/ambiguous pending/running queue state;
-- more than one exact target match;
-- unexpected project/timeline identity;
-- any offline test indicating the diagnostic can call a mutation API;
-- live diagnostic failure or any observed state drift;
-- a need for a second live diagnostic invocation;
-- architecture/scope/dependency expansion.
+- any need to change frozen/public product code or architecture;
+- any direct semantic contradiction, partial title observability, non-empty title media path, structural mismatch, target UID change, artifact hash change, or inventory drift;
+- any save count other than exactly one in the finalizer;
+- any active/stale/ambiguous queue state;
+- any second-run result other than the exact declared fail-closed result;
+- a save/discard prompt during close, reopen ambiguity, missing project/target after reopen, or protected/media drift;
+- any live retry, cleanup, rollback, or product repair;
+- human visual `REJECT` or required subjective judgment.
 
 ## 10. Tasks
 
-### TASK T001 — Build + Prove the Read-Only Forensic Surface
+### T001 — Adapt and Prove the Evidence-Bound Acceptance Surface
 
-**Status:** `PASS`
+**Initial status:** `AUTHORIZED — OFFLINE ONLY`
 
-**Objective:** create the smallest diagnostic adapter that exposes the evidence P001 discarded while statically and behaviorally proving it cannot mutate Resolve.
+**Objective:** make the smallest offline-proven adapter change that consumes the exact accepted P001/P002 evidence, applies the existing structural/provenance fallback, allows exactly one save, and supports zero-mutation post-reopen verification.
 
 **Allowed tracked changes:**
 
-- one dedicated diagnostic module under `resolve_workspace/modules/`;
-- one focused test file under `tests/`;
-- P002 project-op reports/artifact references only.
+- `resolve_workspace/modules/video_cloner_phase6_offline_timeline_live_application.py`;
+- at most one small dedicated P003 read-only verifier module if materially simpler than a second mode;
+- focused corresponding tests;
+- P003 `T001/REPORT.md`.
 
 **Required behavior:**
 
-1. validate command identity and require explicit read-only/zero-mutation flags;
-2. verify exact project identity and exactly one target with the P001 target name;
-3. capture current timeline identity without changing it;
-4. capture full timeline + media-pool inventories before inspection;
-5. capture target UID and `timeline_snapshot`;
-6. map expected overlay rows to actual title items by lane/track + timing/duration, not by display name alone;
-7. record for each overlay: expected text, observed `title_text`, observed `media_path`, name, track, start, end, duration;
-8. run strict `validate_target(...)` and record the exact pass/failure;
-9. independently run `validate_target(..., require_title_text=False)` and record the exact pass/failure;
-10. derive the Objective classification fail-closed;
-11. recapture current timeline, timelines, and media inventory after inspection and prove equality;
-12. report explicit zero mutation counters/claims for all prohibited operation classes.
+1. authenticate exact repository, project, target, UID, manifest/artifact, P001 import, P002 classification, completed command/report/status/log, and file hashes;
+2. require P002 `fallback_eligible=true`, exact 112/112 overlay mapping, every expected text matching the canonical contract, every observed title text `null`, every title media path empty, strict failure exactly `ValueError: target_title`, structural validation PASS, and every P002 mutation counter zero;
+3. re-read the live target structurally before save and compare current timeline, target, protected timelines, and media pool to the P002 baseline;
+4. reuse `PROVENANCE_STRUCTURAL_SEMANTIC_ACCEPTANCE_V1` semantics without requiring irrelevant historical Reel #2 report schemas;
+5. permit only one `SaveProject`; all other mutation capabilities remain explicitly false;
+6. verify target/protected/media/current state immediately after save;
+7. provide a read-only post-reopen path that verifies the exact saved target and full protected/media state without selecting or mutating a timeline;
+8. fail closed on any contradiction or incomplete evidence.
 
-**Test requirements:**
+**Offline tests:** accepted P001/P002 schema passes; wrong run/hash/UID/classification/fallback flag/overlay text/geometry/media path/validation result/counter fails; pre-save drift fails before save; save false fails; post-save drift fails; save count exactly one; post-reopen verifier has a prohibited-mutation static call-surface test and rejects persistence/protected/media drift.
 
-- direct TextPlus/property readback PASS;
-- all-title direct readback unavailable + structural PASS → `DIRECT_TITLE_TEXT_UNOBSERVABLE_STRUCTURALLY_VALID`;
-- observed wrong text → `DIRECT_TITLE_TEXT_MISMATCH`;
-- non-empty title media path → `TITLE_MEDIA_PATH_CONTAMINATION`;
-- structural timing/lane/count/media mismatch → `STRUCTURAL_TARGET_MISMATCH`;
-- partial/ambiguous title observability fails closed, never silently becomes fallback eligibility;
-- duplicate/wrong target/project fails closed;
-- current timeline and inventories unchanged;
-- static call-surface test rejects prohibited mutation APIs including `ImportTimelineFromFile`, `SaveProject`, `SetCurrentTimeline`, `DeleteTimelines`, `AppendToTimeline`, title/Fusion writes, relink/replace/import/export/render calls.
+**Verification:** focused P003 tests, `tests/test_video_cloner_p002_live_target_forensic_readback.py`, `tests/test_video_cloner_phase6_offline_timeline_live_application.py`, `tests/test_prepare_video_cloner_fresh_mvp_timeline.py`, `tests/test_vc_agent_bridge.py`, and `git diff --check`.
 
-**Acceptance criteria:**
+**Required report:** `.project_ops/reports/P003_FALLBACK_PERSISTENCE_ACCEPTANCE/T001/REPORT.md`
 
-- focused tests green;
-- `git diff --check` green;
-- no dependency change;
-- only allowed files changed;
-- frozen base/bridge hashes unchanged;
-- diagnostic code contains no mutation path.
+**STOP:** return T001 evidence for Browser Architect/user progression approval. Do not publish a command.
 
-**Required report:** `.project_ops/reports/P002_LIVE_TARGET_FORENSIC_READBACK/T001/REPORT.md`
+### T002 — Prepare One Save-Capable Finalization Command
 
-### TASK T002 — Prepare One Attributable Diagnostic Command
+**Status:** `NOT_STARTED — NOT AUTHORIZED`
 
-**Status:** `PASS`
+**Objective:** authenticate the exact repository, evidence, artifact, queue, and runtime identities and publish one attributable save-capable P003 finalizer command. T002 does not claim to directly observe current Resolve state.
 
-**Objective:** prove one exact read-only command is safe and ready for human execution against the still-open P001 state.
+**Requirements:** clean/explained Git state; exact baseline/evidence hashes; frozen launcher/bridge/importer identity; empty pending/running queue; exact installed repository identity; focused regressions repeated; one unique run ID; `SaveProject=true`; import/delete/replace/relink/media/title/Fusion/metadata/export/render/timeline-selection permissions false; retry false. The finalizer itself must re-read and compare the exact current live target, protected-timeline, current-timeline, and media-pool state to the accepted P002 baseline immediately before `SaveProject`. `SaveProject` is permitted only if that in-invocation pre-save validation passes. Pre-save validation and the single `SaveProject` deliberately remain within one finalizer invocation; no separate pre-save live invocation is authorized.
 
-**Required checks:**
+**Required report:** `.project_ops/reports/P003_FALLBACK_PERSISTENCE_ACCEPTANCE/T002/REPORT.md`
 
-1. repository branch/HEAD/status recorded;
-2. exact P001 T002 command/report/status paths + SHA-256 recorded;
-3. canonical artifact/manifest identities verified;
-4. installed launcher/bridge repository identity still matches expected frozen authority;
-5. queue has no stale/ambiguous pending/running command;
-6. command binds exact project, exact existing target, exact P001 run evidence, exact diagnostic module, unique P002 run ID;
-7. every mutation permission is explicitly false;
-8. no live action has occurred yet.
+**HUMAN GATE 1:** only after T001 and T002 PASS, run Resolve → Workspace → Scripts → `VC_Run_Agent_Task` exactly once. Do not close/reopen or visually edit yet.
 
-**Acceptance criteria:**
+### T003 — Verify Fallback Finalization and One Save
 
-- one and only one intended pending P002 command exists;
-- command/report/status destinations are unambiguous and repository-contained;
-- human receives exact Workspace action and the warning not to save/close/switch/modify Resolve before the action.
+**Status:** `NOT_STARTED — NOT AUTHORIZED`
 
-**Required report:** `.project_ops/reports/P002_LIVE_TARGET_FORENSIC_READBACK/T002/REPORT.md`
+**Objective:** consume the first P003 result without another live call.
 
-**HUMAN GATE:** only after T001 + T002 are PASS may the human run Resolve → Workspace → Scripts → `VC_Run_Agent_Task` **exactly once**. Plan creation alone does not authorize this action.
+**PASS requires:** exact command/run binding; fallback policy accepted; pre-save and immediate post-save target signature exact; exact UID; 46 timelines / 45 protected / 55 media items unchanged; `saves=1`; every other mutation counter zero; `SaveProject` succeeded; no second finalizer exists.
 
-### TASK T003 — Capture + Classify the Existing P001 Target
+**Required report:** `.project_ops/reports/P003_FALLBACK_PERSISTENCE_ACCEPTANCE/T003/REPORT.md`
 
-**Status:** `PASS_FORENSIC_CLASSIFICATION_READY`
+**STOP:** no T004 publication without explicit progression approval.
 
-**Objective:** consume the single diagnostic result and close P002 with an evidence-backed failure class.
+### T004 — Prepare the Declared Same-Target Second Run
 
-**Acceptance criteria:**
+**Status:** `NOT_STARTED — NOT AUTHORIZED`
 
-1. P002 bridge/report/run ID matches the exact T002 command;
-2. diagnostic reports exactly one P001 target and target UID;
-3. exact per-overlay title evidence is present;
-4. strict and structural validation outcomes are both recorded;
-5. before/after current timeline, non-target timeline inventory, and media inventory are unchanged;
-6. no prohibited mutation occurred;
-7. one Objective classification is selected with concrete evidence;
-8. fallback eligibility is reported separately from product acceptance;
-9. no second live invocation occurs.
+**Objective:** publish one new-run-ID canonical import command for the same exact target to test the already-declared fail-closed contract.
 
-**P002 PASS means:** `PASS_FORENSIC_CLASSIFICATION_READY` — diagnosis is sufficient to choose the next Plan. It does **not** mean live Resolve acceptance passed.
+**Expected behavior:** because the exact target already exists and `require_target_absent=true`, the frozen importer returns `ValueError: target_already_exists` before `ImportTimelineFromFile`; import/save/delete/relink/metadata counts remain zero and no duplicate is created.
 
-**Required report:** `.project_ops/reports/P002_LIVE_TARGET_FORENSIC_READBACK/T003/REPORT.md`
+**Required report:** `.project_ops/reports/P003_FALLBACK_PERSISTENCE_ACCEPTANCE/T004/REPORT.md`
 
-## 11. Classification / Next-Plan Routing
+**HUMAN GATE 2:** only after T004 PASS, run `VC_Run_Agent_Task` exactly once. The visible failure is expected; do not retry.
 
-P002 itself does not create the next Plan. Its report must expose the routing evidence:
+### T005 — Verify Fail-Closed Second Run and Prepare Reopen Readback
 
-- `DIRECT_TITLE_TEXT_UNOBSERVABLE_STRUCTURALLY_VALID` → next Browser Architect evaluates operationalizing the already-tested provenance/structural semantic fallback for this current importer evidence shape, then a separate persistence acceptance Plan.
-- `DIRECT_TITLE_TEXT_MISMATCH` → next Plan isolates whether compiler/import semantics or readback normalization is wrong; do not weaken validation.
-- `TITLE_MEDIA_PATH_CONTAMINATION` → next Plan isolates why the imported title item is media-backed under current contract.
-- `STRUCTURAL_TARGET_MISMATCH` → next Plan repairs the earliest violated structural invariant.
-- `FORENSIC_EVIDENCE_INSUFFICIENT` → next Plan improves observation/provenance only; no repair guess.
+**Status:** `NOT_STARTED — NOT AUTHORIZED`
 
-## 12. Verification
+**Objective:** bind the exact expected failed command/result and, only if exact, publish one read-only post-reopen verifier command.
 
-Before publishing any P002 live command:
+**PASS requires:** `ValueError: target_already_exists`; import/save/delete/relink/metadata counters all zero; one target only; no retry/duplicate; clean pending/running queue before publishing exactly one read-only verifier; every verifier mutation permission false.
 
-```powershell
-git status --short
-git branch --show-current
-git rev-parse HEAD
-python -m pytest --basetemp=.pytest-tmp-p002-readback -q tests/test_video_cloner_phase6_offline_timeline_live_application.py <P002_DIAGNOSTIC_TEST_FILE>
-git diff --check
-```
+**Required report:** `.project_ops/reports/P003_FALLBACK_PERSISTENCE_ACCEPTANCE/T005/REPORT.md`
 
-Also record SHA-256 / Git blob identity for:
+**HUMAN GATE 3:** after T005 PASS, close Resolve. If any Save/Discard prompt appears, cancel and report it. Otherwise reopen Resolve, open `New Project 1` if needed, make no edits or timeline selection changes, then run `VC_Run_Agent_Task` exactly once for the pending read-only verifier.
 
-- `resolve_workspace/VC_Run_Agent_Task.py`;
-- `resolve_workspace/VC_Agent_Bridge.py`;
-- `resolve_workspace/modules/video_cloner_phase6_textplus_application.py`;
-- `resolve_workspace/modules/video_cloner_phase6_offline_timeline_live_application.py`;
-- the new P002 diagnostic module.
+### T006 — Verify Save/Reopen Persistence and Protected State
 
-Run broader canonical regression only if the bounded diagnostic change touches a shared helper or focused evidence indicates regression risk. Any requested change to frozen/shared product behavior is a STOP, not a reason to broaden P002.
+**Status:** `NOT_STARTED — NOT AUTHORIZED`
 
-## 13. Evidence Required
+**Objective:** consume the post-reopen read-only report and decide machine acceptance.
 
-- T001/T002/T003 `REPORT.md` files under `.project_ops/reports/P002_LIVE_TARGET_FORENSIC_READBACK/`.
-- exact Git baseline/diff.
-- focused test output.
-- original P001 command/report/status path + SHA-256 binding.
-- exact P002 command/run ID + completed/failed bridge evidence.
-- target UID + target snapshot.
-- per-overlay expected vs observed title text/media-path geometry.
-- strict validator result.
-- `require_title_text=False` structural validator result.
-- before/after current timeline + timeline inventory + media inventory comparison.
-- explicit zero-mutation evidence.
-- final classification + next-plan routing evidence.
+**PASS requires:** exact project, target name, UID, signature, structure, 112 overlay geometry, empty title media paths, 46 timelines, 45 protected signatures including Reel #2 GOLD, and 55 media items match the accepted saved baseline; all verifier mutation counters zero; exactly one verifier invocation; no unexpected state drift.
 
-Heavy machine-local evidence may remain under `.project_ops/artifacts/` when ignored; the reports must contain enough hashes/paths to make it attributable.
+**Required report:** `.project_ops/reports/P003_FALLBACK_PERSISTENCE_ACCEPTANCE/T006/REPORT.md`
 
-## 14. Repair Limit
+**HUMAN GATE 4 — VISUAL:** only after T006 PASS, the human may select/open the target for inspection without editing or saving and return exactly `APPROVE` or `REJECT` plus concise notes on cuts, audio, captions/text, timing, framing, and obvious corruption.
 
-- PRODUCT-CODE REPAIR ATTEMPTS: `0`.
-- DIAGNOSTIC-SUPPORT REPAIR ATTEMPTS BEFORE LIVE EXECUTION: `1` bounded correction if T001 offline tests expose an implementation defect in the new diagnostic adapter itself.
-- AFTER ANY P002 LIVE INVOCATION: `0` retries / `0` repairs / `0` second executions under this Plan.
+### T007 — Record Human Decision and Close P003 Evidence
 
-If the first live diagnostic cannot classify safely, close P002 BLOCKED with the evidence obtained.
+**Status:** `NOT_STARTED — NOT AUTHORIZED`
 
-## 15. Human Gate
+**Objective:** record the human decision only; no live call and no product change.
 
-Human intervention is required once, conditionally:
+- `APPROVE` plus all machine gates PASS → `PH1_ACCEPTED`.
+- `REJECT` plus all machine gates PASS → `PH1_VISUAL_REJECTED`; do not repair in P003.
 
-- PRE-GATE: keep Resolve/project/target open and untouched.
-- ACTION: only after T001 + T002 explicitly say READY, run Workspace → Scripts → `VC_Run_Agent_Task` exactly once.
-- RETURN: no manual interpretation is required for machine classification; report the visible launcher outcome only if it differs from captured bridge evidence.
-- AFTER ACTION: do not save/close/revert/delete/rename/switch until Browser Architect reviews T003 and explicitly decides how the live state may be retired.
+**Required report:** `.project_ops/reports/P003_FALLBACK_PERSISTENCE_ACCEPTANCE/T007/REPORT.md`
 
-## 16. Rollback
+**STOP:** Browser Architect reviews and closes/archives P003. Codex does not create the next Plan.
 
-- Repository diagnostic changes are reversible with Git and do not alter accepted product behavior.
-- Live rollback is **not applicable** because P002 authorizes no mutation. If any mutation is observed, STOP and preserve the state/evidence; do not attempt cleanup.
-- Do not delete or alter the P001 target as “cleanup” under P002.
+## 11. Acceptance Criteria
 
-## 17. Stop Conditions
+| Criterion | Required evidence |
+|---|---|
+| fallback operationalized | exact P001/P002 evidence accepted under `PROVENANCE_STRUCTURAL_SEMANTIC_ACCEPTANCE_V1`; no semantic contradiction |
+| target identity | exact name + UID + canonical artifact binding |
+| save | exactly one successful `SaveProject`; no other mutation in finalizer |
+| persistence | exact target survives human close/reopen and read-only verification |
+| protected state | all 45 protected timelines, Reel #2 GOLD, and 55 media items unchanged |
+| second run | canonical same-target replay fails `target_already_exists` before import; zero mutation; one target remains |
+| visual | explicit human `APPROVE` or `REJECT` recorded separately |
+| product acceptance | only `APPROVE` plus every machine gate PASS yields `PH1_ACCEPTED` |
 
-STOP instead of improvising when:
+## 12. Repair Limit
 
-- baseline Git/provenance identity is not exact;
-- Resolve/project/target identity is ambiguous;
-- Resolve was saved/closed/reverted/modified before capture and persistence/state cannot be proven;
-- queue state is ambiguous;
-- diagnostic support requires product/frozen-file change;
-- any prohibited mutation call exists or occurs;
-- current timeline changes;
-- protected/non-target timeline or media inventory changes;
-- live diagnostic errors before sufficient evidence is captured;
-- classification remains ambiguous;
-- a second live invocation appears useful;
-- save/persistence/idempotency/visual review becomes tempting inside P002.
+- Before any P003 live invocation: one bounded T001 correction is allowed if focused offline evidence exposes a defect in the new/adapted P003 support only.
+- After the first P003 live invocation: zero product repairs, zero retries, zero replacement commands for a failed gate.
+- The expected T004 fail-closed result is not a retry or defect; any other result is a stop.
+- Visual rejection closes P003 as `PH1_VISUAL_REJECTED`; it does not authorize repair.
 
-## 18. Partition Close Procedure
+## 13. Rollback
 
-After Codex finishes or blocks:
+- Repository changes are Git-reversible.
+- The single project save is an intentional one-way external-state transition. Do not attempt ad hoc discard, delete, restore, or project-backup manipulation under P003.
+- If a post-save gate fails, preserve the exact state/evidence and stop. Never delete or replace the target or mutate Reel #2 GOLD.
 
-1. return T001/T002/T003 reports + exact Git diff/evidence to this Browser Architect partition;
-2. Browser Architect reviews actual code/evidence, not `PASS` alone;
-3. record the exact forensic classification and fallback eligibility;
-4. explicitly decide whether the now-captured live Resolve state can be closed and under which save/discard instruction;
-5. synchronize `PROJECT_STATE.md`, `PROJECT_TRACKER.xlsx`, and `docs/DECISIONS.md` if warranted;
-6. archive P002 only after ACCEPTED/BLOCKED review;
-7. next Plan is created only in a fresh Browser Architect chat + fresh Codex session.
+## 14. Stop Conditions
+
+Stop immediately on unexplained Git state, stale/ambiguous queue state, identity/hash mismatch, title contradiction, structural mismatch, target/protected/media drift, unauthorized mutation, save count mismatch, unexpected second-run result, close prompt, reopen ambiguity, persistence failure, human visual rejection, need for retry/repair, or scope/architecture/dependency expansion.
+
+## 15. Partition Close Procedure
+
+After T007 or the first blocked gate:
+
+1. Browser Architect reviews actual diffs and all P003 reports/live artifacts;
+2. synchronize `PROJECT_STATE.md`, `PROJECT_TRACKER.xlsx`, and `docs/DECISIONS.md` to the evidence;
+3. archive this Plan to `docs/plans/archive/P003_FALLBACK_PERSISTENCE_ACCEPTANCE.md`;
+4. commit accepted closeout if authorized;
+5. end this partition;
+6. create no next Plan in this Codex session.
