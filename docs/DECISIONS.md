@@ -61,3 +61,12 @@ Only decisions that materially constrain future work belong here.
 - STATUS: VALIDATED
 - DECISION: do not retry or patch inside P001. P001 closes BLOCKED after `ValueError: target_title`; root-cause work becomes a new bounded Plan created by a fresh Browser Architect chat.
 - WHY: P001 proved the acceptance-vs-repair boundary works: one controlled execution produced attributable live evidence without starting a patch loop or authorizing a second Resolve run.
+
+## D009 — Preserve P001 live state and diagnose read-only before repair/persistence
+
+- DATE: 2026-10-08
+- PLAN: P002_LIVE_TARGET_FORENSIC_READBACK
+- STATUS: ACTIVE
+- DECISION: keep Resolve and the current project open with the P001 target untouched until one bounded read-only forensic capture classifies `target_title`. Do not save, close/revert, switch timeline, rename/delete/modify the target, import again, or run unrelated Resolve commands before capture. After capture, save/discard/close remains an explicit Browser Architect + human decision.
+- WHY: P001 aborted before recording the exact title text/media-path condition, target UID, and post-import inventories. Existing code already proves a tolerant structural/provenance route can be valid when direct title readback is genuinely unavailable, but the current save-capable regression-support runner requires prerequisite evidence P001 did not produce and is not safe as the first diagnostic action. The live unsaved target is therefore the highest-value evidence and must not be contaminated before zero-mutation inspection.
+- REVISIT IF: P002 T003 captures sufficient attributable evidence to retire the live state safely, or if independent evidence proves the live state was already saved/closed/modified.
