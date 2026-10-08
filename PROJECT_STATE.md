@@ -36,6 +36,9 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 - P002 is ACCEPTED/CLOSED after exactly one read-only live execution classified `DIRECT_TITLE_TEXT_UNOBSERVABLE_STRUCTURALLY_VALID`.
 - P002 mapped 112/112 overlays exactly; every direct title read was `null`, every title media path was empty, strict validation failed only `ValueError: target_title`, and `require_title_text=False` structural validation passed.
 - P002 fallback eligibility is `true`; this is not product acceptance.
+- P003 T001 is `PASS / ACCEPTED — OFFLINE`: the evidence-bound finalizer, dedicated read-only reopen verifier, focused tests, and report passed Browser Architect review.
+- Accepted T001 SHA-256: finalizer `79d1a8cafecc28eb791fbfa453df80ad02be70a432e861c84500f21b8ec28c4c`; verifier `f4493d0bab98f97fc39db4b4f2bb38427d7372a1dbac7db73e9bd9af02fd767c`; focused test `153d9ec232787be430e752b8a2f7a111487859df54f6b4c5428b0430faf29f38`.
+- T001 verification: focused tests `26 passed`; required affected regression `83 passed`; no queue publication or Resolve/live action occurred.
 - Current timeline, all 46 timelines, 45 protected/non-target timelines, and all 55 media-pool items were unchanged; all P002 mutation counters were zero.
 - Exact current target: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`, UID `4aaa91c0-c434-4439-a15a-92ce86e80256`.
 - Reel #2 GOLD remains exact: timeline `DcJRJtUKScu_offline_timeline_v1`, UID `4ad2a3c3-031c-464d-96aa-76a045608ad6`, DRT SHA-256 `99b11b92d55c40682f630fd4c52072e006c7e0b6494aef367bda175fb9d4af2e`.
@@ -60,8 +63,10 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 - CURRENT PLAN ID: `P003_FALLBACK_PERSISTENCE_ACCEPTANCE`
 - PLAN STATUS: `READY_FOR_CODEX`
 - INITIAL AUTHORIZATION: `T001 ONLY — OFFLINE IMPLEMENTATION / TESTS; NO COMMAND PUBLICATION; NO RESOLVE ACTION`
-- T001 STATUS: `AUTHORIZED — OFFLINE ONLY`
-- T002–T007 STATUS: `NOT_STARTED — NOT AUTHORIZED`
+- T001 STATUS: `PASS / ACCEPTED — OFFLINE`
+- T002 STATUS: `NEXT — NOT YET AUTHORIZED`
+- T003–T007 STATUS: `NOT_STARTED — NOT AUTHORIZED`
+- T002 AUTHORIZATION: Browser Architect authorization is still required before T002 may publish a finalizer command.
 - PLAN FILE: `plan.md`
 - PREDECESSOR: `P002_LIVE_TARGET_FORENSIC_READBACK` — `ACCEPTED / CLOSED`
 - PREDECESSOR ARCHIVE: `docs/plans/archive/P002_LIVE_TARGET_FORENSIC_READBACK.md`
@@ -69,20 +74,20 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 ## Resolve Live-State Hold
 
-- KEEP Resolve open and `New Project 1` unchanged during T001 and until T002 explicitly passes.
+- KEEP Resolve open and `New Project 1` unchanged until a later explicit human gate.
 - DO NOT save, close, reopen, switch, rename, delete, modify, import, export, render, or run a Workspace script merely because P003 exists.
 - P003 live actions are sequential human gates. Each requires the preceding task report to PASS and explicit progression authorization.
 - If a Save/Discard prompt appears during the later authorized close after the P003 save, cancel and report it.
 
 ## Critical Path
 
-1. T001: adapt and offline-prove the existing Phase 6 fallback/save boundary and minimal read-only reopen verifier.
+1. T001: `PASS / ACCEPTED — OFFLINE`; evidence-bound fallback/save boundary and dedicated read-only reopen verifier are checkpoint-ready.
 2. T002–T003: one attributable finalizer invocation; accept the existing target under the evidence-backed fallback and save exactly once.
 3. T004–T005: exercise the already-declared same-target `target_already_exists` fail-closed behavior with zero mutation.
 4. T005–T006: human close/reopen, then one read-only persistence/protected-state verification.
 5. T006–T007: human visual APPROVE/REJECT and evidence closure.
 
-CURRENT CRITICAL MOVE: execute P003 T001 offline only in a fresh Codex session, then STOP and return its implementation/test evidence before T002. No command publication, Resolve/live action, save, close, or reopen is authorized.
+CURRENT CRITICAL MOVE: after the accepted T001 checkpoint is pushed and independently verified, execute T002 to authenticate the committed P003 implementation/evidence/runtime identities and prepare/publish exactly one save-capable finalizer command. T002 is next but not yet authorized. No command publication, Resolve/live action, save, close, or reopen is authorized by this checkpoint.
 
 ## Dependencies / Constraints
 
@@ -136,11 +141,11 @@ CURRENT CRITICAL MOVE: execute P003 T001 offline only in a fresh Codex session, 
 
 ## Human Action Queue
 
-1. During T001: leave Resolve/project/target open and untouched; run nothing.
+1. Before T002 authorization: leave Resolve/project/target open and untouched; run nothing.
 2. Later gates, only when explicitly authorized: one finalizer Workspace action; one fail-closed second-run Workspace action; close/reopen without accepting any prompt; one read-only verifier Workspace action; visual APPROVE/REJECT with notes.
 
 ## Latest Consequential Decision
 
 - DECISION: P003 will adapt the existing evidence-backed Phase 6 fallback/save support, preserve the frozen importer and its declared fail-closed second-run contract, and cross save/reopen/protected-state/visual gates in strict sequence.
-- STATUS: P003 ARCHITECTURE APPROVED; T001 AUTHORIZED — OFFLINE ONLY; T002–T007 NOT STARTED / NOT AUTHORIZED.
+- STATUS: P003 remains READY_FOR_CODEX; T001 PASS / ACCEPTED — OFFLINE; T002 NEXT / NOT YET AUTHORIZED; T003–T007 NOT STARTED / NOT AUTHORIZED.
 - DETAILS: `docs/DECISIONS.md` D011 and `plan.md`.

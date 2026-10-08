@@ -4,6 +4,8 @@
 - PLAN NAME: Evidence-Bound Fallback, Persistence, and PH1 Acceptance
 - STATUS: `READY_FOR_CODEX`
 - INITIAL AUTHORIZATION: `T001 ONLY — OFFLINE IMPLEMENTATION / TESTS; NO COMMAND PUBLICATION; NO RESOLVE ACTION`
+- CURRENT CHECKPOINT: `T001 PASS / ACCEPTED — OFFLINE`
+- NEXT TASK: `T002 — NEXT / NOT YET AUTHORIZED`
 - PHASE: `PH1`
 - BROWSER SESSION: `BROW-P003_FALLBACK_PERSISTENCE_ACCEPTANCE`
 - CODEX SESSION: `CODEX-P003_FALLBACK_PERSISTENCE_ACCEPTANCE` (fresh session required)
@@ -17,7 +19,9 @@
 
 > One Plan = one observable result: decide PH1 acceptance for the exact existing P001 target by operationalizing the accepted structural/provenance fallback, proving one project save plus reopen persistence, exercising the already-declared fail-closed second-run behavior, preserving protected state, and recording a human visual APPROVE/REJECT.
 
-> P003 architecture is approved. **T001 only** is authorized for offline implementation and tests in a fresh Codex session. T001 must stop and return evidence before T002. No command publication, Resolve action, save, close, reopen, or visual gate is authorized.
+> P003 architecture and T001 offline implementation are accepted. T002 is next but is **not yet authorized**. Browser Architect authorization is still required before T002 may publish a finalizer command. No command publication, Resolve action, save, close, reopen, or visual gate is authorized by this checkpoint.
+
+> CURRENT CRITICAL MOVE: after the accepted T001 checkpoint is pushed and independently verified, T002 authenticates the committed P003 implementation/evidence/runtime identities and prepares/publishes exactly one save-capable finalizer command. Resolve remains open and unchanged; PH2 remains blocked.
 
 ## 1. Objective — One Observable Result
 
@@ -152,7 +156,7 @@ Codex MUST STOP / escalate for:
 
 ### T001 — Adapt and Prove the Evidence-Bound Acceptance Surface
 
-**Initial status:** `AUTHORIZED — OFFLINE ONLY`
+**Status:** `PASS / ACCEPTED — OFFLINE`
 
 **Objective:** make the smallest offline-proven adapter change that consumes the exact accepted P001/P002 evidence, applies the existing structural/provenance fallback, allows exactly one save, and supports zero-mutation post-reopen verification.
 
@@ -182,9 +186,13 @@ Codex MUST STOP / escalate for:
 
 **STOP:** return T001 evidence for Browser Architect/user progression approval. Do not publish a command.
 
+**Accepted checkpoint evidence:** finalizer SHA-256 `79d1a8cafecc28eb791fbfa453df80ad02be70a432e861c84500f21b8ec28c4c`; verifier SHA-256 `f4493d0bab98f97fc39db4b4f2bb38427d7372a1dbac7db73e9bd9af02fd767c`; focused test SHA-256 `153d9ec232787be430e752b8a2f7a111487859df54f6b4c5428b0430faf29f38`; focused tests `26 passed`; required affected regression `83 passed`; no live action or queue publication occurred.
+
 ### T002 — Prepare One Save-Capable Finalization Command
 
-**Status:** `NOT_STARTED — NOT AUTHORIZED`
+**Status:** `NEXT — NOT YET AUTHORIZED`
+
+Browser Architect authorization is still required before T002 may publish a finalizer command.
 
 **Objective:** authenticate the exact repository, evidence, artifact, queue, and runtime identities and publish one attributable save-capable P003 finalizer command. T002 does not claim to directly observe current Resolve state.
 
