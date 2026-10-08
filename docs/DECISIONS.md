@@ -56,8 +56,8 @@ Only decisions that materially constrain future work belong here.
 
 ## D008 — P001 isolates acceptance from repair
 
-- DATE: 2026-10-07
+- DATE: 2026-10-08
 - PLAN: P001_LIVE_RESOLVE_ACCEPTANCE
-- STATUS: OPEN
-- DECISION: live Resolve acceptance performs zero product-code repairs. Any real failure closes P001 BLOCKED and becomes a new bounded investigation Plan.
-- WHY: prevents patch loops and separates execution truth from debugging.
+- STATUS: VALIDATED
+- DECISION: do not retry or patch inside P001. P001 closes BLOCKED after `ValueError: target_title`; root-cause work becomes a new bounded Plan created by a fresh Browser Architect chat.
+- WHY: P001 proved the acceptance-vs-repair boundary works: one controlled execution produced attributable live evidence without starting a patch loop or authorizing a second Resolve run.

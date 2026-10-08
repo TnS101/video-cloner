@@ -3,15 +3,15 @@
 - PLAN ID: `P001_LIVE_RESOLVE_ACCEPTANCE`
 - TASK ID: `T001`
 - CODEX SESSION: `CODEX-P001_LIVE_RESOLVE_ACCEPTANCE` (continuation)
-- RESULT: `BLOCKED`
+- RESULT: `HUMAN_INTERVENTION_REQUIRED`
 - EXTERNAL SKILLS: VERIFIED — `ponytail` (full)
 
 ## Baseline
 
 - branch: `main`
-- HEAD: `9ed472c9b0b174d87f6def0b7ddc11269cee3b9b`
+- HEAD: `6b713b24ace1b148284f3722098da6faee03917f`
 - accepted product baseline: `4516da32e6780a574e7d3904782bb1007def05e7` / `video-cloner-canonical-cleanup-20261007`
-- accepted product baseline is an ancestor of HEAD; the delta remains project-operations only.
+- accepted product baseline is an ancestor of HEAD.
 - initial `git status --short`:
 
 ```text
@@ -24,13 +24,19 @@ Produce one provenance-backed canonical command and prove it is safe to execute.
 
 ## Approach
 
-Reviewed the prior T001 report and preflight evidence, verified the reconciled Git baseline, reran only the required focused safety suite, confirmed the executable queue remained empty, and checked the frozen launcher/runtime identities before preparing any new command. Stopped when the previously verified `%APPDATA%` launcher installation was found absent.
+Read the current installer contract, corrected the prior `%APPDATA%` assumption, verified the installer-selected single canonical launcher/config and empty active queue, ran the narrow installer contract tests, compiled a fresh collision-resistant target, and published exactly one new bounded command. No Resolve action was executed.
+
+## Installer Contract Reconciliation
+
+`scripts/install_vc_agent_live.py` requires exactly one discovered launcher and one adjacent config at the installer-selected canonical `Scripts/Edit` directory. It prefers `%APPDATA%` only when that directory is an anchored candidate; it does not require a second `%APPDATA%` copy. The portable directory selected and recorded by the approved installer is the current authority.
 
 ## Files Changed
 
 | File | Why |
 |---|---|
-| `.project_ops/reports/P001_LIVE_RESOLVE_ACCEPTANCE/T001/REPORT.md` | Required continuation report recording the new preflight blocker. |
+| `.project_ops/reports/P001_LIVE_RESOLVE_ACCEPTANCE/T001/REPORT.md` | Required T001 continuation report. |
+| `.project_ops/reports/P001_LIVE_RESOLVE_ACCEPTANCE/T001/PREFLIGHT_EVIDENCE.json` | Updated machine-readable preflight and fresh command identity. |
+| `.project_ops/artifacts/P001_LIVE_RESOLVE_ACCEPTANCE/T001/P001_acceptance_fresh_4CE37F9BC61B*` | Fresh ignored FCPXML/package evidence. |
 
 Tracked product files: NONE.
 
@@ -40,60 +46,68 @@ Tracked product files: NONE.
 git status --short
 git branch --show-current
 git rev-parse HEAD
-git merge-base --is-ancestor 4516da32e6780a574e7d3904782bb1007def05e7 HEAD
-python -m pytest --basetemp=.pytest-tmp-p001-preflight-continuation -q tests/test_vc_agent_bridge.py tests/test_video_cloner_phase6_offline_timeline_live_application.py tests/test_prepare_video_cloner_fresh_mvp_timeline.py
-Get-FileHash (repository and installed launcher/bridge preflight)
-queue inventory for pending/running/completed/failed
+python -m pytest --basetemp=.pytest-tmp-p001-installer -q tests/test_vc_bridge_installer.py
+read-only installer discovery/state/hash/process verification
+read-only pending/running queue inventory
+python -m video_cloner.cli compile ... --timeline-name VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B --timeline-mode full_timeline ...
+python -m video_cloner.cli publish ... --project "New Project 1" --target-timeline VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B
 ```
 
-Focused result: `46 passed in 0.65s`.
+- installer contract tests: `8 passed in 0.18s`.
+- immediately prior focused contract preflight: `46 passed in 0.65s`; not repeated because no tracked runtime/product code changed.
 
 ## Current Contract Semantics
 
-- First run: one pending command is claimed; the application requires the exact project and an absent target, imports once, validates target/protected/media state, restores the prior current timeline, and does not save, replace, delete, relink, or invoke metadata control.
-- Declared second run: a separately republished command for the same target must fail closed with `target_already_exists` because public publication sets `require_target_absent=true`; no duplicate target is created. Invoking Workspace with no pending command is a no-op.
+- First run: one pending command is claimed; the application requires project `New Project 1` and an absent target, imports once, validates target/protected/media state, restores the prior current timeline, and does not save, replace, delete, relink, or invoke metadata control.
+- Declared second run: only after T002 authorization, republishing for the same target creates a new run ID and must fail closed with `target_already_exists`; no duplicate is created. Invoking Workspace with no pending command is a no-op.
 
 ## Key Evidence / Artifacts
 
-- previous run `20261007T161023409Z_26f666947be04f14ab075d353662ede6` remains `QUARANTINED_NOT_EXECUTABLE`; it was not reused.
-- queue before stop: pending `0`, running `0`.
-- repository launcher SHA-256: `ce39ebd249963b67450e79d67435f6a9618eeaacc8700e9ed9d5fa2e35c98013`.
-- portable launcher SHA-256: `ce39ebd249963b67450e79d67435f6a9618eeaacc8700e9ed9d5fa2e35c98013` (match).
+- canonical Scripts/Edit: portable installer-selected directory recorded in `PREFLIGHT_EVIDENCE.json`.
+- repository/installed launcher SHA-256: `ce39ebd249963b67450e79d67435f6a9618eeaacc8700e9ed9d5fa2e35c98013` (match).
+- installed config SHA-256: `da85e6d7bb9eaf9fc6448feb142234c599705011e1f6739f3cf01398d9ab08e0`.
 - repository bridge SHA-256: `c5d342d1b735a9e7862bf60aedb38c3bade391324d57e518d68b3b3b8578c85e`.
-- expected `%APPDATA%\Blackmagic Design\DaVinci Resolve\Support\Fusion\Scripts\Edit\VC_Run_Agent_Task.py`: MISSING.
-- expected adjacent `%APPDATA%` `VC_Run_Agent_Task.config.json`: MISSING.
-- fresh command/run/target: NOT CREATED because the runtime gate failed first.
+- previous quarantined command: not reused.
+- fresh run ID: `20261007T173351920Z_b031b0693f6f4c7d8f8d17c6d718ce41`.
+- fresh target: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`.
+- protected target: `DcJRJtUKScu_offline_timeline_v1` (distinct).
+- command SHA-256: `3f8f78df42275aa2ec57a2ea67e3f7bd8676c0a62e1ab5fb055c363dfabfd492`.
+- manifest SHA-256: `38e57cfd57eafb4956f7a54ea86b8f3819d3ba5b1ab3b8b7d47d0d37fe38a615`.
+- FCPXML SHA-256: `d9d5c5c695e29e8ea82e7e1f6488f19deb95e9328c7e2c0f89a7370ed2cf8b62`.
+- queue after publication: pending `1`, running `0`.
 - Resolve mutation: NONE.
 
 ## Acceptance Criteria
 
 | Criterion | Result | Evidence |
 |---|---|---|
-| exact Git/runtime baseline recorded | BLOCKED | Git is clean and focused tests pass, but the installed launcher baseline differs from the prior verified state. |
-| current first/second-run semantics summarized | PASS | Existing T001 evidence and current focused contract tests agree. |
-| queue safe/isolated | PASS | pending `0`, running `0`; quarantined command remains outside the executable queue. |
-| matching non-empty run ID and NEW absent target | BLOCKED | Intentionally not generated after the launcher gate failed. |
-| protected identities checked | BLOCKED | No new target was selected because execution preparation stopped earlier. |
+| exact Git/runtime baseline recorded | PASS | Clean initial Git state; baseline and canonical installer state recorded. |
+| current first/second-run semantics summarized | PASS | Current contract above and focused test evidence. |
+| queue safe/isolated | PASS | `0/0` before publication; exactly one owned pending command afterward. |
+| matching non-empty run ID and NEW absent target | PASS | Fresh identities above; target absent from local evidence before creation and live application independently requires absence. |
+| protected identities checked | PASS | Fresh target differs from protected Reel #2 GOLD identity; replacement/deletion/relink/save are false. |
 | no Resolve mutation yet | PASS | No Workspace action occurred. |
-| exact Workspace action supplied | BLOCKED | Withheld because live execution is not authorized. |
+| exact Workspace action supplied | PASS | Human action below. |
 
 ## Deviations / Remaining Risk
 
-- Prior T001 evidence recorded both portable and `%APPDATA%` launcher copies as matching. The portable copy still matches, but the `%APPDATA%` launcher and config are absent. P001 says frozen launcher/bridge identities must remain unchanged and requires STOP if they differ.
+- The earlier requirement for an additional `%APPDATA%` launcher was a worker assumption contradicted by the current installer. It is withdrawn.
+- Live target absence and protected-state preservation remain subject to the application's fail-closed Resolve readback during the authorized first execution.
 
 ## Human Intervention
 
 - REQUIRED: YES
-- ACTION: Do **not** run Resolve Workspace. Determine why the `%APPDATA%\Blackmagic Design\DaVinci Resolve\Support\Fusion\Scripts\Edit\` launcher and config disappeared, then restore/reconcile that installed launcher state through the approved launcher installation process outside this acceptance execution.
-- WHY: The runtime baseline changed after the previous preflight; P001 forbids proceeding or repairing product/runtime behavior inside this acceptance task.
-- RETURN REQUIRED: confirmation of the intentional reconciliation plus SHA-256 values for the restored `%APPDATA%` `VC_Run_Agent_Task.py` and its config, and a clean `git status --short`.
+- ACTION: Launch the canonical portable DaVinci Resolve, open project `New Project 1`, and confirm no timeline named `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B` is present. If absent, click `Workspace` → `Scripts` → `VC_Run_Agent_Task` exactly once. Do not invoke it a second time and do not save/delete/rename any timeline.
+- WHY: Resolve Workspace execution is the explicit live mutation boundary and must be performed by the human.
+- RETURN REQUIRED: confirm the script was clicked exactly once; report any visible error/dialog/console text verbatim; state whether the target timeline appeared; leave Resolve/project state unchanged afterward. The worker will inspect the matching bridge report/status/log, target readback, and protected-state evidence before authorizing anything else.
 
 ## Final Git Status
 
 ```text
+ M .project_ops/reports/P001_LIVE_RESOLVE_ACCEPTANCE/T001/PREFLIGHT_EVIDENCE.json
  M .project_ops/reports/P001_LIVE_RESOLVE_ACCEPTANCE/T001/REPORT.md
 ```
 
 ## Stop
 
-No Resolve Workspace action is authorized. Browser Architect reviews the blocker; this worker does not choose another Plan.
+Stop at the first Resolve human gate. No second Workspace action is authorized.

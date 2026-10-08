@@ -2,7 +2,7 @@
 
 - PLAN ID: `P001_LIVE_RESOLVE_ACCEPTANCE`
 - PLAN NAME: Controlled Live Resolve Machine Acceptance
-- STATUS: `READY_FOR_CODEX`
+- STATUS: `BLOCKED`
 - PHASE: `PH1`
 - BROWSER SESSION: `BROW-P001_LIVE_RESOLVE_ACCEPTANCE`
 - CODEX SESSION: `CODEX-P001_LIVE_RESOLVE_ACCEPTANCE`
@@ -13,6 +13,16 @@
 - ARCHITECTURE VERSION: `A001`
 
 > One Plan = one bounded result. This Plan is ACCEPTANCE ONLY. Do not repair product behavior inside it. A product defect becomes the next root-cause Plan.
+
+## Closure Summary
+
+- CLOSED: 2026-10-08 Europe/Sofia
+- RESULT: `BLOCKED`
+- T001: `PASS` — preparation and safety boundary complete.
+- T002: `BLOCKED_LIVE_ACCEPTANCE` — one authorized execution called `ImportTimelineFromFile` once and created/found the exact commanded target, then machine validation failed with `ValueError: target_title`.
+- T003: `NOT_EXECUTED`.
+- NOT PROVEN: persistence, protected-state preservation, second-run/idempotency behavior, and visual acceptance.
+- NO SECOND RUN IS AUTHORIZED UNDER P001.
 
 ## 1. Objective — One Observable Result
 
@@ -96,6 +106,8 @@ Codex MUST STOP / escalate for:
 
 ### TASK T001 — Prepare Acceptance Run
 
+**Status:** `PASS` — preparation and safety boundary complete.
+
 **Objective:** produce one provenance-backed canonical command and prove it is safe to execute.
 
 **Allowed components:**
@@ -118,6 +130,8 @@ Codex MUST STOP / escalate for:
 
 ### TASK T002 — First Live Apply + Persistence Readback
 
+**Status:** `BLOCKED_LIVE_ACCEPTANCE` — `ValueError: target_title` after one import; see the required T002 report.
+
 **Objective:** after the human executes the exact Workspace action once, validate the resulting live state.
 
 **Acceptance criteria:**
@@ -133,6 +147,8 @@ If any criterion fails: `BLOCKED_LIVE_ACCEPTANCE` and STOP. No fix in this Plan.
 **Required report:** `.project_ops/reports/P001_LIVE_RESOLVE_ACCEPTANCE/T002/REPORT.md`
 
 ### TASK T003 — Declared Second-Run Behavior + Human Visual Gate
+
+**Status:** `NOT_EXECUTED` — first-run validation failure prohibited further Resolve execution.
 
 **Objective:** prove the current declared second-run/idempotency/fail-closed behavior and capture human visual decision.
 
@@ -190,7 +206,7 @@ Heavy screenshots/logs remain local under `.project_ops/artifacts/...` unless a 
 - HUMAN INTERVENTION REQUIRED: YES.
 - ACTION 1: when T001 says READY, run Resolve → Workspace → Scripts → `VC_Run_Agent_Task` exactly once.
 - RETURN 1: exact observed result plus the requested bridge/report evidence.
-- ACTION 2: only when Codex explicitly authorizes after T002, execute the same Workspace action for the declared second-run check.
+- ACTION 2: NOT AUTHORIZED — T002 failed machine validation; no second Workspace execution is permitted under P001.
 - RETURN 2: second observed result/report.
 - ACTION 3: visually inspect the target timeline and return `APPROVE` or `REJECT` + concise notes.
 

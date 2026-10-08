@@ -6,7 +6,7 @@
 
 - PROJECT NAME: Video Cloner
 - STATUS: ACTIVE
-- LAST UPDATED: 2026-10-07
+- LAST UPDATED: 2026-10-08
 - LAST ACCEPTED PRODUCT COMMIT: `4516da32e6780a574e7d3904782bb1007def05e7`
 - CLEANUP AUTHORITY TAG: `video-cloner-canonical-cleanup-20261007`
 - RECOVERY TAG: `video-cloner-pre-hygiene-snapshot-20261007`
@@ -32,13 +32,15 @@ Deadline has already passed. Optimize for the shortest critical path to a trustw
 - Canonical regression: 116 passed; CI-equivalent core: 64 passed.
 - Resolve launcher wiring is ready and points to the canonical repository.
 - Live Resolve machine acceptance is NOT ACCEPTED.
+- P001 is BLOCKED/CLOSED: one authorized live import created/found the exact commanded target, then machine validation failed with `ValueError: target_title`.
+- Persistence, protected-state preservation, second-run/idempotency behavior, and visual acceptance remain unproven.
 - Advanced caption/font/opacity/stroke/camera/Flash/occlusion sources are indexed as deferred, not active operator paths.
 
 ## Current Constraint
 
-- MAIN BOTTLENECK: live Resolve machine acceptance.
-- WHY: until the published canonical command is proven to apply, persist, read back with correct target identity, and satisfy declared second-run behavior, downstream visual/product work rests on an untrusted execution boundary.
-- LIKELY NEXT BOTTLENECK: visual fidelity / missing deferred capabilities, determined only after P001 evidence.
+- MAIN BOTTLENECK: Resolve title readback/validation boundary.
+- WHY: the canonical live import created/found the exact target, but current machine validation stopped at `ValueError: target_title` before persistence, protected-state, idempotency, or visual acceptance could be proven.
+- NEXT TECHNICAL MOVE: UNDEFINED; only a fresh Browser Architect chat may define the next bounded Plan.
 
 ## Architecture State
 
@@ -49,27 +51,26 @@ Deadline has already passed. Optimize for the shortest critical path to a trustw
 ## Current Plan Partition
 
 - CURRENT PLAN ID: `P001_LIVE_RESOLVE_ACCEPTANCE`
-- PLAN STATUS: `READY_FOR_CODEX`
+- PLAN STATUS: `BLOCKED / CLOSED`
 - BROWSER SESSION: `BROW-P001_LIVE_RESOLVE_ACCEPTANCE` (this browser chat)
 - CODEX SESSION: `CODEX-P001_LIVE_RESOLVE_ACCEPTANCE`
-- CURRENT `plan.md`: `/plan.md`
-- CURRENT REPORT: NONE
+- ARCHIVED PLAN: `docs/plans/archive/P001_LIVE_RESOLVE_ACCEPTANCE.md`
+- CURRENT REPORT: `.project_ops/reports/P001_LIVE_RESOLVE_ACCEPTANCE/T002/REPORT.md`
+- FURTHER RESOLVE ACTION UNDER P001: NOT AUTHORIZED
 
 ## Next Plan Partition
 
 - NEXT PLAN ID: UNDEFINED
-- NEXT PLAN PURPOSE: determined only after P001 closes from evidence
-- MAY BE CREATED NOW: NO
+- NEXT PLAN PURPOSE: determined only by a fresh Browser Architect chat from the closed P001 evidence
+- MAY BE CREATED NOW: YES — fresh Browser Architect chat only
 
 ## Critical Path
 
-1. Prove controlled live Resolve apply + persistence/identity.
-2. Prove declared second-run/idempotency behavior + human visual gate.
-3. Use evidence to choose the next smallest product blocker (likely visual fidelity/deferred capability canonicalization).
-4. Prove real style transfer on clean/raw footage before claiming generalization.
-5. Only then expand adapters/content-ecosystem integrations.
+1. P001 isolated the live failure to the Resolve title readback/validation boundary.
+2. A fresh Browser Architect chat reviews the closed evidence and defines the next bounded Plan.
+3. Persistence, protected-state, idempotency, and visual acceptance remain future gates.
 
-CURRENT CRITICAL MOVE: `P001_LIVE_RESOLVE_ACCEPTANCE`
+CURRENT CRITICAL MOVE: UNDEFINED — no active Plan after P001 closure
 
 ## Dependencies / Constraints
 
@@ -93,36 +94,37 @@ CURRENT CRITICAL MOVE: `P001_LIVE_RESOLVE_ACCEPTANCE`
 - Cleanup authority tag and GitHub main establish the clean baseline.
 - Canonical E2E offline run and bounded publication passed.
 - Installed Resolve launcher/bridge hashes were verified against repository state.
-- Previous live Resolve bridge transactions were machine-unaccepted after validation.
+- P001 run `20261007T173351920Z_b031b0693f6f4c7d8f8d17c6d718ce41` called `ImportTimelineFromFile` once and created/found target `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`.
+- The matching bridge result was `BLOCKED_LIVE_ACCEPTANCE` with `ValueError: target_title`; T003 was not executed.
 
 ### INFERRED
 
-- The next highest-value test is the live boundary itself, not more repository work.
+- The most likely failure boundary is Resolve title-item readback versus the current validator's expected title representation; exact mismatch values were not recorded.
 
 ### ASSUMED
 
-- Current installed Resolve environment remains materially the same as the Step 5 launcher verification until P001 preflight proves otherwise.
+- NONE for closed P001.
 
 ### UNKNOWN
 
-- Whether the next controlled live application persists the intended target with correct readback.
-- Whether declared second-run behavior is safe/idempotent in the real Resolve environment.
-- Whether the resulting timeline is visually acceptable to the human.
+- The exact observed title value/media-path condition that triggered `target_title`.
+- Whether the created target persists across save/reopen.
+- Whether protected state remained unchanged.
+- Second-run/idempotency behavior and visual acceptance.
 
 ## Main Risks / SPOFs
 
-- Conflating timeline creation with machine acceptance or visual fidelity.
-- Mutating a protected/incorrect timeline.
-- Debugging/fixing inside an acceptance Plan and recreating patch loops.
+- Conflating the created target with machine acceptance, persistence, protected-state proof, or visual fidelity.
+- Retrying or patching the closed acceptance Plan instead of isolating root cause in a new bounded Plan.
 - Treating flattened source reconstruction as raw style-transfer proof.
 
 ## Human Action Queue
 
-P001 will require explicit Resolve Workspace execution and human visual approval. Codex must stop and request each action with exact run/target evidence.
+NONE under P001. No further Resolve action is authorized by the closed Plan.
 
 ## Latest Consequential Decision
 
 - DECISION: isolate live Resolve acceptance from repair work.
-- WHY: one clean acceptance boundary makes failures attributable; defects become a separate investigation Plan.
-- STATUS: OPEN UNTIL P001 CLOSES
+- WHY: P001 produced an attributable `target_title` failure without retrying or patching inside acceptance; root cause belongs to a new bounded Plan.
+- STATUS: VALIDATED BY P001 CLOSURE
 - DETAILS: `docs/DECISIONS.md`
