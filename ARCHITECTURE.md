@@ -24,9 +24,9 @@ For the immediate product gate, one clean/raw target must be processed through t
 
 Future editor adapters are enabled by the application boundary but are not required for P001.
 
-### Production sequencing override (2026-10-09)
+### Production sequencing override — SPEEDRUN (2026-10-09)
 
-The complete PH1 ship-acceptance criteria in §2 remain release gates, not prerequisites for PH2 caption production. The only prerequisite for PH2 is evidence that the **existing Reel #3 target** was saved once and survived one Resolve close/reopen cycle with its identity, timeline structure, protected timelines, and media inventory intact. After `P004_PERSISTENCE_UNBLOCKED`, begin PH2 caption fidelity directly; defer same-target replay/idempotency and formal full-target visual acceptance to `PRE-SHIP`. This sequencing decision does not weaken release acceptance or alter the approved architecture.
+The complete PH1 ship-acceptance criteria in §2 remain **release gates**, but they no longer block PH2 caption production. PH2 begins immediately from the retained Reel #2 GOLD and accepted caption authorities. P004 save/reopen persistence, live repository-identity proof, same-target replay/idempotency, and formal full-target acceptance are deferred to `PRE-SHIP`. This changes sequencing only; it does not weaken release acceptance or alter the approved architecture.
 
 ## 3. Current Architecture Summary
 

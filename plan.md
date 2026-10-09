@@ -1,91 +1,147 @@
-# P004 — Repository Identity and Persistence Unblock
+# P005 — PH2 Advanced TextPlus Caption Fidelity — SPEEDRUN
 
-- PLAN ID: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK`
+- PLAN ID: `P005_PH2_ADVANCED_TEXTPLUS_CAPTION_FIDELITY`
 - STATUS: **READY_FOR_CODEX**
-- CREATED: 2026-10-09 Europe/Sofia
-- PHASE: PH1 persistence checkpoint (PH2 production unblock only)
-- ARCHITECT BASELINE: `main@a102a94b34431bcc609ed5cfc4e048cfc6b3fa0a`
-- ARCHITECT DRAFT BRANCH: `architect/p004-persistence-unblock-draft`
-- PREDECESSOR: `P003_FALLBACK_PERSISTENCE_ACCEPTANCE` — BLOCKED / CLOSED. No P003 retry.
-- WORKER GATE: **OPEN FOR T002 ONLY — PREPARATION/PUBLICATION**. T001 is accepted at `da1d62833f1ec32ba40396a267640aa239ba7046`. Codex may prepare and publish exactly one fresh pending finalizer command, then STOP. Queue processing, Resolve invocation, `SaveProject`, T003/T004 and PH2 implementation are explicitly prohibited.
+- PHASE: **PH2 — FEATURE / PRODUCTION**
+- MODE: **SPEEDRUN — SHIP BY END OF WEEK**
+- BASELINE: accepted repository state containing P004 T001 + retained Reel #2 caption authorities
+- PREDECESSOR: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK` — **SUPERSEDED / PRE-SHIP DEFERRED**
+- WORKER GATE: **T001 AUTHORIZED NOW**
 
-## One observable Win Condition
+## Win Condition
 
-**`P004_PERSISTENCE_UNBLOCKED`** iff the existing Reel #3 target is saved **exactly once** through a newly attributable, evidence-bound finalizer path and survives **one** human Resolve close/reopen plus existing read-only verifier cycle unchanged. Otherwise precise `BLOCKED_*` and STOP. P004 is NOT full PH1/product/visual/idempotency acceptance.
+Produce a **real, deterministic, reviewable caption production package** from the retained Reel #2 caption baseline using the canonical Video Cloner caption pipeline — not a new caption system.
 
-## Accepted facts / bottleneck
+T001 PASS requires a real Reel #2 offline output package (FCPXML + report/evidence) in which the existing canonical caption path demonstrably reuses accepted semantic text, lifecycle, static style/position, font authority and accepted motion where evidence exists, with no dropped/duplicated caption coverage and no unrelated regression.
 
-- P002: `DIRECT_TITLE_TEXT_UNOBSERVABLE_STRUCTURALLY_VALID`, 112/112 captions structurally mapped, direct title text null, title media paths empty, fallback eligible. Do not reopen `target_title` or caption diagnosis.
-- P003 T001 offline: accepted (26 focused, 83 affected regression). T002 published one exact command. T003 failed before live-state read/save: `FileNotFoundError [WinError 2]` from bare `git` inside Resolve Python; `saves=0`, all mutation counters zero; P003 is terminal and will not be retried.
-- Both `resolve_workspace/modules/video_cloner_phase6_offline_timeline_live_application.py` and `resolve_workspace/modules/video_cloner_p003_post_reopen_verification.py` use `subprocess.run(["git", ...])`. The existing installed launcher/bridge binds repository root but does not replace HEAD/branch verification.
-- Target in `New Project 1`: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`, UID `4aaa91c0-c434-4439-a15a-92ce86e80256`; 46 timelines (45 protected), 55 media items, 8 video/1 audio clips, 112 overlays, 673 frames. Exact current timeline and protected/media signatures must match accepted P002 evidence before save.
-- Protected Reel #2 GOLD: `DcJRJtUKScu_offline_timeline_v1`, UID `4ad2a3c3-031c-464d-96aa-76a045608ad6`, DRT SHA-256 `99b11b92d55c40682f630fd4c52072e006c7e0b6494aef367bda175fb9d4af2e`.
-- Resolve is open; keep current project/target untouched until an explicitly authorized human gate.
+The fastest acceptable route wins. If the existing path already produces the package correctly, **do not modify code**.
 
-## Repository-identity mechanism: choose Route A (REUSE / ADAPT)
+## Why Now / Current Bottleneck
 
-| Route | Outcome | Decision |
-|---|---|---|
-| A. Command-bound absolute Git executable | Preparation locates canonical `git.exe`, validates that it can query the **actual target repo**, records path + SHA-256; Resolve authenticates path/hash before invoking it; old branch/HEAD checks retained | **WIN — smallest bounded repair to existing code** |
-| B. Existing runtime identity | Launcher/bridge provides resolved repository root and safe module path, but not equivalent trusted HEAD/branch verification | REJECT as insufficient alone |
-| C. Parse Git state without execution | Would require handling worktrees, gitfiles, packed refs, symbolic refs and detached HEAD correctly; no confirmed reusable equivalent | REJECT: more code/risk |
+The project tracker already marks PH2 as **Retain / Reuse / Improve** and explicitly says the Reel #2 caption lifecycle/GOLD baseline exists and must not be rebuilt.
 
-Research stop: A/B/C inspected; no external dependency/OSS scan. No architecture tree, no new general identity framework. One dedicated local helper **only if** it removes duplication across finalizer/verifier; otherwise minimal in-place changes.
+The repository already contains:
 
-### Exact safety contract for Route A
+- retained Reel #2 GOLD identity/hash evidence;
+- `config/DcJRJtUKScu.accepted_caption_motion.json`;
+- `config/DcJRJtUKScu.accepted_human_static_style_adjudication.json`;
+- `config/DcJRJtUKScu.accepted_lifecycle_end_correction.json`;
+- display/position recovery authorities;
+- Step 3C animation and Step 3D lifecycle mechanisms;
+- font inference;
+- canonical `video_cloner/captions/{textplus,lifecycle,fcpxml}.py`;
+- caption grammar and extensive focused tests.
 
-Preparation (outside Resolve) resolves the absolute actual Git executable (not a PATH string), checks a regular executable file, obtains its SHA-256, executes the expected `branch --show-current` and `rev-parse HEAD` against the exact repository root, and binds both path/hash and expected repo HEAD into the new queue command. Resolve must resolve/canonicalize that command-bound path, verify exact SHA-256 and file, disallow bare `"git"` and ambient PATH lookup, then invoke only that executable with explicit `cwd=root` and existing branch/HEAD comparisons. Fail closed before live validation/save on missing, invalid, swapped executable, missing or unexpected branch/HEAD, mismatched root, executable error or command contract mismatch. Re-verify command-bound executable identity for the later read-only verifier command. Avoid permanent machine-specific constants and do not trust an unvalidated path/hash merely because the payload supplies it.
+Therefore the bottleneck is **production caption fidelity**, not Git/persistence plumbing.
 
-## Scope and complexity budget
+## Speedrun Rules
 
-IN: one bounded Git discovery/identity repair to **both** identity callers; command preparation binding; minimal focused tests; unchanged accepted P003 fallback/save semantics; one fresh finalizer command/live save attempt; one read-only reopen verifier command/cycle; P004 task reports/evidence.
+1. **REUSE > ADAPT > SMALL FIX. Never rebuild captions.**
+2. No OSS scan, architecture redesign, Git identity work, persistence work, cleanup, refactor or generic framework work before the caption preview exists.
+3. No source change unless a concrete observed gap blocks the T001 production package or an accepted caption authority from being applied.
+4. Any code change must be the smallest canonical fix and remain generic — no production logic branching on Reel ID, literal caption text, or human-choice IDs.
+5. Unknown visual properties remain unknown; do not invent fidelity.
+6. Existing working caption behavior/regression must remain green.
 
-OUT: PH2 implementation, caption/font/animation code, `target_title` reopening, strict-validator weakening, same-target replay, idempotency acceptance, full human visual acceptance, PH1 ship certification, dataset work, broad research, dependencies, queue redesign, unrelated hardening, architecture expansion, new launcher/bridge changes.
+## T001 — Build the Caption Production Preview Package — AUTHORIZED
 
-HARD CAP: **one mechanism decision; one implementation patch; one focused offline test batch plus affected regression; one newly attributable save attempt; one close/reopen verifier cycle.** No P004A/B/C, extra diagnostic Plans, auto retries, or broad acceptance ceremony. Any evidence of destructive mutation is an immediate stop.
+### Action
 
-## Tasks — strict serial gates
+Run the existing canonical caption pipeline on the real retained Reel #2 evidence and generate a production-ready offline caption/FCPXML package suitable for the next live visual preview.
 
-### T001 — Offline repository identity repair
-- STATUS: **PASS / ACCEPTED — OFFLINE** — commit `da1d62833f1ec32ba40396a267640aa239ba7046`
-- Allowed implementation: `resolve_workspace/modules/video_cloner_phase6_offline_timeline_live_application.py`, `resolve_workspace/modules/video_cloner_p003_post_reopen_verification.py`, minimum corresponding `tests/test_video_cloner_p003_fallback_persistence_acceptance.py` (and at most one tiny reused helper if strictly required). Command-preparation changes only if an existing prep utility is demonstrably the correct owner; otherwise bind via T002 bounded preparation procedure.
-- Scope: replace bare Git calls in both modules with authenticated command-bound `git.exe`; keep repository-root/HEAD/branch validation unchanged. Preserve P003 fixed evidence/hash/fallback, `SaveProject` guard, verifier read-only surface, protected/current/media comparison.
-- Tests: correct signed command-bound executable; missing/path-only/hash mismatch/swapped binary/bad exit/non-main/wrong HEAD/wrong root rejected **before SaveProject**; finalizer save once only on accepted baseline; verifier zero mutation and identity proof. Mock Git process: offline tests must never launch Resolve or save real project.
-- Verify: targeted P003 test + affected P002/Phase6/bridge/prep regression; `git diff --check`; verify only allowed files changed and no launcher/bridge/public API import contract drift.
-- Required report: `.project_ops/reports/P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK/T001/REPORT.md`.
-- **STOP** for Architect review. No command publication or live action.
+First inspect/reuse, in this order:
 
-### T002 — Prepare one fresh attributable command
-- STATUS: **AUTHORIZED — PREPARATION/PUBLICATION ONLY**
-- Only after separate T001 approval. Require clean/explained tree, exact committed repair SHA, executable absolute path/hash authenticated from preparation environment, fresh command/run ID (never P003 run `20261008T120754374Z_11c3411415444aa2a83b816bf7bacb88`), accepted P001/P002 identities/hashes, frozen runtime identities, and empty pending/running queue.
-- Bind exact command-root, expected repository HEAD and authenticated Git path/hash; bind updated finalizer module SHA and expected project/target/UID/evidence. Only `save_once` and `save_project` true; all other mutation flags false; `retry_permitted=false`.
-- Publish **exactly one** pending finalizer command. No Resolve invocation. Report `.../T002/REPORT.md`.
-- **STOP** before human action.
+- `video_cloner/captions/textplus.py`
+- `video_cloner/captions/lifecycle.py`
+- `video_cloner/captions/fcpxml.py`
+- `video_cloner/caption_grammar.py`
+- existing canonical Resolve/FCPXML compiler surfaces
+- retained `DcJRJtUKScu` accepted config authorities
+- existing Step 3C/3D mechanisms only where already consumed by the canonical path
 
-### T003 — One live finalizer invocation
-- STATUS: **NOT_STARTED / NOT_AUTHORIZED**
-- Only after T002 review/explicit human gate: human executes `Resolve → Workspace → Scripts → VC_Run_Agent_Task` **once**.
-- Finalizer authenticates executable, repository HEAD/branch and exact command, project/target UID, P001/P002 evidence, 112 caption structures, full P002 live target/current/protected/media baseline, and only then calls `SaveProject` exactly once. Verify immediate post-save state; all other mutation counters zero.
-- Report `.../T003/REPORT.md`, including command/run/status/report/log SHA-256 and pre/post signatures. **NO RETRY**. If PASS, proceed to T004; otherwise terminal STOP.
+Do not create a parallel caption engine.
 
-### T004 — One close/reopen persistence cycle
-- STATUS: **NOT_STARTED / NOT_AUTHORIZED**
-- Only after T003 PASS: prepare one new attributable **read-only** verifier command using the existing post-reopen verifier and the same authenticated executable identity contract, with all mutation permissions false. Require pending/running queue empty before one publication.
-- Human closes Resolve once **without extra manual save**, reopens Resolve/project and runs `VC_Run_Agent_Task` exactly once for the read-only verifier. If save/discard prompt appears, cancel and report; do not silently choose Save/Discard.
-- Require saved target name/UID, signature, 8+1 clips, 112 overlays/geometry, 673 frames, empty title media paths, 46 timeline/45 protected signatures including Reel #2 GOLD, 55 media items and expected artifact/provenance identities unchanged; read-only mutation counters zero. Current timeline selection difference after reopen must be recorded separately, never hide content drift.
-- Report `.../T004/REPORT.md`; PASS → `P004_PERSISTENCE_UNBLOCKED`. Exact mismatches → precise BLOCKED / STOP. No second verifier or persistence cycle.
+### Fidelity that must be represented when source authority exists
 
-## Kill criteria / fallback (non-negotiable)
+- semantic/display text authority;
+- exact caption source coverage and ordering;
+- lifecycle/timing, including accepted lifecycle corrections;
+- font family/style/weight authority;
+- size and position/anchor;
+- fill / gradient / opacity where accepted;
+- stroke/shadow where supported by retained authority;
+- multiline/layout behavior when existing authority supplies it;
+- accepted scale/slide/motion keyframes where explicitly supported;
+- static captions remain static when motion evidence is absent/ambiguous.
 
-1. Any baseline semantic contradiction, target/UID mismatch, structural corruption, protected/current/media inventory mutation, missing target, unexpected SaveProject behavior or reopen persistence drift → **BLOCKED_PRODUCT_CORRECTNESS**, stop PH2 and preserve all evidence/state. Never improvise repair.
-2. On a second non-product environment/tooling failure **before SaveProject** during the **single new T003 live attempt** → terminal `BLOCKED_ENVIRONMENT`, no automatic P005 repair. Present human exactly: **A** controlled manual Resolve save plus close/reopen checkpoint (default recommendation when no product correctness risk), or **B** authorize one additional targeted automation repair. Manual checkpoint is production continuity only, never automated acceptance. Do not claim persistence proven without actual readback evidence.
-3. Any ambiguous queue/run attribution, unexpected command count, git path/hash/HEAD failure, save/discard prompt, unauthorized mutation, needed second attempt or broader mechanism change → STOP. Preserve original P003 failed run and evidence; never reuse/retry it.
-4. After first live invocation, **zero** P004 repair/retry. No automatic new Plan.
+### Allowed implementation surface if — and only if — a real gap is found
 
-## Completion and next Plan
+Prefer no edits. If required, edits are limited to the smallest relevant canonical caption/compiler files and directly corresponding tests:
 
-Success is `P004_PERSISTENCE_UNBLOCKED`, **not `PH1_ACCEPTED`**. Close/archive P004 and immediately begin **P005 / PH2_ADVANCED_TEXTPLUS_CAPTION_FIDELITY** (or conventionally equivalent) with actual caption production: REUSE Reel #2 human-cleaned GOLD `DcJRJtUKScu` and retained Step 3C/3D caption lifecycle → ADAPT → MEASURE → IMPROVE → HUMAN REVIEW. Focus font family/weight/size, stroke, opacity, positioning, multiline layout, entry/hold/exit lifecycle, scale/movement/easing/timing, archetype consistency.
+- `video_cloner/captions/textplus.py`
+- `video_cloner/captions/lifecycle.py`
+- `video_cloner/captions/fcpxml.py`
+- `video_cloner/caption_grammar.py`
+- `video_cloner/resolve/fcpxml.py` only if the observed gap is in canonical title/FCPXML emission
+- directly relevant caption tests only
 
-PRE-SHIP deferred gates — REQUIRED before release, **not before PH2**: same-target second-run/idempotency, formal target-level human visual APPROVE/REJECT, remainder of PH1/full product certification. Do not insert another acceptance Plan between successful P004 and PH2.
+If fixing the observed gap requires broader architecture/public API/dependency changes: STOP and report the exact blocker. Do not broaden scope.
 
-Architect authorization gate: P004 is `READY_FOR_CODEX`; T001 is accepted and authorization is strictly limited to T002 preparation/publication. Codex may publish exactly one fresh pending finalizer command and must STOP after the T002 report for Browser Architect review. No queue processing, Resolve invocation, `SaveProject`, T003/T004, PH2 implementation, or live/project mutation is authorized.
+### Required production evidence
+
+Produce one T001 report plus the actual generated caption/FCPXML artifact(s). The report must state:
+
+- exact real input authorities used;
+- output paths/hashes;
+- caption/source coverage counts;
+- lifecycle authority counts;
+- style/font authority counts;
+- animated vs static caption counts;
+- unresolved properties honestly retained as unresolved;
+- focused tests/regression run;
+- code files changed, if any;
+- whether the package is ready for one Resolve visual preview.
+
+### Acceptance
+
+T001 is accepted when:
+
+- a real Reel #2 caption package is generated successfully;
+- semantic source coverage is exact — no dropped, duplicated or reordered source cues;
+- generated timing/lane structure validates;
+- retained accepted static style/font/position authorities are consumed where applicable;
+- accepted motion/lifecycle authorities are consumed where applicable;
+- ambiguity fails closed rather than fabricating style/motion;
+- relevant tests pass;
+- no Git/persistence/PH1 plumbing work is performed.
+
+Then STOP for a **visual-production gate**, not another architecture review.
+
+## T002 — One Resolve Caption Preview + Human Review — NOT YET AUTHORIZED
+
+Import/apply the T001 caption package once through the existing safe mechanism and obtain human APPROVE/REJECT on caption fidelity. Review only visually material dimensions: font, weight, size, stroke, opacity/fill, position, multiline layout, lifecycle timing and motion/easing.
+
+## T003 — One Bounded Fidelity Repair — CONDITIONAL
+
+Only if T002 is REJECT: fix the highest-value visible caption deltas in one bounded iteration, regenerate, and re-review. No endless per-caption patch loop.
+
+If T002 is APPROVE, skip T003 and freeze PH2 caption baseline.
+
+## PRE-SHIP DEFERRED — NOT CURRENT WORK
+
+Before final product release, we still owe:
+
+- P004 save/reopen persistence proof;
+- repository identity live proof;
+- same-target second-run/idempotency acceptance;
+- final full-target human acceptance / ship certification.
+
+These do **not** block caption production now.
+
+## STOP / KILL RULES
+
+- Do not reopen P004 while working P005.
+- Do not create a new caption subsystem.
+- Do not research tools/libraries unless direct evidence proves the retained stack cannot achieve the required caption result.
+- Do not spend a task on Git hygiene/tracker synchronization/process cleanup.
+- If a task does not make the visible caption output better or directly enable its production preview, it is not on the Critical Path.

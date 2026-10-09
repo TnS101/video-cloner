@@ -106,3 +106,14 @@ Only decisions that materially constrain future work belong here.
 - SEQUENCING: P004 success proves one attributable save plus one close/reopen persistence readback for current Reel #3. Then PH2 caption production begins immediately, without full PH1 acceptance as an intermediate gate. Same-target replay/idempotency, formal full-target visual APPROVE/REJECT, and remaining PH1/ship checks become mandatory PRE-SHIP deferred work.
 - HARD LIMIT: one identity mechanism decision, one bounded patch, one focused offline verification batch, one newly attributable save attempt, one close/reopen persistence verification; no P004 subdivisions or retries. On another pre-save environment/tooling failure, stop and present manual controlled save/reopen versus one authorized targeted automation repair; default manual unless product correctness risk. On actual target/protected/media corruption or persistence drift, stop PH2.
 - PRESERVE: P003 terminal failure is closed, never retried. Existing semantic/provenance fallback, strict validation behavior, target UID, protected Reel #2 GOLD, queue/bridge/launcher, and all blocked mutation authorities remain untouched.
+
+
+## D013 — Speedrun: PH2 caption production starts now; persistence moves to PRE-SHIP
+
+- DATE: 2026-10-09
+- PLAN: `P005_PH2_ADVANCED_TEXTPLUS_CAPTION_FIDELITY`
+- STATUS: APPROVED / ACTIVE
+- DECISION: supersede P004 as the current Critical Path and defer its remaining save/reopen + live repository-identity proof to PRE-SHIP. Start PH2 caption production immediately from the retained Reel #2 GOLD/accepted caption authorities.
+- WHY: the end-of-week ship deadline makes visible feature output the binding constraint. The tracker explicitly defines PH2 as Retain / Reuse / Improve and says not to rebuild the retained Reel #2 caption baseline. P004 T002 published nothing, so deferral creates no ambiguous live state.
+- PRESERVE: P004 T001 accepted repair remains in source; full persistence/idempotency/final human acceptance remain mandatory before release.
+- SPEEDRUN RULE: no further Git/persistence ceremony while it does not block caption feature production.
