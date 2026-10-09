@@ -4,8 +4,10 @@
 
 - REAL OBJECTIVE: ship a usable Video Cloner by end of week.
 - ACTIVE PRODUCTION REEL: `DZatr0EJt4B` (Reel #3).
-- ACTIVE RESOLVE TARGET: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`.
-- TARGET UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`.
+- PRIOR RESOLVE TARGET (pre-reinstall): `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`.
+- PRIOR TARGET UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`.
+- CURRENT PRODUCTION TARGET: **TO BE RECONSTRUCTED** after Resolve reinstall; do not assume the prior UID survives.
+- RECONSTRUCTION AUTHORITY: `data/DZatr0EJt4B/davinci/DZatr0EJt4B_mvp_timeline.fcpxml` (accepted 112-caption baseline).
 - PRIORITY: production-value work only.
 - **NEW HARD DIRECTIVE: OSS-FIRST / PROVEN-CODE-FIRST.**
 - Before custom-building any material mechanism, Video Cloner must search/audit/test existing proven code and prefer `REUSE > ADAPT > COMBINE > BUILD`.
@@ -27,7 +29,7 @@ Analyze a reference Reel and reproduce the core/basic principles of that editor'
 
 ### Preserved working baseline
 - Reel #3 offline analysis/planning exists.
-- Reel #3 target timeline exists.
+- The pre-reinstall Reel #3 Resolve project/timeline is not currently available in the new Project Library; the accepted Reel #3 baseline remains reconstructible from the stored MVP FCPXML.
 - Basic captions remain the accepted baseline.
 - Existing cuts/shot structure remain preserved.
 - Caption animation detection plan exists:
@@ -47,24 +49,25 @@ Analyze a reference Reel and reproduce the core/basic principles of that editor'
 Not "how do we invent another caption carrier?"
 
 The bottleneck is now:
-**integrate the already-proven external Resolve Text+ placement mechanism into Video Cloner and return to visible Reel #3 progress.**
+**reconstruct the accepted Reel #3 baseline in the new Resolve 21.0.4.5 Free environment, then apply the already-proven nested Text+ mechanism to visible Reel #3 caption animation.**
 
 ## Current Stage
 
 - STAGE ID: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
-- STATUS: `READY`
-- CURRENT MOVE: reproduce `davinci-resolve-mcp` nested-timeline Text+ live workaround on a disposable timeline, then adapt it to Reel #3.
+- STATUS: `ACTIVE`
+- CURRENT MOVE: OSS-001 is PASS; reconstruct the accepted Reel #3 baseline, then execute OSS-002 using the proven nested Text+ route.
 - RESEARCH AUTHORITY: `docs/research/OSS_PROVEN_CODE_RESEARCH_20261009.md`
 
 ## Current OSS Work Unit
 
 - QUEUE: `docs/research/OSS_ADOPTION_QUEUE.md`
-- ACTIVE UNIT: `OSS-001`
-- LAYER: Resolve editable Text+ placement / caption carrier
-- PRIMARY OSS: `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5`
-- CURRENT ACTION: reproduce its live-tested nested-timeline Text+ route on disposable timelines.
-- DONE WHEN: exact track/start/duration and inner editable Text+ readback pass on this Resolve runtime.
-- NEXT UNIT AFTER PASS: `OSS-002` — apply the proven carrier to Reel #3 advanced caption animation.
+- ACTIVE UNIT: `OSS-002`
+- LAYER: Advanced caption animation on Reel #3
+- PROVEN CARRIER: `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5` nested-timeline Text+ route
+- OSS-001 EVIDENCE: PASS on official DaVinci Resolve Free `21.0.4.5`, run `20261009T163045758Z_1e449e5f407e4301ade1a95de239daf4`
+- CURRENT ACTION: reconstruct Reel #3 from the accepted MVP FCPXML, establish the new target identity, then apply one visually reviewed animated caption using the proven carrier.
+- DONE WHEN: one Reel #3 advanced caption animation is placed through the proven nested-timeline route and human visual review accepts it.
+- NEXT UNIT AFTER PASS: `OSS-003` — transitions.
 
 ## Current Proven Route
 
@@ -97,7 +100,7 @@ These do not outrank current visible production work.
 
 ## Human Action
 
-None until Codex prepares one disposable OSS compatibility command requiring Resolve.
+Reconstruct the Reel #3 accepted baseline in Resolve from `DZatr0EJt4B_mvp_timeline.fcpxml` if the pre-reinstall project cannot be recovered; then allow Codex to bind the new timeline identity before OSS-002 live mutation.
 
 ## Anti-loop Kill Rule
 

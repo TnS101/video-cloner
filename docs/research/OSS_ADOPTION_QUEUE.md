@@ -4,7 +4,7 @@
 - POLICY: `REUSE > ADAPT > COMBINE > BUILD`
 - HUMAN AUTHORITY: the human may reorder this queue at any time.
 - RULE: exactly **one** OSS work unit is `ACTIVE` at a time.
-- CURRENT UNIT: `OSS-001`
+- CURRENT UNIT: `OSS-002`
 - ACTIVE REEL FOR PRODUCTION INTEGRATION: `DZatr0EJt4B`
 - RESEARCH BASELINE: `docs/research/OSS_PROVEN_CODE_RESEARCH_20261009.md`
 
@@ -18,8 +18,8 @@ A work unit changes status only at a meaningful compatibility/integration bounda
 
 | ID | Layer / Capability | Primary Proven Route | Backup / Secondary | Immediate Product Outcome | Status | BUILD Gate |
 |---|---|---|---|---|---|---|
-| OSS-001 | Resolve editable Text+ placement / caption carrier | `samuelgursky/davinci-resolve-mcp@94c7a885...` nested-timeline Text+ | `mhadifilms/dvr`, `pydavinci` | Stable editable Text+ can be placed at exact track/start/duration in Resolve | **ACTIVE** | Only if proven nested-timeline route and next proven wrapper route fail exact compatibility |
-| OSS-002 | Advanced caption animation on Reel #3 | proven Text+ carrier from OSS-001 + existing VC detection; HyperFrames as animation/reference benchmark | ghost-editor recipes; Remotion only if license approved | Apply preserved 16-caption plan: 10 scale + 6 slide, visually accepted | QUEUED | Only if proven Text+/animation route cannot express required motion |
+| OSS-001 | Resolve editable Text+ placement / caption carrier | `samuelgursky/davinci-resolve-mcp@94c7a885...` nested-timeline Text+ | `mhadifilms/dvr`, `pydavinci` | Stable editable Text+ can be placed at exact track/start/duration in Resolve | **PASS / INTEGRATED** | Only if proven nested-timeline route and next proven wrapper route fail exact compatibility |
+| OSS-002 | Advanced caption animation on Reel #3 | proven Text+ carrier from OSS-001 + existing VC detection; HyperFrames as animation/reference benchmark | ghost-editor recipes; Remotion only if license approved | Reconstruct accepted Reel #3 baseline, then apply preserved 16-caption plan: 10 scale + 6 slide, visually accepted | **ACTIVE** | Only if proven Text+/animation route cannot express required motion |
 | OSS-003 | Transitions | Resolve MCP verified API/workaround ledger + HyperFrames transition catalog/runtime | OpenChatCut reference; Remotion license-gated | Source-backed Reel #3 transitions become executable/editable | QUEUED | Only after proven routes fail named transition family |
 | OSS-004 | Core motion / VFX | HyperFrames for animation/synthetic truth + Resolve MCP for editor application | OpenCV; RAFT/GMFlow when optical-flow evidence is required | Highest-ROI Reel #3 motion/VFX family becomes executable (blur/whip/zoom/etc. based on source evidence) | QUEUED | Only after relevant proven mechanism fails on measured Reel #3 gap |
 | OSS-005 | Speed ramps / retiming | Resolve MCP capability ledger / known DRT-OTIO route where public API is insufficient; HyperFrames speed-ramp reference | auto-editor effects | Source-backed speed ramps can be represented and reproduced | QUEUED | Only after verified Resolve/existing route cannot meet retime requirement |
@@ -80,25 +80,49 @@ When an ACTIVE unit finishes:
 
 Do not create a new custom mechanism unless the unit's BUILD Gate is satisfied.
 
-## Current work unit — OSS-001
+## Completed work unit — OSS-001
 
 ### Source
 `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5`
 
-### Exact upstream mechanism
-`tests/live_workaround_verification.py::case_nested_title`
+### Result
+**PASS / INTEGRATED** on official DaVinci Resolve Free `21.0.4.5`.
 
-Nested timeline:
-- create source timeline;
-- `InsertFusionTitleIntoTimeline("Text+")`;
-- configure Text+;
-- get source timeline `MediaPoolItem`;
-- use `MediaPool.AppendToTimeline` with exact `trackIndex`, `recordFrame`, `startFrame`, `endFrame`;
-- verify track/start/duration;
-- reopen inner timeline and verify Text+ remains editable.
+Live run:
+`20261009T163045758Z_1e449e5f407e4301ade1a95de239daf4`
 
-### DONE
-Disposable compatibility test passes on this Resolve runtime.
+Verified:
+- native Text+ insertion;
+- source timeline MediaPoolItem;
+- exact nested placement on V3;
+- exact record frame `86500` from target start `86400`;
+- exact 90-frame duration with exclusive end semantics;
+- `MediaPoolItem.GetTimeline()` reach-back;
+- post-placement StyledText edit/readback;
+- cleanup of both disposable timelines;
+- Reel #3 untouched.
+
+No further carrier compatibility experiments are justified.
+
+## Current work unit — OSS-002
+
+### Objective
+Use the proven OSS-001 carrier for advanced caption animation on Reel #3.
+
+### Production prerequisite
+The old Resolve project/timeline is unavailable after reinstall. Reconstruct the accepted baseline from:
+
+`data/DZatr0EJt4B/davinci/DZatr0EJt4B_mvp_timeline.fcpxml`
+
+This stored MVP baseline contains the accepted 112-caption structure. After import, record the NEW project/timeline identity; never reuse the pre-reinstall UID by assumption.
+
+### First visible gate
+Apply one source-supported caption animation through the proven nested-timeline carrier, then require human visual acceptance before rolling out the remaining selected captions.
+
+### Preserved rollout plan
+- 16 selected captions
+- 10 scale
+- 6 slide
 
 ### Next
-OSS-002 immediately uses this carrier on Reel #3, first one caption, then the preserved 16-caption animation plan.
+After Reel #3 caption animation is accepted, move to `OSS-003` transitions.

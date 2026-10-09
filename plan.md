@@ -5,8 +5,8 @@
 - STATUS: `READY`
 - MODE: `PRODUCTION`
 - ACTIVE REEL AFTER DISPOSABLE SPIKES: `DZatr0EJt4B`
-- ACTIVE TARGET: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`
-- TARGET UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`
+- PRIOR TARGET: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B` (pre-reinstall; unavailable)
+- CURRENT TARGET: reconstruct accepted Reel #3 baseline from `data/DZatr0EJt4B/davinci/DZatr0EJt4B_mvp_timeline.fcpxml`, then record new identity
 - HUMAN DIRECTIVE: **OSS-FIRST IS MANDATORY**
 - DEFAULT RISK: `R1`, with R2 only for live Resolve compatibility/visual checks
 
@@ -42,10 +42,10 @@ Canonical sequential adoption queue:
 Exactly one OSS work unit may be `ACTIVE` at a time.
 
 Current:
-- `OSS-001` — Resolve editable Text+ placement via `davinci-resolve-mcp`.
+- `OSS-002` — advanced Reel #3 caption animation using the proven `davinci-resolve-mcp` carrier.
 
-Next after PASS:
-- `OSS-002` — advanced Reel #3 caption animation using the proven carrier.
+Completed:
+- `OSS-001` — PASS on official Resolve Free 21.0.4.5 with exact track/start/duration + editable inner Text+ readback.
 - `OSS-003` — transitions.
 - `OSS-004` — core motion/VFX.
 - `OSS-005` — speed ramps/retiming.
@@ -88,8 +88,8 @@ Stars alone are not proof.
 | Step | Risk | Result | Done When | Status |
 |---|---|---|---|---|
 | 1 | R1 | Freeze custom routes + pin research decisions | Research artifact + candidate pins/licenses/decisions exist | DONE |
-| 2 | R1/R2 | Reproduce proven nested-timeline Text+ route on disposable timeline | Exact track/start/duration + editable inner Text+ readback pass on user's Resolve | ACTIVE |
-| 3 | R1/R2 | Adapt nested Text+ route for one Reel #3 `sub_008` animated caption | Visual caption/style/timing/animation match accepted; no unrelated mutation | TODO |
+| 2 | R1/R2 | Reproduce proven nested-timeline Text+ route on disposable timeline | Exact track/start/duration + editable inner Text+ readback pass on user's Resolve | DONE — PASS on Free 21.0.4.5 |
+| 3 | R1/R2 | Reconstruct accepted Reel #3 baseline, bind new target identity, then adapt nested Text+ route for one Reel #3 animated caption | Visual caption/style/timing/animation match accepted; no unrelated mutation | ACTIVE |
 | 4 | R1/R2 | Roll out the already-selected 16 Reel #3 animations | 10 scale + 6 slide applied via proven route and human-reviewed | TODO |
 | 5 | R1 | Proven-code capability map for transitions/motion | Each Reel #3 gap mapped to proven route before code | TODO |
 | 6 | R1/R2 | Integrate next highest-ROI proven transition/motion route | Visible Reel #3 improvement from proven implementation | TODO |
