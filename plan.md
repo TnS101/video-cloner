@@ -1,165 +1,178 @@
-# plan.md — S006 Reel #3 Core Style Reproduction
+# plan.md — S007 OSS-First Proven-Code Integration
 
-- STAGE ID: `S006_REEL3_CORE_STYLE_REPRODUCTION`
-- STAGE NAME: Reel #3 advanced captions + transitions + core motion/VFX
+- STAGE ID: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
+- STAGE NAME: Replace custom wheel-reinvention with proven OSS mechanisms
 - STATUS: `READY`
 - MODE: `PRODUCTION`
-- ACTIVE REEL: `DZatr0EJt4B`
+- ACTIVE REEL AFTER DISPOSABLE SPIKES: `DZatr0EJt4B`
 - ACTIVE TARGET: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`
 - TARGET UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`
-- DEFAULT RISK: `R1`
-- DEFAULT REPAIR BUDGET: 3 focused repair cycles per step
-
-> This is one meaningful production stage. Do not create a new Plan/session after each test failure, visual correction, or local repair.
+- HUMAN DIRECTIVE: **OSS-FIRST IS MANDATORY**
+- DEFAULT RISK: `R1`, with R2 only for live Resolve compatibility/visual checks
 
 ## 1. Human-Set Outcome
 
-Reel #3 should have a credible baseline reproduction of the editor's core style:
+Ship Video Cloner by end of week using proven mechanisms instead of continuing custom API experiments.
 
-- existing basic captions preserved;
-- source-supported advanced caption animation applied;
-- cuts preserved;
-- supported transitions applied;
-- at least the highest-value source-backed core motion/VFX behavior applied;
-- integrated result ready for human judgment.
+Before Video Cloner custom-builds any material mechanism, it MUST:
+1. identify the best proven OSS/existing implementation;
+2. verify license/maintenance/evidence;
+3. run a bounded compatibility test;
+4. REUSE / ADAPT / COMBINE when viable;
+5. BUILD only after the proven route fails a named requirement.
 
-After this baseline, the next stage is the human-mandated OSS research/reuse expansion layer.
+## 2. Immediate reason for this Stage
 
-## 2. Production Value
+The custom caption-animation carrier path entered an agentic repair loop:
+- custom carrier assumptions;
+- native crashes;
+- item rediscovery bug;
+- structural identity mismatch;
+- repeated canaries without visible Reel #3 progress.
 
-- WIN CONDITION CONTRIBUTION: converts existing analysis/Resolve infrastructure into source-visible editing behavior.
-- CURRENT BOTTLENECK: advanced caption animation on Reel #3.
-- WHY NOW: basic captions and cuts already exist; animation is the closest missing visible style layer.
-- KILL TEST: if a proposed task does not improve Reel #3 visible fidelity or directly enable the next visual preview, it is not on this stage's Critical Path.
+Meanwhile, `samuelgursky/davinci-resolve-mcp` already contains a live-tested MIT nested-timeline Text+ route that directly solves exact track/frame/duration placement while preserving editable Text+.
 
-## 3. Accepted Baseline / Preserve
+Therefore custom caption carrier development is frozen.
 
-Preserve:
+## 3. Proven-code authority
 
-- active Reel #3 only;
-- existing target timeline + UID;
-- 112/112 existing Text+ overlay baseline;
-- caption Rich Text, timing, font, static style and unaffected position;
-- existing cuts/shot structure unless direct regression evidence appears;
-- canonical public pipeline/CLI;
-- Resolve queue/bridge boundary;
-- protected historical/GOLD fixtures.
+Research artifact:
+`docs/research/OSS_PROVEN_CODE_RESEARCH_20261009.md`
 
-Do not regenerate basic captions.
+Priority evidence tiers:
+- `PROVEN_A`: live-tested exact-runtime mechanism OR mature active library with strong tests/benchmarks.
+- `PROVEN_B`: credible implementation/tests/demos but less exact proof.
+- `REFERENCE_ONLY`: weak adoption/license/proof; do not copy blindly.
 
-## 4. IN Scope
+Stars alone are not proof.
 
-- generic command-bound Reel #3 caption animation plan/application;
-- persistent Text+ animation mechanisms already proven by project history;
-- human visual review and bounded fidelity repair;
-- existing transition detection/authority/application on Reel #3;
-- highest-value source-backed core motion/VFX family for Reel #3;
-- focused tests/reproduction directly needed for those outputs.
+## 4. IN scope
 
-## 5. OUT of Scope
+- vendor/adapt minimal proven OSS mechanisms with license attribution;
+- bounded compatibility tests on disposable Resolve timelines/projects;
+- replace custom caption carrier with `davinci-resolve-mcp` nested-timeline Text+ route;
+- audit existing VC cuts/timing/transitions/motion against proven OSS before future custom work;
+- use real visual/output evidence to choose next integration;
+- preserve existing Reel #3 analysis and 16-caption animation detection plan.
 
+## 5. OUT of scope
+
+- more custom caption-carrier designs before the nested-timeline route is tested;
+- more ordinal/geometry/name-matching canaries;
+- rebuilding basic captions;
 - Reel #2 production;
-- basic caption rebuild;
-- persistence/Git certification until pre-ship;
-- generic architecture rewrite;
-- broad refactor/cleanup;
-- speculative VFX not evidenced in Reel #3;
-- broader ecosystem/OSS expansion before this basic style baseline is working.
+- architecture rewrite;
+- broad dependency migration unrelated to current Win Condition;
+- copying AGPL/custom-license/no-license code without an explicit licensing decision.
 
-## 6. Worker Autonomy
+## 6. Stage Steps
 
-Codex MAY:
+| Step | Risk | Result | Done When | Status |
+|---|---|---|---|---|
+| 1 | R1 | Freeze custom routes + pin research decisions | Research artifact + candidate pins/licenses/decisions exist | DONE |
+| 2 | R1/R2 | Reproduce proven nested-timeline Text+ route on disposable timeline | Exact track/start/duration + editable inner Text+ readback pass on user's Resolve | ACTIVE |
+| 3 | R1/R2 | Adapt nested Text+ route for one Reel #3 `sub_008` animated caption | Visual caption/style/timing/animation match accepted; no unrelated mutation | TODO |
+| 4 | R1/R2 | Roll out the already-selected 16 Reel #3 animations | 10 scale + 6 slide applied via proven route and human-reviewed | TODO |
+| 5 | R1 | Proven-code capability map for transitions/motion | Each Reel #3 gap mapped to proven route before code | TODO |
+| 6 | R1/R2 | Integrate next highest-ROI proven transition/motion route | Visible Reel #3 improvement from proven implementation | TODO |
+| 7 | R2 | Integrated Reel #3 core-style review | Human accepts basic style baseline | TODO |
 
-- choose normal implementation details;
-- inspect Reel #3 data/evidence;
-- modify directly relevant caption/transition/motion application code and focused tests;
-- perform up to 3 focused repair cycles per step;
-- fix directly blocking adjacent defects inside this stage boundary;
-- continue to the next R1 step without a new Browser/Codex session.
+Cuts remain preserved unless a real benchmark failure appears.
 
-Codex MUST escalate for:
+## 7. Step 2 — exact current task
 
-- active Reel/target/objective change;
-- architecture boundary change;
-- material new dependency;
-- destructive/live Resolve action requiring human approval;
-- conflicting unowned tracked changes overlapping needed files;
-- exhausted repair budget.
+Use pinned source:
+`samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5`
 
-## 7. Stage Steps
+Primary reference:
+`tests/live_workaround_verification.py::case_nested_title`
 
-| Step | Risk | Production Result | Done When | Human Gate | Status |
-|---|---|---|---|---|---|
-| 1 | R1 | Generic Reel #3 advanced caption-animation payload + adapter | legacy Reel #1 hardcoding/count assumptions removed from execution path; source-supported Reel #3 animations prepared; focused tests pass | NO | ACTIVE |
-| 2 | R2 | Apply animations once to existing Reel #3 target | existing target receives only authorized animation mutations; human watches and returns visible deltas | YES | TODO |
-| 3 | R1/R2 | Reel #3 transitions | supported source-backed transitions are applied via existing mechanism and visually reviewed | YES | TODO |
-| 4 | R1/R2 | Core motion/VFX | highest-value real Reel #3 effect family (e.g. ramp/zoom/whip/other evidence-backed winner) is executable and reviewed | YES | TODO |
-| 5 | R2 | Integrated Reel #3 visual acceptance | human confirms the basic components behave credibly enough to freeze this baseline | YES | TODO |
+Mechanism:
+1. Create disposable source timeline.
+2. `InsertFusionTitleIntoTimeline("Text+")`.
+3. Configure Text+ in source timeline.
+4. `source_timeline.GetMediaPoolItem()`.
+5. Create disposable target timeline with multiple video tracks.
+6. Place source-timeline media item with `MediaPool.AppendToTimeline` using:
+   - `trackIndex`
+   - `recordFrame`
+   - `startFrame`
+   - `endFrame` (exclusive)
+7. Verify exact track/start/duration.
+8. Reach inner timeline with `placedItem.GetMediaPoolItem().GetTimeline()`.
+9. Verify Text+ remains editable and Fusion comp/tool remains reachable.
 
-Cuts are already baseline behavior; do not create a separate cut-rebuild step unless a regression is observed.
+Do not touch Reel #3 during Step 2.
 
-## 8. Caption Animation Step 1 — immediate work
+### Attribution
+If code is copied/adapted, preserve MIT notice and record source path + pinned commit.
 
-Reuse existing mechanisms, especially:
+## 8. Step 2 kill criteria
 
-- `scripts/davinci/caption_animation_step_3C.py`
-- `resolve_workspace/resolve_apply_caption_animation_step_3C.py`
-- `tests/test_step4b_resolve_caption_animation_adapter.py`
-- existing Reel #3 analysis/grammar/motion artifacts.
+PASS:
+- mechanism works on user's Resolve in disposable state.
 
-Required behavior:
+FAIL:
+- exact documented mechanism cannot work on current runtime after one bounded adaptation.
 
-- remove Reel #1-specific execution assumptions such as fixed `DZsqH7auhjt` / fixed 116-caption contract;
-- bind video ID, target timeline, target UID, animation plan and expected caption identity/count through generic runtime/command inputs;
-- accept the existing Reel #3 112-overlay baseline;
-- preserve caption text/timing/static style;
-- animate only source-supported events;
-- static/ambiguous captions remain untouched;
-- reuse persistent Fusion mechanisms (e.g. Size -> BezierSpline, Center -> Path) where already proven;
-- prepare one directly applicable artifact/command for Step 2;
-- do not perform the live Resolve mutation during Step 1.
+If FAIL:
+- compare only the next proven candidates (`mhadifilms/dvr`, `pydavinci`, or official Resolve mechanism);
+- do NOT invent carrier V4.
 
-## 9. Verification
+## 9. Rules for every later capability
 
-Use the smallest evidence that proves behavior:
+Before coding:
+1. search `OSS_PROVEN_CODE_RESEARCH_20261009.md`;
+2. if a proven route exists, test/adapt it first;
+3. if not, run a targeted search;
+4. record `REUSE / ADAPT / COMBINE / BUILD / IGNORE`;
+5. only BUILD after incompatibility evidence.
 
-1. focused tests for the changed caption/transition/motion path;
-2. real Reel #3 artifact/payload generation;
-3. affected regression for protected caption/static behavior;
-4. live Resolve readback only at R2 steps;
-5. human visual review for perceptual acceptance.
+## 10. Selected proven routes already approved for benchmark
 
-Do not substitute broad green suites for broken real output.
+- Resolve title/control: `davinci-resolve-mcp`
+- Cuts: PySceneDetect; auto-editor; TransNetV2 fallback
+- Rough cuts: auto-editor
+- Word timing: WhisperX / VideoLingo
+- Animation/transition render/reference: HyperFrames
+- Timeline IR: OpenTimelineIO
+- Style-process references: ghost-editor, video-style-kit, EditDNA
+- QA patterns: video-editor-agent
+- Content automation: MoneyPrinterTurbo
+- Remotion: technically strong but license-gated
+- OpenChatCut: reference only unless AGPL strategy approved
 
-## 10. Reporting
+## 11. Reporting
 
-- R1 work: short Codex result only.
-- R2 live steps: durable report/evidence if useful.
-- Stage close: update `PROJECT_STATE.md` + tracker once and checkpoint Git.
+R1:
+short result only:
+- OSS source + pin
+- mechanism reused
+- compatibility result
+- files changed
+- real artifact/readback
 
-Do not create a report-only success.
+R2:
+durable evidence only when a live Resolve action is required.
 
-## 11. True Block Conditions
+No report-only stages.
 
-Block only for:
+## 12. True BLOCK conditions
 
-- missing required Reel #3 input/evidence;
-- architecture/material dependency decision;
-- conflicting overlapping unowned tracked work;
-- unavailable external permission/credential;
-- unsafe irreversible action;
-- no safe path after repair budget.
+- best proven candidate has incompatible license;
+- proven route requires unavailable runtime/hardware;
+- exact compatibility test fails and no second proven route exists;
+- human-set target/Win Condition changes;
+- destructive live action needs approval.
 
-Do not block on harmless untracked report directories, Excel lock files, stale session labels, mid-stage tracker lag or optional tools.
+A failed custom mechanism is NOT permission to invent another before proven OSS is exhausted.
 
-## 12. Stage Exit
+## 13. Stage Exit
 
-Stage COMPLETE when:
+S007 exits when:
+- advanced Reel #3 caption animation uses a proven reused mechanism;
+- current transition/motion gaps have proven-code decisions;
+- at least one next visible transition/motion improvement is integrated from a proven route;
+- the human accepts the integrated basic Reel #3 style baseline.
 
-- Reel #3 advanced caption animation is visibly present where source-supported;
-- existing captions/cuts remain acceptable;
-- source-backed transitions are visibly represented where supported;
-- at least the highest-value core motion/VFX gap is executed;
-- integrated human review accepts the basic style baseline.
-
-NEXT STAGE (mandatory): targeted OSS research/reuse expansion from the project tracker before broader content-automation functionality.
+Then continue unseen/raw Reel generalization, still under OSS-first law.

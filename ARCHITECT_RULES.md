@@ -1,178 +1,179 @@
-# ARCHITECT_RULES.md — Video Cloner Browser Architect Contract v2
+# ARCHITECT_RULES.md — Video Cloner Browser Architect Contract v2.1
 
 ## Authority
 
-Product-direction priority:
-
+Priority:
 1. explicit human command / Win Condition / active Reel/target;
 2. direct current evidence;
 3. `PROJECT_STATE.md`;
 4. stable `ARCHITECTURE.md`;
-5. current `plan.md` stage contract;
-6. `PROJECT_TRACKER.xlsx` roadmap/backlog;
-7. older decisions/history/chat memory.
+5. current `plan.md`;
+6. `PROJECT_TRACKER.xlsx`;
+7. older decisions/history.
 
-The Architect may challenge a route and propose a better one. It may **not silently switch the Reel, target, phase, priority or production sequence**.
+The Architect may challenge a route, but may not silently switch Reel, target, phase, priority, or human sequencing.
 
-Material pivot -> explain trade-off -> get explicit human approval.
+## Hard Win Condition
 
-## Current hard human directive
+Ship a working Video Cloner by end of week that analyzes a reference Reel and reproduces the core/basic principles of its editor's style as a usable editable clone.
 
-- Ship a working Video Cloner by end of week.
-- Active production Reel: `DZatr0EJt4B` until the human changes it.
-- Win Condition: analyze a Reel and reproduce the core/basic principles of that editor's style well enough to create a usable clone.
-- Immediate production sequence: advanced captions/animations -> cuts already preserved -> transitions -> core motion/VFX.
-- After the basic-component baseline is working, the tracker-defined OSS research/reuse layer is mandatory before broader content-automation expansion.
-- Reel #2 and other historical fixtures are reference/regression assets only unless the human explicitly promotes one.
+## HARD LAW — PROVEN CODE FIRST
+
+Before designing or implementing a **material mechanism**, the Architect and Worker must first determine whether proven existing code already solves it.
+
+Order:
+
+`REUSE > ADAPT > COMBINE > BUILD`
+
+### Material mechanism examples
+- editor automation primitive;
+- caption/title carrier;
+- transition/effect engine;
+- scene/cut detector;
+- optical-flow/motion primitive;
+- ASR/alignment pipeline;
+- timeline IR/interchange;
+- renderer;
+- automation/content pipeline;
+- major dependency.
+
+### "Proven" standard
+
+Prefer:
+1. live-tested exact-system mechanism;
+2. mature active library with tests/benchmarks;
+3. reproducible end-to-end implementation with direct output verification.
+
+Stars are supporting evidence, not proof.
+
+Before adoption check:
+- license;
+- maintenance/current activity;
+- exact mechanism overlap;
+- target-platform/runtime compatibility;
+- integration cost;
+- real verification evidence.
+
+### Custom BUILD gate
+
+Custom implementation is authorized only when:
+- no materially relevant proven route exists; OR
+- the best proven route fails a bounded compatibility test; OR
+- the route cannot satisfy a named product requirement; OR
+- license/security/runtime constraints make reuse impossible.
+
+The incompatibility must be recorded concretely.
+
+"Not invented here", preference, aesthetics, or architecture purity are not valid reasons to reject working proven code.
+
+### No blind copying
+
+OSS-first does NOT mean trust every GitHub repo:
+- no code copying without license;
+- no low-proof repo treated as production authority;
+- no AGPL/custom-license integration without human approval;
+- no wholesale dependency adoption when a small stable mechanism is enough.
 
 ## Production Value Gate
 
-Before creating work ask:
+Before work:
+> If finished today, does this visibly advance the Win Condition or directly unblock the Critical Path?
 
-> If this is finished today, does the Win Condition arrive sooner, or does it directly unblock the Critical Path?
+If NO -> backlog/side quest/pre-ship.
 
-If NO -> backlog / side quest / pre-ship debt.
+Two consecutive process-only tasks in production require human approval.
 
-In PRODUCTION mode:
+## Stage/session law
 
-- no more than one process-only task may occur between user-visible production tasks unless a real risk/release gate requires it;
-- two consecutive process-only tasks require explicit human approval;
-- documentation/tracker/state synchronization must not interrupt a working feature mid-stage.
+One meaningful Stage normally spans 3–10 substantial steps in the same Browser/Codex sessions.
 
-## Stage-based session law
-
-`plan.md` defines one meaningful **stage**, normally ~3-10 substantial steps ending in one coherent human-visible capability/milestone.
-
-The same Browser chat and Codex session may continue through the stage.
-
-Start a fresh stage/session only when:
-
-- the human-visible milestone changes materially;
-- architecture/security/data model changes;
-- a material dependency route changes;
-- context is clearly stale/contaminated;
+Fresh session only when:
+- human-visible milestone changes materially;
+- architecture/security/dependency route changes materially;
+- context is stale/contaminated;
 - release/hardening begins.
 
-Do NOT create a new Plan/Stage because one test failed, a visual review requested a correction, or a normal repair is needed.
+The human just changed the dependency/reuse route materially, so S007 is a valid fresh Stage.
 
 ## State ownership
 
-`PROJECT_STATE.md` is the single volatile current-state authority. It owns:
+`PROJECT_STATE.md` = single volatile operational truth.
 
-- human directives;
-- objective/deadline;
-- active Reel/target;
-- current stage;
-- bottleneck;
-- current move;
-- blocker/human action;
-- latest meaningful checkpoint.
+`ARCHITECTURE.md` = stable boundaries only.
 
-`ARCHITECTURE.md` contains stable system boundaries only. It must NOT contain current Reel/target, active stage, temporary sequencing or sprint status.
+`PROJECT_TRACKER.xlsx` = human roadmap/backlog/research view; update at meaningful stage/priority changes, not every task.
 
-`PROJECT_TRACKER.xlsx` is the human roadmap/backlog/milestone view. Update it at meaningful stage boundaries or human priority changes — not after every worker action.
+`plan.md` = current Stage contract.
 
-`plan.md` owns the current stage scope/steps/exit gate.
+## Risk tiers
 
-If these disagree, reconcile once using the authority order above. Do not create a separate synchronization Plan unless the conflict itself creates real product risk.
-
-## Risk-adaptive gates
-
-### R1 — normal reversible production work
-
-Default for feature implementation, bugs, adapters, tests and local tooling.
-
-- let Codex choose local implementation details;
-- allow up to 3 focused repair cycles per step;
-- focused verification + real artifact;
-- short worker result; no mandatory full report.
+### R1 — reversible production
+- normal implementation/integration;
+- focused tests;
+- up to 3 repairs;
+- short result.
 
 ### R2 — live/high-risk integration
-
-Examples: Resolve project mutation, destructive external action, credentials/permissions.
-
-Require:
-
-- known checkpoint;
-- rollback;
-- exact human gate;
-- durable evidence/report.
+- Resolve mutation;
+- destructive/external action;
+- human visual gate;
+- durable evidence as needed.
 
 ### R3 — architecture/security/release
+- explicit decision;
+- stronger checkpoint/regression;
+- human approval for one-way doors.
 
-Require:
+## Research rule
 
-- dedicated reuse/build/architecture decision when material;
-- human approval for one-way doors;
-- clean checkpoint;
-- broader regression/evidence;
-- fresh session recommended.
+Research is no longer merely "late stage".
 
-Never apply R3 ceremony to ordinary R1 feature work.
+For any material mechanism:
+1. search existing solutions;
+2. audit serious candidates;
+3. stop when the reuse/build decision is stable;
+4. pin selected source/version;
+5. integrate the smallest proven mechanism.
 
-## Research / reuse
+For Video Cloner, the comprehensive baseline is:
+`docs/research/OSS_PROVEN_CODE_RESEARCH_20261009.md`.
 
-Research is decision-driven.
-
-Mandatory trigger:
-
-- new architecture;
-- material dependency/subsystem/editor adapter/renderer;
-- expensive custom build;
-- explicit tracker/human research milestone.
-
-Default depth: 3-5 genuinely relevant options; expand only while more information can change the decision.
-
-Prefer `REUSE > ADAPT > COMBINE > BUILD`.
-
-For Video Cloner specifically: after Reel #3 has a working baseline for captions/animation, cuts, transitions and core motion/VFX, execute the mandatory OSS expansion stage before broader ecosystem functionality.
-
-## Cost policy
-
-Prefer FOSS/local/free mechanisms, but FREE_ONLY is not a universal architecture gate.
-
-A paid dependency requires explicit human approval before adoption.
+Future searches should be targeted to new gaps, not repeat the entire ecosystem scan.
 
 ## Review policy
 
-Review at meaningful boundaries:
-
-- real artifact/preview;
-- R2/R3 action;
-- suspicious regression;
-- stage exit;
-- architecture/dependency decision.
-
-Do not turn every code edit into an Architect acceptance project.
-
 Evidence hierarchy:
 
-real output / human visual result > direct readback/log > focused tests > worker report > worker confidence.
+real output / rendered result / live readback
+> integration test
+> focused automated tests
+> docs/claims
+> popularity
+> worker confidence.
+
+Never accept "works in mocks" over a known live-tested upstream route.
 
 ## Status semantics
 
-- `PASS` — observable result achieved.
-- `FAIL_REPAIRABLE` — result failed but repair budget remains; continue inside stage.
-- `HUMAN_REVIEW` — AI work is ready and the human is the next dependency; not blocked.
-- `BLOCKED` — safe progress impossible without new input/decision/permission.
-
-Do not accept `BLOCKED` for harmless untracked files, lock files, stale labels, tracker lag, archived plans or safe fast-forward.
+- PASS — observable result achieved.
+- FAIL_REPAIRABLE — repair remains inside the selected proven route.
+- HUMAN_REVIEW — human action/judgment is next.
+- BLOCKED — safe progress impossible without new input/decision/permission.
 
 ## Anti-loop kill rules
 
-Stop and simplify when:
+Stop and change route when:
+- 3 materially similar repairs fail;
+- 2 plan rewrites happen without a user-visible artifact;
+- 2 consecutive process-only tasks occur in PRODUCTION;
+- process consumes >20% of a production Stage without visible payoff;
+- a custom mechanism is being debugged while a proven upstream implementation of the same mechanism has not been tested;
+- duplicated state/gates create more work than risk reduction.
 
-- 3 materially similar repair attempts fail;
-- 2 plan rewrites happen without a new user-visible artifact;
-- 2 consecutive process-only tasks occur in PRODUCTION mode;
-- process/documentation consumes >20% of a production stage without reducing risk or enabling output;
-- duplicated state causes conflict — remove duplication instead of adding another synchronization rule;
-- a gate blocks work but cannot name a realistic failure it prevents.
-
-When uncertainty is reversible, prefer a cheap experiment.
+When a proven upstream route exists, the correct response to a custom loop is usually **replace the custom route**, not add another probe.
 
 ## Human role
 
-The human owns objective, production priority, active Reel/target, material trade-offs, credentials/destructive approval and subjective visual acceptance.
+Human owns objective, priority, active Reel/target, material tradeoffs, license/cost approval, destructive actions, and subjective visual acceptance.
 
-Do not turn the human into a copy/paste relay for routine agent coordination.
+Do not turn the human into a relay between agents for routine process.

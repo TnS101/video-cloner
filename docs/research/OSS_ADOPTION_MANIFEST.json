@@ -1,0 +1,79 @@
+{
+  "generated_at": "2026-10-09",
+  "policy": "OSS_FIRST_PROVEN_CODE_FIRST",
+  "primary_immediate": {
+    "repo": "samuelgursky/davinci-resolve-mcp",
+    "commit": "94c7a885d53f13be78522ce96561a9e9e21d64c5",
+    "license": "MIT",
+    "mechanism": "nested timeline Text+ placement via CreateEmptyTimeline + InsertFusionTitleIntoTimeline + Timeline.GetMediaPoolItem + MediaPool.AppendToTimeline(trackIndex, recordFrame, startFrame, endFrame)",
+    "decision": "ADOPT_NOW"
+  },
+  "approved_benchmarks": [
+    {
+      "repo": "Breakthrough/PySceneDetect",
+      "commit": "81c414cb4b706e58648f98efd381024790b1565f",
+      "license": "BSD-3-Clause",
+      "decision": "REUSE_CUTS"
+    },
+    {
+      "repo": "WyattBlue/auto-editor",
+      "commit": "5ab59aba3b8961aeef2c156300a7259d026e98fe",
+      "license": "Unlicense",
+      "decision": "BENCHMARK_ROUGH_CUT_EXPORT"
+    },
+    {
+      "repo": "m-bain/whisperX",
+      "commit": "771b4a14a9486f8fd5aef18ef49e35d639523dd3",
+      "license": "BSD-2-Clause",
+      "decision": "REUSE_WORD_TIMING"
+    },
+    {
+      "repo": "Huanshere/VideoLingo",
+      "commit": "01f843492759be9bbfd1a5cb697b799cc9de1609",
+      "license": "Apache-2.0",
+      "decision": "ADAPT_CAPTION_ALIGNMENT"
+    },
+    {
+      "repo": "heygen-com/hyperframes",
+      "commit": "46f6cb356785bed79e1ce7b79d7e7accc697786a",
+      "license": "Apache-2.0",
+      "decision": "BENCHMARK_ANIMATION_TRANSITIONS_RENDER"
+    },
+    {
+      "repo": "AcademySoftwareFoundation/OpenTimelineIO",
+      "commit": "00c22fa3a64256d8d3dcafbc7276492185dd970d",
+      "license": "Apache-2.0",
+      "decision": "REUSE_IF_TIMELINE_IR_NEEDED"
+    },
+    {
+      "repo": "mhadifilms/dvr",
+      "commit": "dcc592be88e462a4d4cc58f6be77631e56cf96ee",
+      "license": "MIT",
+      "decision": "ADAPT_WRAPPER_HELPERS"
+    },
+    {
+      "repo": "kurbaitaev/ghost-editor",
+      "commit": "9f197e4e65691d190ba63efa6c061d9c43f02cf6",
+      "license": "MIT",
+      "decision": "REFERENCE_STYLE_RECIPES"
+    },
+    {
+      "repo": "MEX-creator/easy-edit",
+      "commit": "8591e4f9ba88894b2a78e4c0d47d47bd4a53c818",
+      "license": "MIT",
+      "decision": "AUDIT_DIRECT_STYLE_CLONE_SCHEMA"
+    },
+    {
+      "repo": "0xsline/OpenChatCut",
+      "commit": "2e6f4a29b784200cfb32b859b16f2561592bc3e8",
+      "license": "AGPL-3.0",
+      "decision": "REFERENCE_ONLY_LICENSE_GATED"
+    },
+    {
+      "repo": "harry0703/MoneyPrinterTurbo",
+      "commit": "b819f7e1213ca2bc444cbf53ad3e0e3080c8a866",
+      "license": "MIT",
+      "decision": "REFERENCE_CONTENT_AUTOMATION"
+    }
+  ]
+}

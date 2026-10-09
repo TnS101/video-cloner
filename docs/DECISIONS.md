@@ -159,3 +159,17 @@ Only decisions that materially constrain future work belong here.
 - ANTI-LOOP: 3 similar failed repairs, 2 plan rewrites without visible output, 2 consecutive process-only tasks, or >20% process effort without payoff trigger simplification/reframing.
 - CURRENT STAGE: `S006_REEL3_CORE_STYLE_REPRODUCTION`.
 - WHY: real project history showed the v1 bootstrap successfully prevented uncontrolled agent drift but then became the bottleneck itself through excessive partitioning, stale duplicated state and compliance-driven BLOCKED loops.
+
+## D018 — Proven-code-first / OSS-first development law
+
+- DATE: 2026-10-09
+- STATUS: APPROVED / HARD DIRECTIVE
+- STAGE: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
+- DECISION: Before custom-building any material Video Cloner mechanism, search/audit/test proven existing code and prefer `REUSE > ADAPT > COMBINE > BUILD`.
+- BUILD GATE: custom code is allowed only after the best compatible proven route fails a bounded compatibility test, cannot satisfy a named product requirement, or cannot be legally/runtime integrated.
+- PROOF: live integration tests/rendered output/readback outrank unit mocks, docs, popularity, and model confidence.
+- LICENSE: no copying from no-license repositories; AGPL/custom-license adoption requires explicit human approval.
+- IMMEDIATE ROUTE: freeze custom Reel #3 caption-carrier experiments and adopt the MIT live-tested nested-timeline Text+ mechanism from `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5`.
+- WHY: repeated custom canaries consumed time while upstream code already measured the same Resolve API limitation and published a working route.
+- REVISIT: only if the human changes the policy.
+
