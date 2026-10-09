@@ -40,6 +40,16 @@ Repository cleanup is complete. GitHub `main` and `repo-hygiene/canonical-consol
 
 Recovery tag: `video-cloner-pre-hygiene-snapshot-20261007` → `f728d4ae1073a2b37f58e5b06a77ed6b97ca0605`. Git history is the archive; deleted Step/Phase scripts must not be recreated. The important lesson is to separate technical persistence from visual fidelity and to keep Resolve as an explicit machine-acceptance boundary.
 
+## Current speedrun directive — supersedes older sequencing
+
+- **Ship by end of week.**
+- Active production reel: **Reel #3 `DZatr0EJt4B`**.
+- Existing Reel #3 basic Text+ captions are the baseline; do not rebuild them.
+- Current work: advanced caption animations on the existing Reel #3 target, then Reel #3 cuts/transitions/core motion/VFX.
+- Reel #2 is retained reference/GOLD evidence only.
+- Explicit human commands are highest product-direction authority; Plan + tracker must remain aligned and no silent reel/phase/target pivot is allowed.
+- After the active reel has a working baseline for captions, cuts, transitions, and core motion/VFX, the **PROJECT_TRACKER OSS research/reuse backlog layer is mandatory**. Research proven OSS projects/components and prefer reuse/adaptation before custom-building broader content-automation functionality.
+
 ## Exact next product-development move
 
-Run one controlled live Resolve machine acceptance with the frozen bridge: matching run ID, target identity readback, first-pass validation, second-run idempotency, and human visual review. Do not redesign the canonical package during that gate.
+Prepare the generic command-bound advanced caption-animation payload for the existing Reel #3 target `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`, then apply/review it once. After caption animation review, continue directly into Reel #3 transitions and core VFX. Do not regenerate basic captions and do not switch to another reel.

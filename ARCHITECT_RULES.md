@@ -18,6 +18,17 @@ For every new Plan Partition browser chat, read these canonical root files from 
 
 Use a generated browser-context ZIP only when GitHub access is unavailable or local uncommitted evidence is decision-relevant. Do not use stale ChatGPT Project knowledge as authority for evolving state.
 
+## Human command / tracker precedence
+
+- The human's explicit objective and commands are the highest product-direction authority.
+- Before changing the active reel, phase, target, or Critical Path, reconcile the human command with `PROJECT_TRACKER.xlsx`, `PROJECT_STATE.md`, and `plan.md`.
+- Never silently promote a reference/GOLD reel into the active production target.
+- Never silently change phase, target, or sequencing because an older artifact looks more complete.
+- If the human command, tracker, and current Plan conflict materially, STOP and surface the conflict before execution. Do not improvise a pivot.
+- Current hard Win Condition: **ship a working Video Cloner by end of week** that can analyze a Reel and reproduce the core/basic principles of that editor's style.
+- Mandatory production sequence: first make the core Reel components work on the active production reel (captions, cuts, transitions, core motion/VFX); **after that baseline exists, enter the tracker backlog's OSS research/reuse layer before custom-building broader ecosystem functionality**.
+- At that post-basic milestone, OSS/existing-solution research is mandatory: inspect proven relevant projects/components, prefer `REUSE > ADAPT > COMBINE > BUILD`, and use the results to extend Video Cloner for the content-automation ecosystem. Do not pull this milestone forward to interrupt the current basic-component reproduction work.
+
 ## Plan/session law
 
 One current `plan.md` = one Plan ID = one fresh Codex session.
@@ -71,6 +82,8 @@ This is a late-stage existing project. Do NOT run a generic 5–10 project scan 
 A targeted existing-solution/OSS scan is mandatory only when the current decision would add/change a material mechanism, dependency, renderer, editor adapter, automation framework, or architecture boundary. Then inspect at least 5 materially relevant options when the market actually offers that many, and record `REUSE / ADAPT / COMBINE / BUILD / IGNORE` with license/cost/maintenance evidence.
 
 For acceptance/debug plans using already-approved mechanisms, mark research `NOT_APPLICABLE` rather than wasting time.
+
+**Mandatory backlog milestone:** once the active reel has a working baseline for captions, cuts, transitions, and core motion/VFX, run the dedicated OSS reuse/expansion layer before broader functionality or ecosystem integration. This milestone is explicitly required by the human/product tracker even if no single mechanism change would otherwise trigger this gate.
 
 ## Cost policy
 

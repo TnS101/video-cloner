@@ -36,3 +36,14 @@ T003: `NEXT — TRANSITIONS/VFX`
 - No basic caption regeneration.
 - No Git/persistence ceremony.
 - No architecture rewrite.
+
+
+## HARD HUMAN DIRECTIVE — DO NOT OVERRIDE
+
+- Highest authority: explicit human commands and Win Condition.
+- Ship target: working Video Cloner by end of week.
+- Product Win Condition: analyze a Reel and reproduce the core/basic principles of that editor's style well enough to generate a usable clone.
+- Active production remains Reel #3 `DZatr0EJt4B`; reference/GOLD reels must never replace it without explicit human direction.
+- Immediate sequence: finish Reel #3 core components — advanced captions/animations, cuts, transitions, then core motion/VFX.
+- Mandatory next milestone after the basic-component baseline: enter the `PROJECT_TRACKER.xlsx` OSS research/reuse backlog layer and reuse/adapt proven open-source projects before custom-building broader content-automation functionality.
+- No silent phase/reel/target pivots. If tracker, Plan, or human command conflict, STOP and ask rather than improvising.

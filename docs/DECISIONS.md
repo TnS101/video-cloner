@@ -136,3 +136,14 @@ Only decisions that materially constrain future work belong here.
 - DECISION: Reel #3 (`DZatr0EJt4B`) is the active production target. Reel #2 remains reference/reuse evidence only.
 - CORRECTION: supersede the Reel #2 integrated-preview detour. Do not regenerate basic captions; Reel #3 already has applied captions and structural overlay validation.
 - CURRENT MOVE: advanced caption animations on the existing Reel #3 target, followed immediately by Reel #3 transitions/VFX.
+
+
+## D016 — Human-directed speedrun sequence and mandatory OSS reuse milestone
+
+- DATE: 2026-10-09
+- STATUS: APPROVED / HARD DIRECTIVE
+- DECISION: explicit human commands are the highest product-direction authority. The active target is Reel #3 `DZatr0EJt4B`; reference reels must not be promoted to active work without explicit authorization.
+- WIN CONDITION: ship a working Video Cloner by end of week that can analyze a Reel and recreate the core/basic principles of that editor's style.
+- REQUIRED SEQUENCE: finish the active Reel #3 baseline for captions/advanced animation, cuts, transitions, and core motion/VFX first. After that baseline, the `PROJECT_TRACKER.xlsx` OSS research/reuse backlog layer is mandatory before broader ecosystem/functionality expansion.
+- OSS RULE: research and reuse/adapt proven open-source mechanisms before custom-building equivalents; prefer `REUSE > ADAPT > COMBINE > BUILD`.
+- FAILURE PREVENTION: no silent reel/phase/target pivot. If human command, tracker, state, and Plan disagree materially, stop and surface the conflict.

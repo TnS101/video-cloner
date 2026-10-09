@@ -79,8 +79,30 @@ Prioritize actual source-backed:
 
 Implement only the highest-value real missing family per visual review.
 
+## T004 — Mandatory OSS Research / Reuse Expansion Layer — AFTER BASIC COMPONENT BASELINE
+
+STATUS: **MANDATORY MILESTONE / NOT YET AUTHORIZED**
+
+Trigger only after Reel #3 has a working baseline for:
+- captions + advanced animation;
+- cuts;
+- transitions;
+- core motion/VFX reproduction.
+
+Then execute the backlog research layer from `PROJECT_TRACKER.xlsx`:
+- research proven OSS/existing projects that already solve remaining editing/automation problems;
+- inspect at least 5 materially relevant options when available;
+- rank `REUSE / ADAPT / COMBINE / BUILD / IGNORE`;
+- evaluate license, maintenance, integration cost, editor/render compatibility, and automation value;
+- reuse/adapt proven mechanisms before custom-building equivalents;
+- use this layer to expand Video Cloner into the wider content-automation ecosystem.
+
+Do NOT pull T004 forward and derail the current Reel #3 basic-component work.
+
 ## Guardrails
 
+- Human commands + Win Condition take precedence; never silently pivot reel/phase/target.
+- Follow the current Plan and tracker sequencing; if they conflict with an explicit human command, STOP and surface it.
 - Reel #3 only.
 - Reel #2 is reference data only.
 - No Git/persistence work.
