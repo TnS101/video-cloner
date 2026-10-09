@@ -95,3 +95,14 @@ Only decisions that materially constrain future work belong here.
 - NEXT CONSTRAINT: Resolve-hosted repository identity authentication currently depends on ambient Git executable discovery and fails when Git is absent from the Resolve process `PATH`. A fresh Browser Architect must compare an authenticated absolute Git binding, an existing repository/runtime identity mechanism, and a dependency-free HEAD verification mechanism only if safer/smaller. This decision does not select or authorize an implementation.
 - ACCEPTANCE BOUNDARY: fallback eligibility is not product acceptance. `PH1_ACCEPTED` requires exact save/reopen persistence, protected/media preservation, declared zero-mutation second-run behavior, and human visual `APPROVE`.
 - REVISIT IF: a fresh Browser Architect authorizes a bounded Plan that removes the ambient-`PATH` dependency without weakening repository identity authentication.
+
+## D012 — Persistence-only production unblock; defer full PH1 acceptance until pre-ship
+
+- DATE: 2026-10-09
+- PLAN: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK`
+- STATUS: PROPOSED — P004 DRAFT / NOT AUTHORIZED
+- DECISION: Route A: resolve the exact absolute Git executable during offline command preparation, authenticate its canonical path and executable SHA-256, bind both into each command, and verify them inside Resolve before executing HEAD/branch checks. Apply to both the finalizer and read-only post-reopen verifier. Do not use ambient PATH or alter expected HEAD/branch enforcement. No new dependency or bridge/launcher modification.
+- WHY: both P003 finalizer and verifier execute bare Git, while existing runtime repository-root binding does not provide Git HEAD/branch verification. This is an environment discovery defect, not a caption defect.
+- SEQUENCING: P004 success proves one attributable save plus one close/reopen persistence readback for current Reel #3. Then PH2 caption production begins immediately, without full PH1 acceptance as an intermediate gate. Same-target replay/idempotency, formal full-target visual APPROVE/REJECT, and remaining PH1/ship checks become mandatory PRE-SHIP deferred work.
+- HARD LIMIT: one identity mechanism decision, one bounded patch, one focused offline verification batch, one newly attributable save attempt, one close/reopen persistence verification; no P004 subdivisions or retries. On another pre-save environment/tooling failure, stop and present manual controlled save/reopen versus one authorized targeted automation repair; default manual unless product correctness risk. On actual target/protected/media corruption or persistence drift, stop PH2.
+- PRESERVE: P003 terminal failure is closed, never retried. Existing semantic/provenance fallback, strict validation behavior, target UID, protected Reel #2 GOLD, queue/bridge/launcher, and all blocked mutation authorities remain untouched.
