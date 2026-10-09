@@ -26,7 +26,7 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 ## Known True Now
 
-- Canonical GitHub `main` is `397148c02e05e803225dec8f2723e6702ce7355f`; local `main` matches and is clean at P003 creation.
+- Canonical GitHub `main` is `a102a94b34431bcc609ed5cfc4e048cfc6b3fa0a`. Historical P003 baseline facts remain preserved below as predecessor evidence.
 - Repository cleanup and source-control reconciliation are complete.
 - Normal entry points are `video-cloner run` and `video_cloner.pipeline.run()`.
 - Canonical offline generation + bounded queue publication are accepted.
@@ -62,8 +62,8 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 ## Current Constraint
 
 - Resolve-hosted repository identity authentication currently depends on ambient Git executable discovery and fails when Git is absent from the Resolve process `PATH`.
-- The next fresh Browser Architect must compare the smallest robust reuse/adaptation options: bind an authenticated absolute Git executable path, reuse an existing repository/runtime identity mechanism, or use a dependency-free HEAD verification mechanism only if materially safer and smaller.
-- Route A is selected in P004 draft; implementation is not authorized. P003 must not be repaired or retried.
+- P004 draft selects Route A — authenticated absolute `git.exe` binding with executable SHA-256 plus the existing repository HEAD/branch checks.
+- Route A is selected in principle but implementation is not authorized. P003 must not be repaired or retried.
 - PH1 remains not accepted: persistence, same-target replay, and human visual acceptance are unproven. PH2 is blocked only by exact save/reopen persistence, not full PH1 acceptance.
 
 ## Architecture State
@@ -77,15 +77,14 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 - CURRENT PLAN ID: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK`
 - PLAN STATUS: `DRAFT / NOT AUTHORIZED`
-- INITIAL AUTHORIZATION: `NONE — DRAFT; NO CODEX, PUBLICATION, OR RESOLVE ACTION`
-- T001 STATUS: `PASS / ACCEPTED — OFFLINE`
-- T002 STATUS: `PASS / COMMAND PREPARED`
-- T003 STATUS: `BLOCKED / TERMINAL`
-- T004–T007 STATUS: `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`
-- TERMINAL RESULT: `BLOCKED_T003_FINALIZER_GIT_EXECUTABLE_NOT_FOUND_BEFORE_SAVE`
+- INITIAL AUTHORIZATION: `NONE — DRAFT`
+- T001 STATUS: `NOT_STARTED / NOT_AUTHORIZED`
+- T002 STATUS: `NOT_STARTED / NOT_AUTHORIZED`
+- T003 STATUS: `NOT_STARTED / NOT_AUTHORIZED`
+- T004 STATUS: `NOT_STARTED / NOT_AUTHORIZED`
 - PLAN FILE: `plan.md`
 - PREDECESSOR: `P003_FALLBACK_PERSISTENCE_ACCEPTANCE` — `BLOCKED / CLOSED`
-- PREDECESSOR ARCHIVE: `docs/plans/archive/P002_LIVE_TARGET_FORENSIC_READBACK.md`
+- PREDECESSOR ARCHIVE: `docs/plans/archive/P003_FALLBACK_PERSISTENCE_ACCEPTANCE.md`
 - REQUIRED REPORT ROOT: `.project_ops/reports/P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK/`
 
 ## Resolve Live-State Hold
@@ -96,12 +95,13 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 ## Critical Path
 
-1. T001: `PASS / ACCEPTED — OFFLINE`.
-2. T002: `PASS / COMMAND PREPARED`.
-3. T003: `BLOCKED / TERMINAL`; the single finalizer invocation failed before save because ambient `git` was unavailable.
-4. T004–T007: `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`.
+1. T001: offline identity repair.
+2. T002: prepare one command.
+3. T003: one live save attempt.
+4. T004: one persistence cycle.
+5. PASS → PH2 immediately.
 
-CURRENT CRITICAL CONSTRAINT: command-bound absolute Git identity repair pending P004 authorization; prove one save/reopen persistence, then start PH2.
+CURRENT CRITICAL CONSTRAINT: Route A identity repair is selected but P004 remains DRAFT / NOT AUTHORIZED. No Codex work, command publication, Resolve action, or save is authorized yet.
 
 ## Dependencies / Constraints
 
