@@ -70,8 +70,18 @@ def _media_counter(rows: list[Mapping[str, Any]]) -> Counter:
     return Counter(row.get("signature") for row in rows)
 
 
-def _git_value(root: Path, *args: str) -> str:
-    completed = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True, check=False)
+def _authenticated_git(payload: Mapping[str, Any]) -> Path:
+    candidate = Path(str(payload.get("git_executable_path") or ""))
+    if not candidate.is_absolute():
+        raise ValueError("git_executable_identity")
+    executable = candidate.resolve()
+    if not executable.is_file() or base._sha256(executable) != payload.get("git_executable_sha256"):
+        raise ValueError("git_executable_identity")
+    return executable
+
+
+def _git_value(root: Path, executable: Path, *args: str) -> str:
+    completed = subprocess.run([str(executable), *args], cwd=str(root), capture_output=True, text=True, check=False)
     if completed.returncode != 0:
         raise ValueError("repository_git_identity")
     return completed.stdout.strip()
@@ -165,7 +175,8 @@ def run(resolve: Any, context: dict[str, Any]) -> dict[str, Any]:
         root = Path(str(payload.get("repository_root") or "")).resolve()
         if not (root / "AGENTS.md").is_file():
             raise ValueError("repository_identity")
-        if _git_value(root, "branch", "--show-current") != "main" or _git_value(root, "rev-parse", "HEAD") != payload.get("expected_repository_head"):
+        git = _authenticated_git(payload)
+        if _git_value(root, git, "branch", "--show-current") != "main" or _git_value(root, git, "rev-parse", "HEAD") != payload.get("expected_repository_head"):
             raise ValueError("repository_git_identity")
         if base._sha256(Path(__file__).resolve()) != payload.get("verifier_module_sha256"):
             raise ValueError("verifier_module_identity")
