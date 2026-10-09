@@ -6,8 +6,8 @@
 
 - PROJECT NAME: Video Cloner
 - STATUS: ACTIVE
-- LAST UPDATED: 2026-10-08
-- PLAN-CREATION REPOSITORY HEAD: `397148c02e05e803225dec8f2723e6702ce7355f`
+- LAST UPDATED: 2026-10-09
+- PLAN-CREATION REPOSITORY HEAD: `a102a94b34431bcc609ed5cfc4e048cfc6b3fa0a`
 - LAST ACCEPTED PRODUCT COMMIT: `4516da32e6780a574e7d3904782bb1007def05e7`
 - CLEANUP AUTHORITY TAG: `video-cloner-canonical-cleanup-20261007`
 - RECOVERY TAG: `video-cloner-pre-hygiene-snapshot-20261007`
@@ -50,12 +50,21 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 - The Reel #2 advanced-caption lifecycle and human-cleaned GOLD are retained baseline evidence to REUSE/ADAPT, not rebuild.
 - Persistence across save/reopen, the declared same-target second-run behavior, and human visual acceptance remain unproven.
 
+## P004 Sequencing Override — 2026-10-09
+
+- CURRENT P004: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK` — `DRAFT / NOT AUTHORIZED`; Architect Plan on branch `architect/p004-persistence-unblock-draft`.
+- Selected mechanism: command-bound canonical absolute Git executable plus SHA-256, checked within Resolve before either finalizer or read-only verifier Git call; original HEAD/branch checks remain mandatory.
+- New immediate Win Condition: existing Reel #3 target saved exactly once and surviving one read-only close/reopen persistence cycle unchanged.
+- PH2 is released immediately on `P004_PERSISTENCE_UNBLOCKED`; no intermediate acceptance Plan.
+- Same-target replay/idempotency acceptance, formal pre-PH2-target human visual acceptance, and full PH1/ship certification are `PRE-SHIP DEFERRED`, not abandoned.
+- P003 remains BLOCKED/CLOSED with no retry. All P004 implementation/live actions await explicit Plan authorization.
+
 ## Current Constraint
 
 - Resolve-hosted repository identity authentication currently depends on ambient Git executable discovery and fails when Git is absent from the Resolve process `PATH`.
 - The next fresh Browser Architect must compare the smallest robust reuse/adaptation options: bind an authenticated absolute Git executable path, reuse an existing repository/runtime identity mechanism, or use a dependency-free HEAD verification mechanism only if materially safer and smaller.
 - No mechanism is selected or authorized in this session. P003 must not be repaired or retried.
-- PH1 remains not accepted: persistence, same-target replay, and human visual acceptance are unproven. PH2 remains blocked.
+- PH1 remains not accepted: persistence, same-target replay, and human visual acceptance are unproven. PH2 is blocked only by exact save/reopen persistence, not full PH1 acceptance.
 
 ## Architecture State
 
@@ -102,7 +111,7 @@ CURRENT CRITICAL CONSTRAINT: a fresh Browser Architect must choose the smallest 
 - The declared second run remains fail closed: same target + `require_target_absent=true` → `ValueError: target_already_exists` before import.
 - `.agent` remains ignored Resolve runtime state; project reports belong under `.project_ops`.
 - No new dependency or OSS research is authorized in P003.
-- PH2 remains blocked until P003 closes with the PH1 result.
+- PH2 may start immediately after P004 proves one exact save plus close/reopen persistence; full PH1 acceptance is PRE-SHIP, not a PH2 prerequisite.
 
 ## Reuse / Research State
 
