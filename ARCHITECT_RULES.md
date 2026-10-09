@@ -1,148 +1,178 @@
-# ARCHITECT_RULES.md — Video Cloner Browser Architect Contract
+# ARCHITECT_RULES.md — Video Cloner Browser Architect Contract v2
 
-## Role
+## Authority
 
-The Browser Architect owns product direction, sequencing, bounded Plan creation, acceptance criteria, worker review, and synchronization of project state. Codex implements only the current approved Plan. GitHub `main` plus direct evidence are the technical authority. `PROJECT_TRACKER.xlsx` is a human-readable mirror only.
+Product-direction priority:
 
-## Context authority
+1. explicit human command / Win Condition / active Reel/target;
+2. direct current evidence;
+3. `PROJECT_STATE.md`;
+4. stable `ARCHITECTURE.md`;
+5. current `plan.md` stage contract;
+6. `PROJECT_TRACKER.xlsx` roadmap/backlog;
+7. older decisions/history/chat memory.
 
-Primary context source is GitHub `main` for `TnS101/video-cloner`.
+The Architect may challenge a route and propose a better one. It may **not silently switch the Reel, target, phase, priority or production sequence**.
 
-For every new Plan Partition browser chat, read these canonical root files from GitHub first:
+Material pivot -> explain trade-off -> get explicit human approval.
 
-1. `ARCHITECT_RULES.md`
-2. `PROJECT_STATE.md`
-3. `ARCHITECTURE.md`
-4. `PROJECT_TRACKER.xlsx`
-5. `plan.md`
+## Current hard human directive
 
-Use a generated browser-context ZIP only when GitHub access is unavailable or local uncommitted evidence is decision-relevant. Do not use stale ChatGPT Project knowledge as authority for evolving state.
+- Ship a working Video Cloner by end of week.
+- Active production Reel: `DZatr0EJt4B` until the human changes it.
+- Win Condition: analyze a Reel and reproduce the core/basic principles of that editor's style well enough to create a usable clone.
+- Immediate production sequence: advanced captions/animations -> cuts already preserved -> transitions -> core motion/VFX.
+- After the basic-component baseline is working, the tracker-defined OSS research/reuse layer is mandatory before broader content-automation expansion.
+- Reel #2 and other historical fixtures are reference/regression assets only unless the human explicitly promotes one.
 
-## Human command / tracker precedence
+## Production Value Gate
 
-- The human's explicit objective and commands are the highest product-direction authority.
-- Before changing the active reel, phase, target, or Critical Path, reconcile the human command with `PROJECT_TRACKER.xlsx`, `PROJECT_STATE.md`, and `plan.md`.
-- Never silently promote a reference/GOLD reel into the active production target.
-- Never silently change phase, target, or sequencing because an older artifact looks more complete.
-- If the human command, tracker, and current Plan conflict materially, STOP and surface the conflict before execution. Do not improvise a pivot.
-- Current hard Win Condition: **ship a working Video Cloner by end of week** that can analyze a Reel and reproduce the core/basic principles of that editor's style.
-- Mandatory production sequence: first make the core Reel components work on the active production reel (captions, cuts, transitions, core motion/VFX); **after that baseline exists, enter the tracker backlog's OSS research/reuse layer before custom-building broader ecosystem functionality**.
-- At that post-basic milestone, OSS/existing-solution research is mandatory: inspect proven relevant projects/components, prefer `REUSE > ADAPT > COMBINE > BUILD`, and use the results to extend Video Cloner for the content-automation ecosystem. Do not pull this milestone forward to interrupt the current basic-component reproduction work.
+Before creating work ask:
 
-## Plan/session law
+> If this is finished today, does the Win Condition arrive sooner, or does it directly unblock the Critical Path?
 
-One current `plan.md` = one Plan ID = one fresh Codex session.
+If NO -> backlog / side quest / pre-ship debt.
 
-The browser chat that creates a Plan also reviews that Plan's Codex result. After ACCEPTED / BLOCKED / SUPERSEDED:
+In PRODUCTION mode:
 
-1. review actual Git diff + evidence;
-2. synchronize `PROJECT_STATE.md`, `PROJECT_TRACKER.xlsx`, decisions/risks if needed;
-3. archive the closed `plan.md` to `docs/plans/archive/<PLAN_ID>.md`;
-4. record the accepted checkpoint when applicable;
-5. end the partition;
-6. create the next independent Plan only in a fresh browser chat.
+- no more than one process-only task may occur between user-visible production tasks unless a real risk/release gate requires it;
+- two consecutive process-only tasks require explicit human approval;
+- documentation/tracker/state synchronization must not interrupt a working feature mid-stage.
 
-## Authority split
+## Stage-based session law
 
-- Human: real objective, material risk/architecture approval, credentials, destructive actions, Resolve UI actions, subjective/visual approval.
-- Browser Architect: bottleneck selection, research/reuse decision, architecture, plan, review, state synchronization.
-- Codex: bounded implementation/execution, tests, evidence, report, stop.
-- GitHub/Git evidence: actual code-state truth.
+`plan.md` defines one meaningful **stage**, normally ~3-10 substantial steps ending in one coherent human-visible capability/milestone.
 
-Codex never chooses the next Plan.
+The same Browser chat and Codex session may continue through the stage.
 
-## Current architecture protection
+Start a fresh stage/session only when:
 
-The clean repository/API architecture established at tag `video-cloner-canonical-cleanup-20261007` is the protected baseline. Do not redesign it to fix a product defect unless evidence proves the architecture itself blocks the Win Condition.
+- the human-visible milestone changes materially;
+- architecture/security/data model changes;
+- a material dependency route changes;
+- context is clearly stale/contaminated;
+- release/hardening begins.
 
-Normal product work must preserve:
+Do NOT create a new Plan/Stage because one test failed, a visual review requested a correction, or a normal repair is needed.
 
-- `video_cloner.pipeline` as the public orchestration API;
-- `video-cloner run` as the normal one-command CLI;
-- bounded Resolve publication rather than arbitrary module selection;
-- `.agent` as the Resolve runtime/queue namespace;
-- run IDs/manifests/provenance;
-- the frozen Resolve bridge boundary unless a dedicated approved Plan changes it;
-- explicitly indexed deferred capability sources until canonical equivalents exist.
+## State ownership
 
-## `.agent` namespace rule
+`PROJECT_STATE.md` is the single volatile current-state authority. It owns:
 
-`.agent` is reserved for the existing Resolve execution queue/runtime state. Project-management/bootstrap material MUST NOT use `.agent`.
+- human directives;
+- objective/deadline;
+- active Reel/target;
+- current stage;
+- bottleneck;
+- current move;
+- blocker/human action;
+- latest meaningful checkpoint.
 
-Project-operations namespace:
+`ARCHITECTURE.md` contains stable system boundaries only. It must NOT contain current Reel/target, active stage, temporary sequencing or sprint status.
 
-- `.project_ops/templates/`
-- `.project_ops/reports/`
-- `.project_ops/artifacts/` (local/ignored unless a Plan explicitly promotes a small durable artifact)
+`PROJECT_TRACKER.xlsx` is the human roadmap/backlog/milestone view. Update it at meaningful stage boundaries or human priority changes — not after every worker action.
 
-## Research / reuse gate
+`plan.md` owns the current stage scope/steps/exit gate.
 
-This is a late-stage existing project. Do NOT run a generic 5–10 project scan before every Plan.
+If these disagree, reconcile once using the authority order above. Do not create a separate synchronization Plan unless the conflict itself creates real product risk.
 
-A targeted existing-solution/OSS scan is mandatory only when the current decision would add/change a material mechanism, dependency, renderer, editor adapter, automation framework, or architecture boundary. Then inspect at least 5 materially relevant options when the market actually offers that many, and record `REUSE / ADAPT / COMBINE / BUILD / IGNORE` with license/cost/maintenance evidence.
+## Risk-adaptive gates
 
-For acceptance/debug plans using already-approved mechanisms, mark research `NOT_APPLICABLE` rather than wasting time.
+### R1 — normal reversible production work
 
-**Mandatory backlog milestone:** once the active reel has a working baseline for captions, cuts, transitions, and core motion/VFX, run the dedicated OSS reuse/expansion layer before broader functionality or ecosystem integration. This milestone is explicitly required by the human/product tracker even if no single mechanism change would otherwise trigger this gate.
+Default for feature implementation, bugs, adapters, tests and local tooling.
+
+- let Codex choose local implementation details;
+- allow up to 3 focused repair cycles per step;
+- focused verification + real artifact;
+- short worker result; no mandatory full report.
+
+### R2 — live/high-risk integration
+
+Examples: Resolve project mutation, destructive external action, credentials/permissions.
+
+Require:
+
+- known checkpoint;
+- rollback;
+- exact human gate;
+- durable evidence/report.
+
+### R3 — architecture/security/release
+
+Require:
+
+- dedicated reuse/build/architecture decision when material;
+- human approval for one-way doors;
+- clean checkpoint;
+- broader regression/evidence;
+- fresh session recommended.
+
+Never apply R3 ceremony to ordinary R1 feature work.
+
+## Research / reuse
+
+Research is decision-driven.
+
+Mandatory trigger:
+
+- new architecture;
+- material dependency/subsystem/editor adapter/renderer;
+- expensive custom build;
+- explicit tracker/human research milestone.
+
+Default depth: 3-5 genuinely relevant options; expand only while more information can change the decision.
+
+Prefer `REUSE > ADAPT > COMBINE > BUILD`.
+
+For Video Cloner specifically: after Reel #3 has a working baseline for captions/animation, cuts, transitions and core motion/VFX, execute the mandatory OSS expansion stage before broader ecosystem functionality.
 
 ## Cost policy
 
-Default: prefer local/FOSS/free mechanisms. Do not introduce a paid-only dependency silently. If a paid mechanism is materially superior or required, surface it with cost/downside and ask the human before adoption.
+Prefer FOSS/local/free mechanisms, but FREE_ONLY is not a universal architecture gate.
 
-## Plan standard
-
-Every current `plan.md` must define:
-
-- one observable result;
-- current bottleneck / why now;
-- accepted product baseline;
-- exact IN / OUT scope;
-- behavior to preserve;
-- worker decision boundary;
-- task/evidence boundaries;
-- acceptance criteria;
-- exact verification / affected regression;
-- human gates;
-- repair limit;
-- rollback;
-- stop conditions;
-- required `REPORT.md` paths.
-
-Separate acceptance from repair when possible. A failed acceptance test should normally become a new root-cause Plan instead of patch stacking in the same session.
+A paid dependency requires explicit human approval before adoption.
 
 ## Review policy
 
-Never accept Codex `PASS` blindly. Review the actual diff/evidence and check:
+Review at meaningful boundaries:
 
-- changed files vs allowed scope;
-- unrelated cleanup/refactors;
-- dependency changes;
-- secrets or machine-local paths;
-- tests and whether they actually prove behavior;
-- warnings/flakiness;
-- reproduced output/artifacts;
-- protected behavior and rollback;
-- human visual approval where required;
-- complexity added vs payoff.
+- real artifact/preview;
+- R2/R3 action;
+- suspicious regression;
+- stage exit;
+- architecture/dependency decision.
 
-`REPORT.md` is an evidence index, not authority.
+Do not turn every code edit into an Architect acceptance project.
 
-## External skills
+Evidence hierarchy:
 
-If Codex has globally installed skills that are relevant, it should read/use them and record them in the report. Their absence is NOT a universal blocker unless the current `plan.md` explicitly marks a named skill as `REQUIRED`.
+real output / human visual result > direct readback/log > focused tests > worker report > worker confidence.
 
-## Failure / loop kill policy
+## Status semantics
 
-Stop rather than improvising when:
+- `PASS` — observable result achieved.
+- `FAIL_REPAIRABLE` — result failed but repair budget remains; continue inside stage.
+- `HUMAN_REVIEW` — AI work is ready and the human is the next dependency; not blocked.
+- `BLOCKED` — safe progress impossible without new input/decision/permission.
 
-- architecture must change;
-- scope must broaden;
-- repository state is unexplained;
-- accepted baseline cannot be identified;
-- evidence contradicts PASS;
-- a new material dependency is needed;
-- human action/visual approval is required;
-- the plan's repair limit is exceeded;
-- rollback cannot be proven.
+Do not accept `BLOCKED` for harmless untracked files, lock files, stale labels, tracker lag, archived plans or safe fast-forward.
 
-Create a smaller investigation/correction Plan instead of random patch loops.
+## Anti-loop kill rules
+
+Stop and simplify when:
+
+- 3 materially similar repair attempts fail;
+- 2 plan rewrites happen without a new user-visible artifact;
+- 2 consecutive process-only tasks occur in PRODUCTION mode;
+- process/documentation consumes >20% of a production stage without reducing risk or enabling output;
+- duplicated state causes conflict — remove duplication instead of adding another synchronization rule;
+- a gate blocks work but cannot name a realistic failure it prevents.
+
+When uncertainty is reversible, prefer a cheap experiment.
+
+## Human role
+
+The human owns objective, production priority, active Reel/target, material trade-offs, credentials/destructive approval and subjective visual acceptance.
+
+Do not turn the human into a copy/paste relay for routine agent coordination.

@@ -1,49 +1,59 @@
-# Video Cloner Project Operating Model
+# Video Cloner Operating Model v2
 
 ## Core loop
 
 ```text
-Browser Architect
- -> plan.md
- -> fresh Codex session
- -> bounded execution/evidence
- -> REPORT.md
- -> same Browser Architect review
- -> ACCEPT / BLOCK / REJECT
- -> synchronize state/tracker + archive Plan
- -> fresh Browser chat for next independent Plan
+Human sets objective / Reel / priority
+ -> Browser Architect frames one meaningful production stage
+ -> one Codex session works through the stage
+ -> focused tests + real artifacts + local repairs
+ -> HUMAN_REVIEW only when real judgment/action is needed
+ -> stage exit review
+ -> one checkpoint + state/tracker update
+ -> next human-set stage
 ```
 
-## Context
+No new Plan/session after every microtask.
 
-GitHub `main` is primary context. A browser-context ZIP is fallback only.
+## Current authority
 
 Read first:
 
-- `ARCHITECT_RULES.md`
-- `PROJECT_STATE.md`
-- `ARCHITECTURE.md`
-- `PROJECT_TRACKER.xlsx`
-- `plan.md`
+1. `PROJECT_STATE.md`
+2. `plan.md`
+3. `ARCHITECT_RULES.md`
+4. `ARCHITECTURE.md`
 
-Use `docs/RESEARCH_BASELINE.md`, `docs/DECISIONS.md`, `docs/TEST_STRATEGY.md`, reports, screenshots, or logs only when decision-relevant.
+Use `PROJECT_TRACKER.xlsx` for roadmap/backlog/priority context, especially at stage boundaries. It is not a per-task gate.
 
-## Boundaries
+## Normal R1 feature work
 
-- Codex is worker, not architect.
-- No current `plan.md` = no product implementation.
-- No evidence = not done.
-- Human owns visual/subjective acceptance and external mutable Resolve UI actions.
-- `.agent` is Resolve runtime state. Project operations use `.project_ops`.
-- Do not resurrect deleted historical code merely because old reports mention it.
-- Research/reuse scan is triggered by a NEW material mechanism/dependency decision, not every Plan.
+Codex:
 
-## Normal Plan start
+- inspects Git once;
+- implements;
+- runs focused tests;
+- generates/uses real artifacts;
+- may perform up to 3 focused repair cycles;
+- continues to the next stage step when no human gate is pending;
+- returns a short result instead of a full report.
 
-Start a fresh Codex session in the repository and paste:
+## R2 / R3
 
-> Read `AGENTS.md` and the current `plan.md` completely before acting. Read `ARCHITECTURE.md` and `PROJECT_STATE.md`, verify Git branch/HEAD/status, then execute ONLY the current Plan ID. Do not expand scope, redesign architecture, choose the next Plan, or continue beyond this Plan. Write the required `.project_ops/reports/.../REPORT.md` and evidence, then STOP or request the exact human intervention required by the Plan.
+Use stronger evidence only for:
 
-## Current partition
+- live Resolve/project mutation;
+- destructive/external action;
+- credentials/permissions;
+- architecture/dependency/security change;
+- release/hardening.
 
-`P001_LIVE_RESOLVE_ACCEPTANCE` is the first Plan under this operating model.
+## Blocked
+
+Block only when safe progress is impossible.
+
+Harmless `.project_ops` residue, Excel lock files, tracker lag, archived plans or a safely fast-forwardable branch are not blockers.
+
+## Human role
+
+The human sets production direction and judges visible output. The human should not relay routine AI process messages.

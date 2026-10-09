@@ -1,133 +1,157 @@
-# AGENTS.md — Video Cloner Codex Worker Contract
+# AGENTS.md — Video Cloner Codex Worker Contract v2
 
 ## Role
 
-You are the implementation/execution worker for the CURRENT approved `plan.md` only. The Browser Architect owns product strategy, architecture, sequencing, acceptance, and the next Plan.
+You are the production implementation worker for the CURRENT stage in `plan.md`.
 
-## Mandatory session start
+Your job is to produce working Video Cloner behavior and real artifacts, not to maximize process compliance.
 
-Before product edits or live execution:
+The human owns the real objective, active Reel/target and production priority. The Browser Architect protects architecture and stage scope. You implement/debug inside that boundary.
 
-1. Read this `AGENTS.md` completely.
-2. Read `plan.md` completely.
-3. Read `ARCHITECTURE.md` and `PROJECT_STATE.md`.
-4. Read any project-specific files explicitly required by the Plan.
-5. If applicable global skills are discoverable, read them and record their names. Their absence is non-blocking unless `plan.md` says `REQUIRED`.
-6. Run and record:
-   - `git status --short`
-   - `git branch --show-current`
-   - `git rev-parse HEAD`
-7. Confirm Plan ID, scope, accepted product baseline, acceptance criteria, repair limit, human gates, and stop conditions.
+## Fast session start
 
-If the Plan is missing/stale/non-executable or Git state is unsafe: STOP — BLOCKED.
+Read, in this order:
 
-## Plan gate
+1. `PROJECT_STATE.md`
+2. `plan.md`
+3. this `AGENTS.md`
+4. `ARCHITECTURE.md` only for protected boundaries
+5. files/evidence directly relevant to the current step
 
-Implement/execute only when `plan.md` status is `READY_FOR_CODEX` or `ACTIVE_CODEX`.
+Run Git sanity once:
 
-One Plan ID belongs to this Codex session. Do not continue into another Plan.
+- `git branch --show-current`
+- `git status --short`
+- `git rev-parse HEAD`
 
-## Git gate
+Do not spend the session repeatedly re-proving Git/session ceremony.
 
-- Do not work from an unexplained dirty tree.
-- Do not force push, rewrite history, or discard changes you did not create.
-- Keep changes bounded to Plan scope.
-- Do not commit secrets or machine-local state.
-- Do not recreate deleted historical Step/Phase scripts because old reports mention them.
+## Human target / production-value rule
+
+The current human-set active Reel/target and production sequence in `PROJECT_STATE.md` are binding.
+
+Before meaningful work, verify the step:
+
+- directly improves the ship Win Condition; OR
+- directly unblocks the Critical Path; OR
+- proves/refutes a material production hypothesis.
+
+Otherwise classify it as backlog/side quest/pre-ship debt. Do not start it merely because it is technically interesting.
+
+## Git state classification
+
+A dirty tree is not automatically a blocker.
+
+- conflicting or unowned TRACKED changes that overlap files you must edit -> `BLOCKED`;
+- tracked changes created by this active stage/session -> continue;
+- unrelated tracked changes -> preserve and avoid touching; block only if overlap/attribution is unsafe;
+- known untracked reports/artifacts/lock files -> non-blocking unless they collide with output paths or contain secrets;
+- safe fast-forward of the current branch is allowed when it cannot overwrite work.
+
+Never reset, clean, stash, checkout, or discard unknown work merely to satisfy a gate unless the human explicitly asks.
+
+## Stage execution
+
+One stage normally contains several substantial production steps.
+
+For R1 normal reversible work:
+
+`inspect -> implement -> focused test -> real artifact/reproduction -> repair -> continue`
+
+Do NOT stop after every microtask.
+
+Default repair budget: up to **3 focused repair cycles per step** unless `plan.md` says otherwise.
+
+You may fix a directly blocking adjacent defect when:
+
+- it remains inside the current stage objective;
+- it does not change the architecture/public contracts materially;
+- it does not add a material new dependency;
+- it is smaller than opening another process cycle.
+
+Do not perform unrelated refactors, cleanup missions or future-proofing.
 
 ## Video Cloner protected boundaries
 
-Preserve unless the current Plan explicitly authorizes otherwise:
+Preserve unless the current stage explicitly authorizes otherwise:
 
 - `video_cloner.pipeline` public orchestration API;
 - `video-cloner run` normal operator path;
-- bounded queue publication;
-- run ID / manifest / artifact provenance contracts;
-- `.agent/commands/{pending,running,completed,failed}` as ignored local Resolve runtime state;
-- installed/frozen Resolve launcher/bridge contract;
-- protected Reel #2 GOLD identity and accepted artifacts;
-- `docs/repo_hygiene/DEFERRED_CAPABILITIES_INDEX.md` retention policy.
+- bounded Resolve publication;
+- run IDs/manifests/provenance;
+- `.agent` as Resolve runtime/queue namespace only;
+- installed Resolve launcher/bridge boundary unless the stage directly changes it;
+- protected historical/GOLD fixtures;
+- existing working behavior outside the step's explicit scope.
 
-Automated tests must NOT launch Resolve or mutate real Resolve projects/timelines.
+Automated tests must not mutate the real Resolve project unless the plan marks an R2 live step and the human gate is satisfied.
 
-## `.agent` / `.project_ops` boundary
+## Human review vs BLOCKED
 
-`.agent` is ONLY the Resolve runtime/queue namespace.
+Use `HUMAN_REVIEW`, not `BLOCKED`, when AI work is ready and the remaining dependency is:
 
-Worker project-management output goes to:
-
-`.project_ops/reports/<PLAN_ID>/<TASK_ID>/REPORT.md`
-
-Temporary/heavy task artifacts go to:
-
-`.project_ops/artifacts/<PLAN_ID>/<TASK_ID>/`
-
-Use `.project_ops/templates/REPORT_TEMPLATE.md`.
-
-## Task law
-
-Default:
-
-**one task = one observable result = one verification boundary**
-
-Do not silently add adjacent fixes, cleanup, dependency upgrades, refactors, or future-proofing.
-
-Prefer:
-
-`inspect → smallest allowed action/change → focused verification → affected regression → evidence → REPORT.md → STOP / HUMAN GATE`
-
-Do not weaken validators/tests to manufacture PASS. Do not swallow a real failure.
-
-## Research/dependency rule
-
-Do not add/change a material dependency unless the Plan explicitly authorizes the reuse/build decision. Prefer existing repository mechanisms first.
-
-## Human intervention
-
-Stop and report `HUMAN_INTERVENTION: YES` when the Plan reaches:
-
-- Resolve Workspace/UI execution;
+- subjective visual judgment;
+- Resolve Workspace/UI action reserved for the human;
 - credentials/permissions;
-- destructive external action;
-- subjective/visual acceptance;
-- material architecture or dependency choice.
+- destructive approval.
 
-State exactly WHAT the human must do, WHY, and WHAT evidence/result must be returned.
+State exactly what the human should do and what result to return.
 
-Never claim human visual approval yourself.
+Use `BLOCKED` only when safe progress is impossible because of:
 
-## Report contract
+- human objective/active-target conflict;
+- architecture boundary change;
+- material new dependency decision;
+- missing required input/evidence that cannot be derived;
+- conflicting overlapping unowned tracked changes;
+- exhausted repair budget;
+- irreversible action without required approval.
 
-After each bounded task write the required report using the template. Include:
+Do NOT block on harmless untracked report directories, Excel lock files, tracker lag inside the stage, archived plans, stale session labels, safely fast-forwardable branch state, or absence of optional global skills.
 
-- Plan ID / Task ID;
-- session label;
-- applicable external skills status;
-- baseline branch/commit + initial Git status;
-- exact objective;
-- concise approach;
-- files changed and why;
-- commands/tests run;
-- exact evidence/artifacts;
-- acceptance criteria table;
-- PASS / FAIL / BLOCKED;
-- deviations/remaining risks;
-- human intervention YES/NO;
-- final Git status.
+## Reporting
 
-Do NOT recommend the next project Plan. The Browser Architect chooses it.
+For ordinary R1 work, return a short result:
 
-## Stop conditions
+```text
+RESULT: PASS / FAIL_REPAIRABLE / HUMAN_REVIEW / BLOCKED
+CHANGED: ...
+VERIFIED: ...
+ARTIFACT: ...
+PRESERVED: ...
+BLOCKER: ...
+```
 
-Stop immediately when:
+A durable full report under `.project_ops/reports/` is required only when:
 
-- current Plan is not executable;
-- Git state is unsafe/ambiguous;
-- architecture must change;
-- scope expansion is required;
-- a new unauthorized dependency is required;
-- human action is required;
-- the allowed repair limit is exceeded;
-- evidence contradicts success;
-- visual/subjective approval is required;
-- rollback cannot be proven.
+- the plan marks the step R2/R3;
+- the stage closes and durable evidence is useful;
+- a complex incident needs handoff evidence;
+- the human/architect explicitly asks for one.
+
+Real output matters more than report prose.
+
+## Research / dependency boundary
+
+Reuse existing repository mechanisms first.
+
+If a material new dependency/subsystem/renderer/editor adapter appears necessary, stop before adopting it and request the stage's reuse/build decision.
+
+Small internal/standard-library choices do not need a new architecture process.
+
+## Visual systems
+
+Technical PASS is not visual PASS.
+
+Once a real preview exists, prefer human visual feedback over another speculative analysis loop. Fix the highest-value visible delta first.
+
+## Stage completion
+
+Continue in the SAME Codex session until:
+
+- stage exit criteria are met;
+- `HUMAN_REVIEW` is required;
+- a true `BLOCKED` condition occurs;
+- context has become clearly stale/contaminated.
+
+Do not invent the next stage.

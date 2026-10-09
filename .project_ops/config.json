@@ -1,52 +1,72 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "name": "VIDEO_CLONER_PROJECT_OPS",
+  "workflow_version": "2.0",
+  "default_mode": "PRODUCTION",
   "context": {
     "primary": "GITHUB_MAIN",
     "repository": "TnS101/video-cloner",
     "browser_zip_fallback": true,
     "chat_history_is_authority": false
   },
+  "authority": {
+    "human_product_direction": "highest",
+    "current_operational_truth": "PROJECT_STATE.md",
+    "stable_architecture": "ARCHITECTURE.md",
+    "tracker_role": "roadmap_backlog_not_execution_gate"
+  },
   "namespaces": {
     "resolve_runtime": ".agent",
     "project_ops": ".project_ops",
-    "report_path_pattern": ".project_ops/reports/<PLAN_ID>/<TASK_ID>/REPORT.md",
-    "artifact_path_pattern": ".project_ops/artifacts/<PLAN_ID>/<TASK_ID>/",
-    "plan_archive_path_pattern": "docs/plans/archive/<PLAN_ID>.md"
+    "report_path_pattern": ".project_ops/reports/<STAGE_ID>/<STEP>/REPORT.md",
+    "artifact_path_pattern": ".project_ops/artifacts/<STAGE_ID>/<STEP>/",
+    "stage_archive_path_pattern": "docs/plans/archive/<STAGE_ID>.md"
+  },
+  "session_policy": {
+    "fresh_browser_per_meaningful_stage": true,
+    "fresh_codex_per_meaningful_stage": true,
+    "fresh_session_per_task": false,
+    "same_session_repairs": true,
+    "context_exhaustion_allows_fresh_session": true
+  },
+  "stage_policy": {
+    "typical_substantial_steps_min": 3,
+    "typical_substantial_steps_max": 10,
+    "default_local_repair_cycles": 3,
+    "codex_may_continue_sequential_stage_steps": true,
+    "human_sets_stage_priority": true
+  },
+  "risk_tiers": {
+    "R1": "normal_reversible_production",
+    "R2": "live_external_destructive_or_human_visual",
+    "R3": "architecture_security_release"
+  },
+  "git_gate": {
+    "block_on_conflicting_overlapping_tracked_changes": true,
+    "untracked_residue_blocks": false,
+    "safe_fast_forward_allowed": true,
+    "exact_sha_required_by_default": false,
+    "never_discard_unknown_work": true
+  },
+  "reporting": {
+    "r1_full_report_required": false,
+    "r2_full_report_required": true,
+    "r3_full_report_required": true
   },
   "research_gate": {
-    "mode": "CONDITIONAL_LATE_STAGE",
-    "trigger": "new_or_changed_material_mechanism_dependency_adapter_or_architecture",
-    "minimum_material_candidates_when_available": 5,
-    "target_candidates": 10
+    "mode": "DECISION_DRIVEN_PLUS_MANDATORY_PROJECT_MILESTONE",
+    "default_min_material_candidates": 3,
+    "default_target_candidates": 5,
+    "video_cloner_mandatory_trigger": "after_core_reel_components_before_broader_ecosystem_expansion"
   },
   "dependency_policy": {
     "prefer_foss_or_local": true,
-    "paid_only_requires_human_approval": true,
-    "trial_dependency_must_be_explicitly_approved": true
+    "paid_only_requires_human_approval": true
   },
-  "plan_partition": {
-    "fresh_codex_session_per_plan": true,
-    "fresh_browser_chat_for_next_independent_plan": true,
-    "same_browser_chat_reviews_current_plan": true,
-    "default_max_local_repair_attempts": 1,
-    "codex_may_choose_next_plan": false,
-    "architect_reviews_worker_pass": true
-  },
-  "external_skills": {
-    "verify_if_present_and_applicable": true,
-    "absence_blocks_only_if_plan_marks_required": true
-  },
-  "mandatory_project_files": [
-    "AGENTS.md",
-    "ARCHITECT_RULES.md",
-    "PROJECT_STATE.md",
-    "ARCHITECTURE.md",
-    "plan.md",
-    "PROJECT_TRACKER.xlsx",
-    "docs/RESEARCH_BASELINE.md",
-    "docs/DECISIONS.md",
-    "docs/TEST_STRATEGY.md",
-    ".project_ops/templates/REPORT_TEMPLATE.md"
-  ]
+  "anti_loop": {
+    "max_similar_repairs": 3,
+    "max_plan_rewrites_without_user_visible_artifact": 2,
+    "max_consecutive_process_only_tasks_in_production": 1,
+    "process_effort_warning_ratio": 0.2
+  }
 }

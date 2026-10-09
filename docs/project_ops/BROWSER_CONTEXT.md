@@ -1,26 +1,34 @@
-# Browser Context — GitHub-First
+# Browser Context — Video Cloner v2
 
 ## Normal mode
 
-A fresh Browser Architect chat should receive the GitHub repository URL and read from `main`:
+GitHub `main` is primary context.
 
-1. `ARCHITECT_RULES.md`
-2. `PROJECT_STATE.md`
-3. `ARCHITECTURE.md`
-4. `PROJECT_TRACKER.xlsx`
-5. `plan.md`
+Read current files directly:
 
-This avoids repeatedly uploading ZIP snapshots now that clean GitHub authority exists.
+1. `PROJECT_STATE.md`
+2. `plan.md`
+3. `ARCHITECT_RULES.md`
+4. `ARCHITECTURE.md`
+5. `PROJECT_TRACKER.xlsx` when roadmap/backlog context is relevant
 
-## Attach only when needed
+Attach only local-only screenshots, Resolve output, ignored artifacts or logs that GitHub cannot provide.
 
-- current Codex `REPORT.md` when reviewing the current Plan;
-- screenshots / local logs / ignored runtime artifacts that GitHub cannot contain;
-- `docs/RESEARCH_BASELINE.md` when a new mechanism/dependency is being chosen;
-- decision/test docs when materially relevant.
+## Fresh Browser cadence
+
+Fresh Browser chat for:
+
+- a new meaningful stage;
+- architecture/dependency/security decision;
+- clearly stale/contaminated context;
+- release/hardening boundary.
+
+Not for each task or repair.
+
+## Same-stage review
+
+The same Browser chat may review multiple Codex iterations and human visual feedback inside one stage.
 
 ## ZIP fallback
 
-Use `scripts/project_ops/make_browser_context.ps1` only when GitHub access is unavailable or a local-only context handoff is required.
-
-Never treat stale ChatGPT Project knowledge as stronger than GitHub current state.
+Use the browser-context script only when GitHub access is unavailable or local-only context must be transferred.

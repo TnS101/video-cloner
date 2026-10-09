@@ -112,7 +112,7 @@ Only decisions that materially constrain future work belong here.
 
 - DATE: 2026-10-09
 - PLAN: `P005_PH2_ADVANCED_TEXTPLUS_CAPTION_FIDELITY`
-- STATUS: APPROVED / ACTIVE
+- STATUS: SUPERSEDED
 - DECISION: supersede P004 as the current Critical Path and defer its remaining save/reopen + live repository-identity proof to PRE-SHIP. Start PH2 caption production immediately from the retained Reel #2 GOLD/accepted caption authorities.
 - WHY: the end-of-week ship deadline makes visible feature output the binding constraint. The tracker explicitly defines PH2 as Retain / Reuse / Improve and says not to rebuild the retained Reel #2 caption baseline. P004 T002 published nothing, so deferral creates no ambiguous live state.
 - PRESERVE: P004 T001 accepted repair remains in source; full persistence/idempotency/final human acceptance remain mandatory before release.
@@ -122,7 +122,7 @@ Only decisions that materially constrain future work belong here.
 ## D014 — Integrated production slice replaces caption-only blocker loop
 
 - DATE: 2026-10-09
-- STATUS: APPROVED / ACTIVE
+- STATUS: SUPERSEDED
 - PLAN: `P005_PRODUCTION_VERTICAL_SLICE_SPEEDRUN`
 - DECISION: treat the Reel #2 caption identity mismatch as a bounded fidelity sub-fix, not as a global blocker. Generate one integrated production slice covering cuts, supported transitions, captions, and detection manifests for ramps/zoom/whip-slide/animation combos.
 - RULE: unresolved optional identity-bound caption authority may be omitted and reported for the preview if core semantic/timing validity remains intact; mappings must never be guessed.
@@ -147,3 +147,15 @@ Only decisions that materially constrain future work belong here.
 - REQUIRED SEQUENCE: finish the active Reel #3 baseline for captions/advanced animation, cuts, transitions, and core motion/VFX first. After that baseline, the `PROJECT_TRACKER.xlsx` OSS research/reuse backlog layer is mandatory before broader ecosystem/functionality expansion.
 - OSS RULE: research and reuse/adapt proven open-source mechanisms before custom-building equivalents; prefer `REUSE > ADAPT > COMBINE > BUILD`.
 - FAILURE PREVENTION: no silent reel/phase/target pivot. If human command, tracker, state, and Plan disagree materially, stop and surface the conflict.
+
+
+## D017 — Workflow v2: stage-based, production-value-first execution
+
+- DATE: 2026-10-09
+- STATUS: APPROVED / ACTIVE
+- DECISION: replace microtask Plan/session/report ceremony with a risk-adaptive stage workflow. One meaningful stage normally spans 3-10 substantial production steps in the same Browser/Codex sessions. R1 work gets up to 3 focused repair cycles and short results; R2/R3 retain stronger gates/reports.
+- AUTHORITY: explicit human objective/active Reel/priority is highest product-direction authority. `PROJECT_STATE.md` is the only volatile current-state authority. `ARCHITECTURE.md` is stable only. `PROJECT_TRACKER.xlsx` is roadmap/backlog/milestone context, not a per-task execution gate.
+- GIT: block only on real conflicting overlapping tracked work or other material risk. Known untracked reports/artifacts/lock files and safe fast-forward state are non-blocking.
+- ANTI-LOOP: 3 similar failed repairs, 2 plan rewrites without visible output, 2 consecutive process-only tasks, or >20% process effort without payoff trigger simplification/reframing.
+- CURRENT STAGE: `S006_REEL3_CORE_STYLE_REPRODUCTION`.
+- WHY: real project history showed the v1 bootstrap successfully prevented uncontrolled agent drift but then became the bottleneck itself through excessive partitioning, stale duplicated state and compliance-driven BLOCKED loops.

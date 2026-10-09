@@ -1,49 +1,84 @@
-# PROJECT_STATE.md — Video Cloner Speedrun
+# PROJECT_STATE.md — Video Cloner Current Operational Truth
 
-## Objective
-Ship usable Video Cloner by end of week.
+## Human Directives
 
-## Active Production Target
-- Reel #3: `DZatr0EJt4B`
-- Existing target timeline: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`
-- Target UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`
+- REAL OBJECTIVE: ship a usable Video Cloner by end of week.
+- ACTIVE PRODUCTION REEL: `DZatr0EJt4B` (Reel #3).
+- ACTIVE RESOLVE TARGET: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`.
+- TARGET UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`.
+- PRIORITY: production-value work only; no silent Reel/phase/target pivots.
+- REQUIRED SEQUENCE: advanced caption animation -> transitions -> core motion/VFX -> integrated Reel #3 acceptance -> mandatory OSS research/reuse expansion.
+- HARD RULE: do not rebuild basic Reel #3 captions; existing 112-overlay baseline is preserved.
 
-## Current Reality
-- Reel #3 offline analysis/planning already exists.
-- Reel #3 target timeline already exists and is reviewable.
+## Win Condition
+
+Video Cloner analyzes a reference Reel and reproduces the core/basic principles of that editor's style well enough to create a usable, editable clone.
+
+## Mode
+
+- MODE: `PRODUCTION`
+- DEFAULT RISK: `R1`
+- DEADLINE: end of week
+
+## Current Position
+
+### Known true now
+
+- Reel #3 offline analysis/planning artifacts exist.
+- Existing Reel #3 Resolve target exists and is reviewable.
 - Basic Text+ captions are already applied.
 - P002 structurally mapped 112/112 overlays.
-- We are NOT rebuilding captions.
-- Reel #2 is retained reference/GOLD evidence only, not the active production target.
-- Previous Reel #2 integrated-preview detour is SUPERSEDED.
+- Cuts/shot structure are already part of the working baseline and should not be reopened without evidence.
+- Existing caption animation machinery exists but still contains legacy Reel #1 assumptions.
+- Reel #2 is reference/GOLD evidence only, not active production.
 
-## Current Plan
-`P006_REEL3_ADVANCED_CAPTION_ANIMATION_TRANSITIONS_SPEEDRUN`
+### Accepted / working
 
-T001: `AUTHORIZED — REEL #3 ADVANCED CAPTION ANIMATION PREPARATION`
-T002: `NEXT — APPLY + VISUAL REVIEW`
-T003: `NEXT — TRANSITIONS/VFX`
+- canonical standalone CLI/API architecture;
+- Resolve queue/bridge boundary;
+- Reel #3 basic caption application;
+- Reel #3 target identity;
+- prior cut/analysis/planning work.
 
-## Critical Path
-1. Prepare Reel #3 advanced caption animation payload using existing captions.
-2. Apply once to existing Reel #3 target and visually review.
-3. Implement highest-value Reel #3 transitions/VFX next.
-4. Continue feature production until ship.
+### Deferred / pre-ship debt
 
-## Guardrails
-- Reel #3 only for active production.
-- No Reel #2 production work.
-- No basic caption regeneration.
-- No Git/persistence ceremony.
-- No architecture rewrite.
+- save/reopen persistence proof;
+- live repository-identity proof;
+- same-target replay/idempotency acceptance;
+- final release certification.
 
+These are release gates, not the current feature bottleneck.
 
-## HARD HUMAN DIRECTIVE — DO NOT OVERRIDE
+## Main Constraint
 
-- Highest authority: explicit human commands and Win Condition.
-- Ship target: working Video Cloner by end of week.
-- Product Win Condition: analyze a Reel and reproduce the core/basic principles of that editor's style well enough to generate a usable clone.
-- Active production remains Reel #3 `DZatr0EJt4B`; reference/GOLD reels must never replace it without explicit human direction.
-- Immediate sequence: finish Reel #3 core components — advanced captions/animations, cuts, transitions, then core motion/VFX.
-- Mandatory next milestone after the basic-component baseline: enter the `PROJECT_TRACKER.xlsx` OSS research/reuse backlog layer and reuse/adapt proven open-source projects before custom-building broader content-automation functionality.
-- No silent phase/reel/target pivots. If tracker, Plan, or human command conflict, STOP and ask rather than improvising.
+- BOTTLENECK: advanced Reel #3 caption animation is not yet applied generically to the existing 112-caption target.
+- WHY: it is the nearest missing source-visible style component before transitions/VFX.
+
+## Current Stage
+
+- STAGE ID: `S006_REEL3_CORE_STYLE_REPRODUCTION`
+- STAGE STATUS: `READY`
+- STAGE PLAN: `plan.md`
+- CURRENT MOVE: genericize/prepare Reel #3 advanced caption animation, then apply once for human visual review.
+- LATEST MEANINGFUL CHECKPOINT: `2b2066cf2a209f9a12e25b713aabb641345de7e8`
+
+## Human Action
+
+- NONE until an R2 Resolve visual/apply gate is ready.
+
+## Evidence / Unknowns
+
+### KNOWN
+
+- existing Reel #3 target has 112/112 mapped overlays;
+- old caption-animation apply path contains Reel #1-specific assumptions;
+- real visual review is required to choose highest-value repairs.
+
+### UNKNOWN THAT COULD CHANGE THE MOVE
+
+- exact source-supported animation count/families for Reel #3 after generic preparation;
+- which non-caption effect family produces the highest visible ROI after transitions.
+
+## Next Milestone
+
+Complete Reel #3 core style baseline, then immediately enter the mandatory OSS reuse/expansion stage from the project tracker.

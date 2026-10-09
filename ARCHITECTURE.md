@@ -1,34 +1,29 @@
-# ARCHITECTURE.md — Video Cloner Approved System Boundaries
+# ARCHITECTURE.md — Video Cloner Stable System Boundaries
 
 - STATUS: APPROVED
 - VERSION: A001
 - LAST UPDATED: 2026-10-09
-- APPROVED BY HUMAN: YES
 - BASELINE: `video-cloner-canonical-cleanup-20261007`
 
-> This summarizes the CURRENT approved architecture. It does not replace detailed canonical documents under `docs/` and `docs/repo_hygiene/`.
+> Stable architecture only. **Do not place current Reel/target, active stage, temporary sequencing, current blocker or sprint status here.** Those belong in `PROJECT_STATE.md`.
 
 ## 1. System Purpose
 
-Turn source video plus editing/style evidence into reproducible analysis, edit decisions, style/profile artifacts, an FCPXML timeline package, and a bounded editor-application command, while preserving run identity/provenance and keeping execution deterministic.
+Turn a reference video plus extracted editing/style evidence into deterministic analysis, edit decisions, reusable style/profile artifacts, an editable timeline package, and bounded editor application so the generated result can reproduce the source editor's visible behavior.
 
-## 2. Observable Product Win Condition
+## 2. Product Capability Constraints
 
-For the immediate product gate, one clean/raw target must be processed through the public pipeline and applied in DaVinci Resolve with:
+The architecture must support, where present in source evidence:
 
-- correct target identity;
-- persistent readback;
-- safe declared second-run/idempotency behavior;
-- protected timelines untouched;
-- human-approved visual result.
+- cuts/shot timing;
+- caption semantic/composition/style/lifecycle/animation;
+- transitions;
+- motion transforms / zoom / retiming when source-backed;
+- supported VFX/occlusion;
+- deterministic provenance and editable output;
+- human visual acceptance of perceptual fidelity.
 
-Future editor adapters are enabled by the application boundary but are not required for P001.
-
-### Production sequencing override — SPEEDRUN (2026-10-09)
-
-The complete PH1 ship-acceptance criteria in §2 remain **release gates**, but they no longer block PH2 caption production. PH2 begins immediately from the retained Reel #2 GOLD and accepted caption authorities. P004 save/reopen persistence, live repository-identity proof, same-target replay/idempotency, and formal full-target acceptance are deferred to `PRE-SHIP`. This changes sequencing only; it does not weaken release acceptance or alter the approved architecture.
-
-## 3. Current Architecture Summary
+## 3. Stable Architecture Summary
 
 ```text
 Operator / future UI / external service
@@ -41,18 +36,18 @@ ingest/reuse
  -> analysis
  -> transition policy
  -> planning
- -> profiles
- -> FCPXML compile
- -> bounded Resolve queue publication
+ -> profiles/style authority
+ -> editable timeline/FCPXML compilation
+ -> bounded Resolve command publication
         |
         v
-.agent/commands (local runtime state)
+.agent/commands (local Resolve runtime state)
         |
         v
 Resolve Workspace launcher
  -> VC_Run_Agent_Task.py
  -> VC_Agent_Bridge.py
- -> frozen Phase 6 application module
+ -> bounded application modules
 ```
 
 No public API launches Resolve directly.
@@ -61,79 +56,69 @@ No public API launches Resolve directly.
 
 | Component | Responsibility | Must Preserve |
 |---|---|---|
-| `video_cloner.pipeline` | Public application orchestration, run identity, manifest | One stable API for CLI/future UI/services |
-| `video_cloner.config` / `contracts` | Runtime inputs, worker/tool paths, identity/contracts | Validated inputs; no hidden machine constants |
-| `video_cloner.ingestion` | Media ingest/prep | Deterministic reusable artifacts |
-| `video_cloner.analysis.*` | Cuts/transcript/rhythm/caption/motion/transitions/occlusion evidence | Capability separation; evidence provenance |
-| `video_cloner.planning.*` | Merge/plan/validate/compile edit decisions | Deterministic validated plan |
-| camera/caption/style/profile modules | Style/edit profile generation | No silent Resolve mutation |
-| `video_cloner.resolve.fcpxml` | Offline timeline compilation | Deterministic output contract |
-| `video_cloner.resolve.queue` | Bounded operation publication | No arbitrary module path exposed publicly |
-| `.agent/commands` | Local Resolve command state | Ignored machine-local runtime namespace |
-| Resolve launcher/bridge | Explicit live mutation boundary | Fail closed; provenance; frozen unless dedicated Plan |
-| `.project_ops` | Plan/report/project-management support | Must never be used as Resolve queue/runtime |
+| `video_cloner.pipeline` | Public orchestration, run identity, manifests | stable API for CLI/future UI/services |
+| `video_cloner.config` / contracts | validated runtime/tool/identity inputs | no hidden machine constants |
+| `video_cloner.ingestion` | deterministic media ingest/prep | reusable artifacts |
+| `video_cloner.analysis.*` | cuts/transcript/rhythm/caption/motion/transitions/occlusion evidence | capability separation + provenance |
+| `video_cloner.planning.*` | merge/plan/validate/compile edit decisions | deterministic validated plan |
+| caption/style/profile modules | convert evidence into reusable visual/edit authority | no silent live mutation |
+| `video_cloner.resolve.fcpxml` | editable offline timeline compilation | deterministic output contract |
+| `video_cloner.resolve.queue` | bounded operation publication | no arbitrary caller-selected module |
+| `.agent/commands` | local Resolve runtime state | machine-local queue namespace |
+| Resolve launcher/bridge | explicit live mutation boundary | fail closed + bounded operation |
+| `.project_ops` | lightweight project-management/evidence support | never used as Resolve runtime |
 
-## 5. Interfaces / Public Contracts
+## 5. Durable Interfaces / Contracts
 
 - CLI: `video-cloner run ...`
 - Python: `video_cloner.pipeline.run(...)`
 - Offline: `run_offline(...)`
-- Run evidence: immutable `run_id` + atomic run manifest
-- Resolve publication: bounded timeline-import operation, not caller-selected Python module
-- Human gate: Resolve Workspace action for live execution
+- immutable run identity / manifest;
+- bounded Resolve publication;
+- human gate for live/subjective editor operations.
 
 ## 6. Runtime Model
 
 - Windows development/runtime environment.
-- Core Python supports 3.10–3.14.
-- Audio/OCR capabilities may use separately configured Python 3.10 worker environments.
-- FFmpeg / yt-dlp / optional Ollama / Resolve are external tools/adapters behind configuration.
-- Do not force single-environment unification during product debugging.
+- Core Python supports 3.10-3.14.
+- Audio/OCR may use configured worker environments.
+- FFmpeg / yt-dlp / optional local inference / Resolve are external adapters.
+- Do not force single-environment unification during feature debugging.
 
 ## 7. Security / State Boundary
 
-- Secrets/local configuration are untracked (`.env`, cookie path, local runtime state).
-- `.agent` is Resolve runtime state and is ignored except `.agent/README.md`.
-- `.project_ops/artifacts` and `.handoffs` are local/ignored.
-- Public runtime identity must not expose credentials/query secrets.
+- secrets/local configuration remain untracked;
+- `.agent` is Resolve runtime state;
+- `.project_ops` is project-management/evidence support;
+- public identity/provenance must not expose credentials/query secrets.
 
 ## 8. Protected Known-Good Behavior
 
-- GitHub `main` + cleanup tag represent clean canonical source.
-- Canonical regression remains green (116 current-path tests at bootstrap creation).
-- CLI/API do not require BAT/PowerShell/N8N orchestration.
-- Resolve live mutation is explicit, not automatic.
-- Protected Reel #2 GOLD must not be mutated.
-- Deferred capability sources remain indexed until canonical replacements/tests exist.
+- canonical GitHub source and recovery history;
+- public CLI/API architecture;
+- explicit Resolve mutation boundary;
+- protected historical/GOLD fixtures and accepted artifacts;
+- deferred capability sources remain available until canonical replacements/tests exist.
 
-## 9. Explicit Non-Goals Right Now
+## 9. Explicit Non-Goals of the Architecture
 
-- HyperFrames/Remotion/rough-cut/editor-adapter integration before current product bottleneck is resolved.
-- Generic multi-editor IR redesign during P001.
-- Full dependency/runtime unification.
-- Recreating deleted historical Step/Phase script forests.
-- Treating agentic editor control as the deterministic execution engine.
+- agentic editor control as the deterministic execution engine;
+- speculative multi-editor redesign without an approved product requirement;
+- rebuilding historical script forests as runtime;
+- forcing one dependency/runtime environment when adapters already isolate concerns.
 
-## 10. Architecture Risks / SPOFs
+## 10. Architecture Change Triggers
 
-- Resolve bridge is still the unaccepted live execution SPOF.
-- Some deferred caption/visual capabilities retain legacy compatibility source until canonicalized.
-- Finished/flattened Reel evidence cannot prove all underlying editor transforms.
-- Human visual acceptance remains required for visual fidelity.
+Open a material architecture decision only when evidence shows:
 
-## 11. Architecture Change Triggers
+- a required product behavior cannot fit current public/application boundaries;
+- a material dependency/renderer/editor adapter/data model must change;
+- repeated implementation failures prove the boundary itself is wrong;
+- security/data constraints materially change.
 
-Open an explicit architecture decision only when evidence shows:
+Ordinary bugs, visual tuning, Reel-specific production work and local adapter fixes are not architecture changes.
 
-- the public pipeline cannot satisfy a required product behavior;
-- current bounded editor adapter cannot support a required operation safely;
-- a repeated defect is architectural rather than implementation-specific;
-- a new editor/rendering mechanism requires a material contract change;
-- security/data/dependency constraints materially change.
-
-Codex reports the trigger; Browser Architect decides; human approves material changes.
-
-## 12. Detailed Authority Pointers
+## 11. Detailed Authority Pointers
 
 - `docs/CANONICAL_PROJECT_STATE.md`
 - `docs/VIDEO_CLONER_FINAL_HANDOFF.md`

@@ -1,113 +1,165 @@
-# P006 — Reel #3 Advanced Caption Animation + Transitions Speedrun
+# plan.md — S006 Reel #3 Core Style Reproduction
 
-- PLAN ID: `P006_REEL3_ADVANCED_CAPTION_ANIMATION_TRANSITIONS_SPEEDRUN`
-- STATUS: **READY_FOR_CODEX**
-- MODE: **FEATURE / PRODUCTION**
-- DEADLINE: **SHIP THIS WEEK**
-- ACTIVE REEL: **Reel #3 — DZatr0EJt4B**
-- CURRENT TARGET: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`
+- STAGE ID: `S006_REEL3_CORE_STYLE_REPRODUCTION`
+- STAGE NAME: Reel #3 advanced captions + transitions + core motion/VFX
+- STATUS: `READY`
+- MODE: `PRODUCTION`
+- ACTIVE REEL: `DZatr0EJt4B`
+- ACTIVE TARGET: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`
 - TARGET UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`
+- DEFAULT RISK: `R1`
+- DEFAULT REPAIR BUDGET: 3 focused repair cycles per step
 
-## What Is Already Done
+> This is one meaningful production stage. Do not create a new Plan/session after each test failure, visual correction, or local repair.
 
-Do NOT rebuild basic captions.
+## 1. Human-Set Outcome
 
-Reel #3 already has:
-- completed offline analysis/planning artifacts;
-- generated caption style + caption grammar;
-- existing imported/reviewable Resolve target timeline;
-- basic Text+ caption application already in place;
-- P002 structural validation of 112/112 overlays.
+Reel #3 should have a credible baseline reproduction of the editor's core style:
 
-The next production step is **advanced caption animation**, then **transitions/VFX**.
+- existing basic captions preserved;
+- source-supported advanced caption animation applied;
+- cuts preserved;
+- supported transitions applied;
+- at least the highest-value source-backed core motion/VFX behavior applied;
+- integrated result ready for human judgment.
 
-Reel #2 is reference/reuse evidence only. It is NOT the active production target.
+After this baseline, the next stage is the human-mandated OSS research/reuse expansion layer.
 
-## T001 — Reel #3 Caption Animation Production Plan + Generic Adapter — AUTHORIZED
+## 2. Production Value
 
-Goal:
-Use Reel #3's existing caption analysis/grammar and existing target captions to prepare the actual advanced animation payload for Reel #3.
+- WIN CONDITION CONTRIBUTION: converts existing analysis/Resolve infrastructure into source-visible editing behavior.
+- CURRENT BOTTLENECK: advanced caption animation on Reel #3.
+- WHY NOW: basic captions and cuts already exist; animation is the closest missing visible style layer.
+- KILL TEST: if a proposed task does not improve Reel #3 visible fidelity or directly enable the next visual preview, it is not on this stage's Critical Path.
 
-Reuse:
+## 3. Accepted Baseline / Preserve
+
+Preserve:
+
+- active Reel #3 only;
+- existing target timeline + UID;
+- 112/112 existing Text+ overlay baseline;
+- caption Rich Text, timing, font, static style and unaffected position;
+- existing cuts/shot structure unless direct regression evidence appears;
+- canonical public pipeline/CLI;
+- Resolve queue/bridge boundary;
+- protected historical/GOLD fixtures.
+
+Do not regenerate basic captions.
+
+## 4. IN Scope
+
+- generic command-bound Reel #3 caption animation plan/application;
+- persistent Text+ animation mechanisms already proven by project history;
+- human visual review and bounded fidelity repair;
+- existing transition detection/authority/application on Reel #3;
+- highest-value source-backed core motion/VFX family for Reel #3;
+- focused tests/reproduction directly needed for those outputs.
+
+## 5. OUT of Scope
+
+- Reel #2 production;
+- basic caption rebuild;
+- persistence/Git certification until pre-ship;
+- generic architecture rewrite;
+- broad refactor/cleanup;
+- speculative VFX not evidenced in Reel #3;
+- broader ecosystem/OSS expansion before this basic style baseline is working.
+
+## 6. Worker Autonomy
+
+Codex MAY:
+
+- choose normal implementation details;
+- inspect Reel #3 data/evidence;
+- modify directly relevant caption/transition/motion application code and focused tests;
+- perform up to 3 focused repair cycles per step;
+- fix directly blocking adjacent defects inside this stage boundary;
+- continue to the next R1 step without a new Browser/Codex session.
+
+Codex MUST escalate for:
+
+- active Reel/target/objective change;
+- architecture boundary change;
+- material new dependency;
+- destructive/live Resolve action requiring human approval;
+- conflicting unowned tracked changes overlapping needed files;
+- exhausted repair budget.
+
+## 7. Stage Steps
+
+| Step | Risk | Production Result | Done When | Human Gate | Status |
+|---|---|---|---|---|---|
+| 1 | R1 | Generic Reel #3 advanced caption-animation payload + adapter | legacy Reel #1 hardcoding/count assumptions removed from execution path; source-supported Reel #3 animations prepared; focused tests pass | NO | ACTIVE |
+| 2 | R2 | Apply animations once to existing Reel #3 target | existing target receives only authorized animation mutations; human watches and returns visible deltas | YES | TODO |
+| 3 | R1/R2 | Reel #3 transitions | supported source-backed transitions are applied via existing mechanism and visually reviewed | YES | TODO |
+| 4 | R1/R2 | Core motion/VFX | highest-value real Reel #3 effect family (e.g. ramp/zoom/whip/other evidence-backed winner) is executable and reviewed | YES | TODO |
+| 5 | R2 | Integrated Reel #3 visual acceptance | human confirms the basic components behave credibly enough to freeze this baseline | YES | TODO |
+
+Cuts are already baseline behavior; do not create a separate cut-rebuild step unless a regression is observed.
+
+## 8. Caption Animation Step 1 — immediate work
+
+Reuse existing mechanisms, especially:
+
 - `scripts/davinci/caption_animation_step_3C.py`
 - `resolve_workspace/resolve_apply_caption_animation_step_3C.py`
 - `tests/test_step4b_resolve_caption_animation_adapter.py`
-- existing caption motion/animation logic
+- existing Reel #3 analysis/grammar/motion artifacts.
 
-Important:
-- the old Resolve Step 3C script is hardcoded to Reel #1 (`DZsqH7auhjt`); genericize/adapt it minimally for command-bound Reel #3 inputs rather than cloning/rebuilding it;
-- preserve the existing Reel #3 captions exactly;
-- do not regenerate captions;
-- do not change caption text, timing, font, size, or position except where animation itself requires animated Size/Center values;
-- animate only source-supported Reel #3 events;
-- static/ambiguous captions remain untouched.
+Required behavior:
 
-Required Reel #3 animation families:
-- scale;
-- slide;
-- scale_pop;
-- any other family already supported by existing generic production code and actually evidenced in Reel #3.
+- remove Reel #1-specific execution assumptions such as fixed `DZsqH7auhjt` / fixed 116-caption contract;
+- bind video ID, target timeline, target UID, animation plan and expected caption identity/count through generic runtime/command inputs;
+- accept the existing Reel #3 112-overlay baseline;
+- preserve caption text/timing/static style;
+- animate only source-supported events;
+- static/ambiguous captions remain untouched;
+- reuse persistent Fusion mechanisms (e.g. Size -> BezierSpline, Center -> Path) where already proven;
+- prepare one directly applicable artifact/command for Step 2;
+- do not perform the live Resolve mutation during Step 1.
 
-Output:
-- Reel #3 animation plan/payload;
-- counts by animation family;
-- exact affected caption names/cue IDs;
-- focused tests;
-- ready-to-apply command/artifact for the existing Reel #3 target.
+## 9. Verification
 
-STOP before live Resolve mutation.
+Use the smallest evidence that proves behavior:
 
-## T002 — Apply Reel #3 Caption Animations + Visual Review — NEXT
+1. focused tests for the changed caption/transition/motion path;
+2. real Reel #3 artifact/payload generation;
+3. affected regression for protected caption/static behavior;
+4. live Resolve readback only at R2 steps;
+5. human visual review for perceptual acceptance.
 
-After T001 PASS:
-apply the prepared animations once to the EXISTING Reel #3 target timeline, save once if required, then human visual review.
+Do not substitute broad green suites for broken real output.
 
-No new timeline.
-No Reel #2.
-No basic-caption regeneration.
+## 10. Reporting
 
-## T003 — Reel #3 Transitions / VFX — NEXT AFTER ANIMATION REVIEW
+- R1 work: short Codex result only.
+- R2 live steps: durable report/evidence if useful.
+- Stage close: update `PROJECT_STATE.md` + tracker once and checkpoint Git.
 
-Use Reel #3's existing transition + motion analysis.
+Do not create a report-only success.
 
-Prioritize actual source-backed:
-1. executable transitions already supported;
-2. speed ramps;
-3. zooms;
-4. whip/slide/blur/crossfade candidates;
-5. animation combos.
+## 11. True Block Conditions
 
-Implement only the highest-value real missing family per visual review.
+Block only for:
 
-## T004 — Mandatory OSS Research / Reuse Expansion Layer — AFTER BASIC COMPONENT BASELINE
+- missing required Reel #3 input/evidence;
+- architecture/material dependency decision;
+- conflicting overlapping unowned tracked work;
+- unavailable external permission/credential;
+- unsafe irreversible action;
+- no safe path after repair budget.
 
-STATUS: **MANDATORY MILESTONE / NOT YET AUTHORIZED**
+Do not block on harmless untracked report directories, Excel lock files, stale session labels, mid-stage tracker lag or optional tools.
 
-Trigger only after Reel #3 has a working baseline for:
-- captions + advanced animation;
-- cuts;
-- transitions;
-- core motion/VFX reproduction.
+## 12. Stage Exit
 
-Then execute the backlog research layer from `PROJECT_TRACKER.xlsx`:
-- research proven OSS/existing projects that already solve remaining editing/automation problems;
-- inspect at least 5 materially relevant options when available;
-- rank `REUSE / ADAPT / COMBINE / BUILD / IGNORE`;
-- evaluate license, maintenance, integration cost, editor/render compatibility, and automation value;
-- reuse/adapt proven mechanisms before custom-building equivalents;
-- use this layer to expand Video Cloner into the wider content-automation ecosystem.
+Stage COMPLETE when:
 
-Do NOT pull T004 forward and derail the current Reel #3 basic-component work.
+- Reel #3 advanced caption animation is visibly present where source-supported;
+- existing captions/cuts remain acceptable;
+- source-backed transitions are visibly represented where supported;
+- at least the highest-value core motion/VFX gap is executed;
+- integrated human review accepts the basic style baseline.
 
-## Guardrails
-
-- Human commands + Win Condition take precedence; never silently pivot reel/phase/target.
-- Follow the current Plan and tracker sequencing; if they conflict with an explicit human command, STOP and surface it.
-- Reel #3 only.
-- Reel #2 is reference data only.
-- No Git/persistence work.
-- No basic caption rebuild.
-- No new caption architecture.
-- No report-only loop.
-- No speculative motion.
-- Every task must improve the existing Reel #3 target or prepare a directly applicable artifact for it.
+NEXT STAGE (mandatory): targeted OSS research/reuse expansion from the project tracker before broader content-automation functionality.
