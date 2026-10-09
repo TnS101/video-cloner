@@ -117,3 +117,13 @@ Only decisions that materially constrain future work belong here.
 - WHY: the end-of-week ship deadline makes visible feature output the binding constraint. The tracker explicitly defines PH2 as Retain / Reuse / Improve and says not to rebuild the retained Reel #2 caption baseline. P004 T002 published nothing, so deferral creates no ambiguous live state.
 - PRESERVE: P004 T001 accepted repair remains in source; full persistence/idempotency/final human acceptance remain mandatory before release.
 - SPEEDRUN RULE: no further Git/persistence ceremony while it does not block caption feature production.
+
+
+## D014 — Integrated production slice replaces caption-only blocker loop
+
+- DATE: 2026-10-09
+- STATUS: APPROVED / ACTIVE
+- PLAN: `P005_PRODUCTION_VERTICAL_SLICE_SPEEDRUN`
+- DECISION: treat the Reel #2 caption identity mismatch as a bounded fidelity sub-fix, not as a global blocker. Generate one integrated production slice covering cuts, supported transitions, captions, and detection manifests for ramps/zoom/whip-slide/animation combos.
+- RULE: unresolved optional identity-bound caption authority may be omitted and reported for the preview if core semantic/timing validity remains intact; mappings must never be guessed.
+- NEXT: visual evidence selects the single highest-ROI production repair.

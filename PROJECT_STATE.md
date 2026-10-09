@@ -1,60 +1,47 @@
-# PROJECT_STATE.md — Video Cloner Current Operational Reality
+# PROJECT_STATE.md — Video Cloner Speedrun
 
-## Project
+## Objective
 
-- STATUS: ACTIVE — SPEEDRUN
-- DEADLINE: ship usable Video Cloner by end of week
-- CURRENT PLAN: `P005_PH2_ADVANCED_TEXTPLUS_CAPTION_FIDELITY`
-- CURRENT PHASE: PH2 — FEATURE / PRODUCTION
-- CURRENT MOVE: build a real Reel #2 caption production preview package from retained accepted authorities
+Ship a usable Video Cloner by end of week.
 
-## Real Objective / Win Condition
+## Current Bottleneck
 
-Ship a deterministic Video Cloner that can produce a visually strong, editable video result. This week, visible caption fidelity is the highest-value feature bottleneck.
+**Integrated visible production quality**, not Git/process infrastructure.
 
-## Known Working / Reuse Assets
+## Current Plan
 
-- Public pipeline/API architecture remains accepted and unchanged.
-- Reel #2 GOLD remains retained baseline evidence: timeline `DcJRJtUKScu_offline_timeline_v1`, UID `4ad2a3c3-031c-464d-96aa-76a045608ad6`, DRT SHA-256 `99b11b92d55c40682f630fd4c52072e006c7e0b6494aef367bda175fb9d4af2e`.
-- Tracker PH2 explicitly says **Retain / Reuse / Improve** and **do not rebuild from scratch**.
-- Accepted Reel #2 authorities exist for static style, font choices, position, opacity/gradient examples, lifecycle correction and motion.
-- Canonical caption modules already exist under `video_cloner/captions`; Step 3C/3D mechanisms and focused caption tests survived cleanup.
-- P004 T001 Git executable repair passed offline at `da1d62833f1ec32ba40396a267640aa239ba7046`.
-- P004 T002 published nothing; no queue command, Resolve invocation or SaveProject occurred.
+`P005_PRODUCTION_VERTICAL_SLICE_SPEEDRUN`
 
-## Current Constraint
+STATUS: `READY_FOR_CODEX`
 
-**Production caption fidelity / visual proof.** We have substantial caption machinery and accepted evidence, but need one real canonical caption package and a visual production preview instead of more infrastructure ceremony.
+T001: `AUTHORIZED — INTEGRATED PRODUCTION SLICE`
+T002: `NOT_STARTED / NOT_AUTHORIZED`
+T003: `CONDITIONAL / NOT_AUTHORIZED`
+
+## Known Reality
+
+- Reel #2 retained caption GOLD/accepted authorities exist.
+- Caption attempt failed because legacy caption-style input has 0 visual IDs while retained grammar/accepted authorities contain identity-bound evidence.
+- This mismatch is a bounded fidelity issue, not permission to block all production output.
+- Cuts engine exists.
+- Transition detector exists.
+- Flash has executable support.
+- Whip/slide are currently detection/candidate only under MVP policy.
+- Motion analysis detects speed-ramp/zoom candidates; planner intentionally keeps heuristic-only candidates non-actionable.
+- Existing caption animation/lifecycle mechanisms and focused tests remain reusable.
 
 ## Critical Path
 
-1. P005 T001 — generate/validate real retained-baseline caption package.
-2. P005 T002 — one Resolve visual caption preview + human APPROVE/REJECT.
-3. If rejected: one bounded visual fidelity repair; if approved: freeze caption baseline and continue next production feature.
-
-## Current Plan Partition
-
-- PLAN: `P005_PH2_ADVANCED_TEXTPLUS_CAPTION_FIDELITY`
-- STATUS: `READY_FOR_CODEX`
-- T001: `AUTHORIZED — FEATURE/PRODUCTION OFFLINE PACKAGE`
-- T002: `NOT_STARTED / NOT_AUTHORIZED`
-- T003: `CONDITIONAL / NOT_AUTHORIZED`
-- PREDECESSOR: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK` — `SUPERSEDED / PRE-SHIP DEFERRED`
-- P004 ARCHIVE: `docs/plans/archive/P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK.md`
-
-## PRE-SHIP Debt — Deferred, Not Forgotten
-
-- save/reopen persistence;
-- live repository identity proof;
-- same-target replay/idempotency;
-- final full-target human acceptance / ship certification.
-
-Do not work these while captions are the bottleneck.
+1. Generate one integrated Reel #2 editable package now.
+2. One Resolve visual review.
+3. Fix the single biggest visible production gap.
+4. Continue feature production.
 
 ## Speedrun Guardrails
 
-- No new Git/process micro-plan unless it directly blocks product work.
-- No caption rebuild; reuse accepted Reel #2 assets.
-- No generic refactor without a visible production payoff.
-- Prefer a real output artifact over another diagnostic report.
-- After a real visual preview, fix only material visible deltas.
+- No Git/persistence work until PRE-SHIP unless it literally blocks output.
+- No report-only tasks when an artifact can be produced.
+- No rebuilding existing caption/cut/transition/motion systems.
+- No speculative identity reconstruction.
+- Optional unresolved fidelity must not block a structurally valid preview package.
+- Implement effects based on actual Reel evidence, not wishlist breadth.

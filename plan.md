@@ -1,147 +1,150 @@
-# P005 — PH2 Advanced TextPlus Caption Fidelity — SPEEDRUN
+# P005 — Production Vertical Slice Speedrun
 
-- PLAN ID: `P005_PH2_ADVANCED_TEXTPLUS_CAPTION_FIDELITY`
+- PLAN ID: `P005_PRODUCTION_VERTICAL_SLICE_SPEEDRUN`
 - STATUS: **READY_FOR_CODEX**
-- PHASE: **PH2 — FEATURE / PRODUCTION**
-- MODE: **SPEEDRUN — SHIP BY END OF WEEK**
-- BASELINE: accepted repository state containing P004 T001 + retained Reel #2 caption authorities
-- PREDECESSOR: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK` — **SUPERSEDED / PRE-SHIP DEFERRED**
-- WORKER GATE: **T001 AUTHORIZED NOW**
+- MODE: **FEATURE / PRODUCTION ONLY**
+- DEADLINE: **SHIP THIS WEEK**
+- CURRENT AUTHORIZATION: **T001 ONLY**
 
 ## Win Condition
 
-Produce a **real, deterministic, reviewable caption production package** from the retained Reel #2 caption baseline using the canonical Video Cloner caption pipeline — not a new caption system.
+Produce one **real editable Reel #2 output package** that combines the strongest working production path for:
 
-T001 PASS requires a real Reel #2 offline output package (FCPXML + report/evidence) in which the existing canonical caption path demonstrably reuses accepted semantic text, lifecycle, static style/position, font authority and accepted motion where evidence exists, with no dropped/duplicated caption coverage and no unrelated regression.
+1. cuts / shot structure;
+2. executable transitions already supported;
+3. captions with the highest deterministic fidelity currently recoverable;
+4. motion/VFX detection manifest for ramps, zooms, whips/slides and caption animation combos.
 
-The fastest acceptable route wins. If the existing path already produces the package correctly, **do not modify code**.
+The artifact wins. Reports exist only to explain what the artifact contains.
 
-## Why Now / Current Bottleneck
+## Existing Leverage — Reuse, Do Not Rebuild
 
-The project tracker already marks PH2 as **Retain / Reuse / Improve** and explicitly says the Reel #2 caption lifecycle/GOLD baseline exists and must not be rebuilt.
+- cuts: `video_cloner/analysis/cuts.py`
+- transitions: `video_cloner/analysis/transitions.py`
+- transition execution/policy + flash path
+- motion analysis: `video_cloner/analysis/motion.py`
+- caption stack: `video_cloner/captions/*`
+- retained Reel #2 caption authorities and grammar
+- existing Step 3C/3D caption motion/lifecycle mechanisms
+- existing focused tests for captions, transitions, speed-ramp/zoom authority and flash
 
-The repository already contains:
+Known reality:
+- hard cuts already work;
+- flash transition has an executable authority path;
+- whip/slide detection exists but current MVP policy demotes it;
+- speed-ramp/zoom candidates exist but current planner intentionally keeps heuristic-only candidates non-actionable;
+- caption T001 failed because the legacy style file has 0 visual IDs while retained grammar/authorities contain identity-bound evidence.
 
-- retained Reel #2 GOLD identity/hash evidence;
-- `config/DcJRJtUKScu.accepted_caption_motion.json`;
-- `config/DcJRJtUKScu.accepted_human_static_style_adjudication.json`;
-- `config/DcJRJtUKScu.accepted_lifecycle_end_correction.json`;
-- display/position recovery authorities;
-- Step 3C animation and Step 3D lifecycle mechanisms;
-- font inference;
-- canonical `video_cloner/captions/{textplus,lifecycle,fcpxml}.py`;
-- caption grammar and extensive focused tests.
+## Speedrun Rule
 
-Therefore the bottleneck is **production caption fidelity**, not Git/persistence plumbing.
+The caption identity mismatch is a **bounded sub-fix**, not a new project.
 
-## Speedrun Rules
+Do not block the whole production slice because one optional identity-bound authority cannot resolve.
 
-1. **REUSE > ADAPT > SMALL FIX. Never rebuild captions.**
-2. No OSS scan, architecture redesign, Git identity work, persistence work, cleanup, refactor or generic framework work before the caption preview exists.
-3. No source change unless a concrete observed gap blocks the T001 production package or an accepted caption authority from being applied.
-4. Any code change must be the smallest canonical fix and remain generic — no production logic branching on Reel ID, literal caption text, or human-choice IDs.
-5. Unknown visual properties remain unknown; do not invent fidelity.
-6. Existing working caption behavior/regression must remain green.
+For the preview package:
+- apply every authority that can be deterministically authenticated;
+- preserve core semantic/timing coverage;
+- mark unresolved identity-bound fidelity explicitly;
+- skip only the unresolved rows;
+- never invent mappings.
 
-## T001 — Build the Caption Production Preview Package — AUTHORIZED
+A missing optional style/motion authority may reduce fidelity, but it must not prevent generating the baseline production artifact if the core caption package can remain structurally valid.
 
-### Action
+## T001 — Integrated Production Slice — AUTHORIZED
 
-Run the existing canonical caption pipeline on the real retained Reel #2 evidence and generate a production-ready offline caption/FCPXML package suitable for the next live visual preview.
+### Goal
 
-First inspect/reuse, in this order:
+Generate the real Reel #2 editable package plus a machine-readable production manifest showing:
 
-- `video_cloner/captions/textplus.py`
-- `video_cloner/captions/lifecycle.py`
-- `video_cloner/captions/fcpxml.py`
-- `video_cloner/caption_grammar.py`
-- existing canonical Resolve/FCPXML compiler surfaces
-- retained `DcJRJtUKScu` accepted config authorities
-- existing Step 3C/3D mechanisms only where already consumed by the canonical path
+- cut/shot count;
+- executed transition families/counts;
+- detected-but-not-executed transition candidates;
+- caption source coverage;
+- applied vs unresolved caption style/lifecycle/motion authority;
+- speed-ramp candidates;
+- zoom candidates;
+- other detected motion/VFX candidates;
+- caption animation families/combos present in source evidence.
 
-Do not create a parallel caption engine.
+### Caption blocker handling
 
-### Fidelity that must be represented when source authority exists
+First try the smallest deterministic bridge between retained Reel #2 grammar/accepted authorities and the legacy style input.
 
-- semantic/display text authority;
-- exact caption source coverage and ordering;
-- lifecycle/timing, including accepted lifecycle corrections;
-- font family/style/weight authority;
-- size and position/anchor;
-- fill / gradient / opacity where accepted;
-- stroke/shadow where supported by retained authority;
-- multiline/layout behavior when existing authority supplies it;
-- accepted scale/slide/motion keyframes where explicitly supported;
-- static captions remain static when motion evidence is absent/ambiguous.
+Allowed join evidence must be explicit, e.g. shared cue/event IDs, retained visual identity fields, exact source-evidence references, or exact canonical windows already present in retained artifacts.
 
-### Allowed implementation surface if — and only if — a real gap is found
+Forbidden:
+- fuzzy text matching;
+- approximate timing guesses;
+- Reel-ID-specific production branches;
+- hardcoded caption literals;
+- fabricated identity reconstruction.
 
-Prefer no edits. If required, edits are limited to the smallest relevant canonical caption/compiler files and directly corresponding tests:
+If some accepted rows still cannot bind, continue the preview with those rows marked `UNRESOLVED_NOT_APPLIED` rather than failing the entire package, provided semantic coverage/timing remain valid.
 
-- `video_cloner/captions/textplus.py`
-- `video_cloner/captions/lifecycle.py`
-- `video_cloner/captions/fcpxml.py`
-- `video_cloner/caption_grammar.py`
-- `video_cloner/resolve/fcpxml.py` only if the observed gap is in canonical title/FCPXML emission
-- directly relevant caption tests only
+### Cuts / transitions / VFX
 
-If fixing the observed gap requires broader architecture/public API/dependency changes: STOP and report the exact blocker. Do not broaden scope.
+Run the existing real Reel #2 analysis/planning path.
 
-### Required production evidence
+- preserve hard cuts;
+- execute supported high-confidence transition authority already implemented;
+- retain unsupported whip/slide as candidates unless a small existing generic path already promotes them safely;
+- emit speed-ramp/zoom candidates from existing analysis;
+- do NOT invent retime/zoom execution from heuristics alone;
+- identify actual source-backed high-value effect families present in Reel #2 for the NEXT bounded implementation step.
 
-Produce one T001 report plus the actual generated caption/FCPXML artifact(s). The report must state:
+The task is not to implement every VFX family. It is to produce the first integrated artifact and expose the actual highest-value missing executable family.
 
-- exact real input authorities used;
-- output paths/hashes;
-- caption/source coverage counts;
-- lifecycle authority counts;
-- style/font authority counts;
-- animated vs static caption counts;
-- unresolved properties honestly retained as unresolved;
-- focused tests/regression run;
-- code files changed, if any;
-- whether the package is ready for one Resolve visual preview.
+### Allowed code changes
 
-### Acceptance
+Only if needed to produce the artifact:
 
-T001 is accepted when:
+- smallest relevant canonical caption files;
+- smallest relevant planning/compile/transition adapter files;
+- directly corresponding tests.
 
-- a real Reel #2 caption package is generated successfully;
-- semantic source coverage is exact — no dropped, duplicated or reordered source cues;
-- generated timing/lane structure validates;
-- retained accepted static style/font/position authorities are consumed where applicable;
-- accepted motion/lifecycle authorities are consumed where applicable;
-- ambiguity fails closed rather than fabricating style/motion;
-- relevant tests pass;
-- no Git/persistence/PH1 plumbing work is performed.
+No dependencies, no architecture rewrite, no Git/persistence work, no cleanup/refactor mission.
 
-Then STOP for a **visual-production gate**, not another architecture review.
+### PASS
 
-## T002 — One Resolve Caption Preview + Human Review — NOT YET AUTHORIZED
+T001 passes when:
 
-Import/apply the T001 caption package once through the existing safe mechanism and obtain human APPROVE/REJECT on caption fidelity. Review only visually material dimensions: font, weight, size, stroke, opacity/fill, position, multiline layout, lifecycle timing and motion/easing.
+- one real editable output package is generated;
+- caption semantic source coverage is exact;
+- caption lifecycle/lane structure validates;
+- resolvable caption authorities are applied;
+- unresolved identity-bound rows are listed, not guessed;
+- cut structure is present;
+- supported transitions are compiled;
+- detected motion/VFX candidates are summarized;
+- relevant focused tests pass;
+- output is ready for one Resolve visual review.
 
-## T003 — One Bounded Fidelity Repair — CONDITIONAL
+Then STOP.
 
-Only if T002 is REJECT: fix the highest-value visible caption deltas in one bounded iteration, regenerate, and re-review. No endless per-caption patch loop.
+## T002 — One Real Resolve Visual Review — NOT YET AUTHORIZED
 
-If T002 is APPROVE, skip T003 and freeze PH2 caption baseline.
+One import/render/review of the integrated slice.
 
-## PRE-SHIP DEFERRED — NOT CURRENT WORK
+Review:
+- cuts/pacing;
+- transitions;
+- captions: font/weight/size/position/stroke/fill/opacity/timing/motion;
+- whether detected ramps/zooms/whips/slides matter visually enough to implement next.
 
-Before final product release, we still owe:
+## T003 — Highest-ROI Production Repair — CONDITIONAL
 
-- P004 save/reopen persistence proof;
-- repository identity live proof;
-- same-target second-run/idempotency acceptance;
-- final full-target human acceptance / ship certification.
+Only one bounded repair after visual evidence.
 
-These do **not** block caption production now.
+Choose the single biggest visible gap:
+- caption identity/fidelity;
+- ramp execution;
+- zoom execution;
+- whip/slide execution;
+- animation combo handling;
+- another source-backed effect actually visible in the reel.
 
-## STOP / KILL RULES
+No roadmap loop.
 
-- Do not reopen P004 while working P005.
-- Do not create a new caption subsystem.
-- Do not research tools/libraries unless direct evidence proves the retained stack cannot achieve the required caption result.
-- Do not spend a task on Git hygiene/tracker synchronization/process cleanup.
-- If a task does not make the visible caption output better or directly enable its production preview, it is not on the Critical Path.
+## PRE-SHIP
+
+Persistence/idempotency/final certification remain release gates but are not current production work.
