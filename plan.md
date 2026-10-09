@@ -1,13 +1,13 @@
 # P004 — Repository Identity and Persistence Unblock
 
 - PLAN ID: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK`
-- STATUS: **DRAFT / NOT AUTHORIZED**
+- STATUS: **READY_FOR_CODEX**
 - CREATED: 2026-10-09 Europe/Sofia
 - PHASE: PH1 persistence checkpoint (PH2 production unblock only)
 - ARCHITECT BASELINE: `main@a102a94b34431bcc609ed5cfc4e048cfc6b3fa0a`
 - ARCHITECT DRAFT BRANCH: `architect/p004-persistence-unblock-draft`
 - PREDECESSOR: `P003_FALLBACK_PERSISTENCE_ACCEPTANCE` — BLOCKED / CLOSED. No P003 retry.
-- WORKER GATE: **CLOSED**. This draft does not authorize Codex, command publication, live Resolve action or project save.
+- WORKER GATE: **OPEN FOR T001 ONLY — OFFLINE**. Codex may implement/test T001 only. Command publication, queue processing, Resolve invocation, `SaveProject`, T002/T003/T004 and PH2 implementation are explicitly prohibited.
 
 ## One observable Win Condition
 
@@ -47,6 +47,7 @@ HARD CAP: **one mechanism decision; one implementation patch; one focused offlin
 ## Tasks — strict serial gates
 
 ### T001 — Offline repository identity repair
+- STATUS: **AUTHORIZED — OFFLINE ONLY**
 - Allowed implementation: `resolve_workspace/modules/video_cloner_phase6_offline_timeline_live_application.py`, `resolve_workspace/modules/video_cloner_p003_post_reopen_verification.py`, minimum corresponding `tests/test_video_cloner_p003_fallback_persistence_acceptance.py` (and at most one tiny reused helper if strictly required). Command-preparation changes only if an existing prep utility is demonstrably the correct owner; otherwise bind via T002 bounded preparation procedure.
 - Scope: replace bare Git calls in both modules with authenticated command-bound `git.exe`; keep repository-root/HEAD/branch validation unchanged. Preserve P003 fixed evidence/hash/fallback, `SaveProject` guard, verifier read-only surface, protected/current/media comparison.
 - Tests: correct signed command-bound executable; missing/path-only/hash mismatch/swapped binary/bad exit/non-main/wrong HEAD/wrong root rejected **before SaveProject**; finalizer save once only on accepted baseline; verifier zero mutation and identity proof. Mock Git process: offline tests must never launch Resolve or save real project.
@@ -55,17 +56,20 @@ HARD CAP: **one mechanism decision; one implementation patch; one focused offlin
 - **STOP** for Architect review. No command publication or live action.
 
 ### T002 — Prepare one fresh attributable command
+- STATUS: **NOT_STARTED / NOT_AUTHORIZED**
 - Only after separate T001 approval. Require clean/explained tree, exact committed repair SHA, executable absolute path/hash authenticated from preparation environment, fresh command/run ID (never P003 run `20261008T120754374Z_11c3411415444aa2a83b816bf7bacb88`), accepted P001/P002 identities/hashes, frozen runtime identities, and empty pending/running queue.
 - Bind exact command-root, expected repository HEAD and authenticated Git path/hash; bind updated finalizer module SHA and expected project/target/UID/evidence. Only `save_once` and `save_project` true; all other mutation flags false; `retry_permitted=false`.
 - Publish **exactly one** pending finalizer command. No Resolve invocation. Report `.../T002/REPORT.md`.
 - **STOP** before human action.
 
 ### T003 — One live finalizer invocation
+- STATUS: **NOT_STARTED / NOT_AUTHORIZED**
 - Only after T002 review/explicit human gate: human executes `Resolve → Workspace → Scripts → VC_Run_Agent_Task` **once**.
 - Finalizer authenticates executable, repository HEAD/branch and exact command, project/target UID, P001/P002 evidence, 112 caption structures, full P002 live target/current/protected/media baseline, and only then calls `SaveProject` exactly once. Verify immediate post-save state; all other mutation counters zero.
 - Report `.../T003/REPORT.md`, including command/run/status/report/log SHA-256 and pre/post signatures. **NO RETRY**. If PASS, proceed to T004; otherwise terminal STOP.
 
 ### T004 — One close/reopen persistence cycle
+- STATUS: **NOT_STARTED / NOT_AUTHORIZED**
 - Only after T003 PASS: prepare one new attributable **read-only** verifier command using the existing post-reopen verifier and the same authenticated executable identity contract, with all mutation permissions false. Require pending/running queue empty before one publication.
 - Human closes Resolve once **without extra manual save**, reopens Resolve/project and runs `VC_Run_Agent_Task` exactly once for the read-only verifier. If save/discard prompt appears, cancel and report; do not silently choose Save/Discard.
 - Require saved target name/UID, signature, 8+1 clips, 112 overlays/geometry, 673 frames, empty title media paths, 46 timeline/45 protected signatures including Reel #2 GOLD, 55 media items and expected artifact/provenance identities unchanged; read-only mutation counters zero. Current timeline selection difference after reopen must be recorded separately, never hide content drift.
@@ -84,4 +88,4 @@ Success is `P004_PERSISTENCE_UNBLOCKED`, **not `PH1_ACCEPTED`**. Close/archive P
 
 PRE-SHIP deferred gates — REQUIRED before release, **not before PH2**: same-target second-run/idempotency, formal target-level human visual APPROVE/REJECT, remainder of PH1/full product certification. Do not insert another acceptance Plan between successful P004 and PH2.
 
-Architect review gate: this file remains `DRAFT / NOT AUTHORIZED` until explicit human authorization; Codex cannot start and no Resolve command or project mutation is allowed by publication of this document.
+Architect authorization gate: P004 is `READY_FOR_CODEX`, but authorization is strictly limited to T001 OFFLINE ONLY. Codex must STOP after the T001 report for Browser Architect review. No command publication, queue processing, Resolve invocation, `SaveProject`, T002/T003/T004, PH2 implementation, or live/project mutation is authorized.

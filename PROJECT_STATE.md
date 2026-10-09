@@ -52,18 +52,18 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 ## P004 Sequencing Override — 2026-10-09
 
-- CURRENT P004: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK` — `DRAFT / NOT AUTHORIZED`; Architect Plan on branch `architect/p004-persistence-unblock-draft`.
+- CURRENT P004: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK` — `READY_FOR_CODEX`; T001 authorized OFFLINE ONLY on branch `architect/p004-persistence-unblock-draft`.
 - Selected mechanism: command-bound canonical absolute Git executable plus SHA-256, checked within Resolve before either finalizer or read-only verifier Git call; original HEAD/branch checks remain mandatory.
 - New immediate Win Condition: existing Reel #3 target saved exactly once and surviving one read-only close/reopen persistence cycle unchanged.
 - PH2 is released immediately on `P004_PERSISTENCE_UNBLOCKED`; no intermediate acceptance Plan.
 - Same-target replay/idempotency acceptance, formal pre-PH2-target human visual acceptance, and full PH1/ship certification are `PRE-SHIP DEFERRED`, not abandoned.
-- P003 remains BLOCKED/CLOSED with no retry. All P004 implementation/live actions await explicit Plan authorization.
+- P003 remains BLOCKED/CLOSED with no retry. P004 T001 offline implementation/testing is authorized; command publication, queue processing, Resolve invocation, `SaveProject`, T002/T003/T004, and PH2 implementation remain unauthorized.
 
 ## Current Constraint
 
 - Resolve-hosted repository identity authentication currently depends on ambient Git executable discovery and fails when Git is absent from the Resolve process `PATH`.
 - P004 draft selects Route A — authenticated absolute `git.exe` binding with executable SHA-256 plus the existing repository HEAD/branch checks.
-- Route A is selected in principle but implementation is not authorized. P003 must not be repaired or retried.
+- Route A is approved for P004 T001 offline implementation only. P003 must not be repaired or retried; no live or queue action is authorized.
 - PH1 remains not accepted: persistence, same-target replay, and human visual acceptance are unproven. PH2 is blocked only by exact save/reopen persistence, not full PH1 acceptance.
 
 ## Architecture State
@@ -76,9 +76,9 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 ## Current Plan Partition
 
 - CURRENT PLAN ID: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK`
-- PLAN STATUS: `DRAFT / NOT AUTHORIZED`
-- INITIAL AUTHORIZATION: `NONE — DRAFT`
-- T001 STATUS: `NOT_STARTED / NOT_AUTHORIZED`
+- PLAN STATUS: `READY_FOR_CODEX`
+- INITIAL AUTHORIZATION: `T001 ONLY — OFFLINE REPOSITORY IDENTITY REPAIR; NO COMMAND PUBLICATION; NO QUEUE PROCESSING; NO RESOLVE INVOCATION; NO SaveProject`
+- T001 STATUS: `AUTHORIZED — OFFLINE ONLY`
 - T002 STATUS: `NOT_STARTED / NOT_AUTHORIZED`
 - T003 STATUS: `NOT_STARTED / NOT_AUTHORIZED`
 - T004 STATUS: `NOT_STARTED / NOT_AUTHORIZED`
@@ -91,7 +91,7 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 - KEEP Resolve open and `New Project 1` unchanged.
 - DO NOT save, close, reopen, switch, rename, delete, modify, import, export, render, run a Workspace script, repair, retry, or publish another command under P003.
-- No further P003 human gate is active. T004–T007 were cancelled by the terminal block. P004 has no active human gate while DRAFT.
+- No further P003 human gate is active. T004–T007 were cancelled by the terminal block. P004 T001 is offline-only and has no live human gate; do not publish/process a queue command or invoke Resolve.
 
 ## Critical Path
 
@@ -101,7 +101,7 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 4. T004: one persistence cycle.
 5. PASS → PH2 immediately.
 
-CURRENT CRITICAL CONSTRAINT: Route A identity repair is selected but P004 remains DRAFT / NOT AUTHORIZED. No Codex work, command publication, Resolve action, or save is authorized yet.
+CURRENT CRITICAL CONSTRAINT: execute T001 offline identity repair only, then STOP for Browser Architect review. T002/T003/T004, command publication, queue processing, Resolve action, `SaveProject`, and PH2 remain unauthorized.
 
 ## Dependencies / Constraints
 
@@ -156,10 +156,12 @@ CURRENT CRITICAL CONSTRAINT: Route A identity repair is selected but P004 remain
 ## Human Action Queue
 
 1. Preserve Resolve, project, and target open and unchanged.
-2. Run no Workspace action, save, close/reopen, repair, retry, or new command under P003.
+2. During authorized P004 T001, run no Workspace action, save, close/reopen, queue command, repair, retry, or live Resolve action.
 
 ## Latest Consequential Decision
 
-- DECISION: close P003 at T003 after the one authorized finalizer invocation failed before save because the Resolve-hosted process could not locate ambient `git`. Do not repair or retry P003.
-- STATUS: P003 `BLOCKED / CLOSED`; T001 `PASS / ACCEPTED — OFFLINE`; T002 `PASS / COMMAND PREPARED`; T003 `BLOCKED / TERMINAL`; T004–T007 `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`.
-- DETAILS: `docs/DECISIONS.md` D011 and `plan.md`.
+- DECISION: approve P004 Route A exactly as drafted and authorize T001 OFFLINE ONLY: authenticated absolute `git.exe` binding + executable SHA-256 + existing repository HEAD/branch validation.
+- STATUS: P004 `READY_FOR_CODEX`; T001 `AUTHORIZED — OFFLINE ONLY`; T002/T003/T004 `NOT_STARTED / NOT_AUTHORIZED`.
+- HARD BOUNDARY: no command publication, queue processing, Resolve invocation, `SaveProject`, T002/T003/T004, or PH2 implementation. STOP after T001 report for Browser Architect review.
+- PREDECESSOR: P003 remains `BLOCKED / CLOSED` with no retry.
+- DETAILS: `docs/DECISIONS.md` D012 and `plan.md`.
