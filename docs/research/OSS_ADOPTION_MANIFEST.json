@@ -75,5 +75,77 @@
       "license": "MIT",
       "decision": "REFERENCE_CONTENT_AUTOMATION"
     }
+  ],
+  "queue_authority": "docs/research/OSS_ADOPTION_QUEUE.md",
+  "current_unit": {
+    "id": "OSS-001",
+    "layer": "Resolve editable Text+ placement / caption carrier",
+    "repo": "samuelgursky/davinci-resolve-mcp",
+    "commit": "94c7a885d53f13be78522ce96561a9e9e21d64c5",
+    "status": "ACTIVE",
+    "done_when": "exact track/start/duration + editable inner Text+ readback pass on current Resolve runtime",
+    "next": "OSS-002"
+  },
+  "sequential_units": [
+    [
+      "OSS-001",
+      "Resolve Text+ placement",
+      "ACTIVE"
+    ],
+    [
+      "OSS-002",
+      "Advanced caption animation",
+      "QUEUED"
+    ],
+    [
+      "OSS-003",
+      "Transitions",
+      "QUEUED"
+    ],
+    [
+      "OSS-004",
+      "Core motion/VFX",
+      "QUEUED"
+    ],
+    [
+      "OSS-005",
+      "Speed ramps/retiming",
+      "QUEUED"
+    ],
+    [
+      "OSS-006",
+      "Cuts/scene detection",
+      "QUEUED_TRIGGERED_BY_FAILURE"
+    ],
+    [
+      "OSS-007",
+      "Auto rough-cut",
+      "QUEUED_GENERALIZATION"
+    ],
+    [
+      "OSS-008",
+      "Caption word timing",
+      "QUEUED_GENERALIZATION"
+    ],
+    [
+      "OSS-009",
+      "Timeline IR/interchange",
+      "QUEUED_ON_TRIGGER"
+    ],
+    [
+      "OSS-010",
+      "Style-template schema",
+      "QUEUED_POST_CORE"
+    ],
+    [
+      "OSS-011",
+      "QA/acceptance",
+      "QUEUED_POST_CORE"
+    ],
+    [
+      "OSS-012",
+      "Content automation ecosystem",
+      "QUEUED_POST_CORE"
+    ]
   ]
 }

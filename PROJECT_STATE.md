@@ -56,6 +56,16 @@ The bottleneck is now:
 - CURRENT MOVE: reproduce `davinci-resolve-mcp` nested-timeline Text+ live workaround on a disposable timeline, then adapt it to Reel #3.
 - RESEARCH AUTHORITY: `docs/research/OSS_PROVEN_CODE_RESEARCH_20261009.md`
 
+## Current OSS Work Unit
+
+- QUEUE: `docs/research/OSS_ADOPTION_QUEUE.md`
+- ACTIVE UNIT: `OSS-001`
+- LAYER: Resolve editable Text+ placement / caption carrier
+- PRIMARY OSS: `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5`
+- CURRENT ACTION: reproduce its live-tested nested-timeline Text+ route on disposable timelines.
+- DONE WHEN: exact track/start/duration and inner editable Text+ readback pass on this Resolve runtime.
+- NEXT UNIT AFTER PASS: `OSS-002` — apply the proven carrier to Reel #3 advanced caption animation.
+
 ## Current Proven Route
 
 Primary:

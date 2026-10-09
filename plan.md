@@ -34,6 +34,24 @@ Meanwhile, `samuelgursky/davinci-resolve-mcp` already contains a live-tested MIT
 
 Therefore custom caption carrier development is frozen.
 
+## OSS Queue Authority
+
+Canonical sequential adoption queue:
+`docs/research/OSS_ADOPTION_QUEUE.md`
+
+Exactly one OSS work unit may be `ACTIVE` at a time.
+
+Current:
+- `OSS-001` — Resolve editable Text+ placement via `davinci-resolve-mcp`.
+
+Next after PASS:
+- `OSS-002` — advanced Reel #3 caption animation using the proven carrier.
+- `OSS-003` — transitions.
+- `OSS-004` — core motion/VFX.
+- `OSS-005` — speed ramps/retiming.
+
+Cuts/rough-cut/timing remain queued for generalization because current Reel #3 cut baseline already works.
+
 ## 3. Proven-code authority
 
 Research artifact:
