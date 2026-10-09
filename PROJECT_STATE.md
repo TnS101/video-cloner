@@ -63,7 +63,7 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 - Resolve-hosted repository identity authentication currently depends on ambient Git executable discovery and fails when Git is absent from the Resolve process `PATH`.
 - The next fresh Browser Architect must compare the smallest robust reuse/adaptation options: bind an authenticated absolute Git executable path, reuse an existing repository/runtime identity mechanism, or use a dependency-free HEAD verification mechanism only if materially safer and smaller.
-- No mechanism is selected or authorized in this session. P003 must not be repaired or retried.
+- Route A is selected in P004 draft; implementation is not authorized. P003 must not be repaired or retried.
 - PH1 remains not accepted: persistence, same-target replay, and human visual acceptance are unproven. PH2 is blocked only by exact save/reopen persistence, not full PH1 acceptance.
 
 ## Architecture State
@@ -75,24 +75,24 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 ## Current Plan Partition
 
-- CURRENT PLAN ID: `P003_FALLBACK_PERSISTENCE_ACCEPTANCE`
-- PLAN STATUS: `BLOCKED / CLOSED`
-- INITIAL AUTHORIZATION: `T001 ONLY — OFFLINE IMPLEMENTATION / TESTS; NO COMMAND PUBLICATION; NO RESOLVE ACTION`
+- CURRENT PLAN ID: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK`
+- PLAN STATUS: `DRAFT / NOT AUTHORIZED`
+- INITIAL AUTHORIZATION: `NONE — DRAFT; NO CODEX, PUBLICATION, OR RESOLVE ACTION`
 - T001 STATUS: `PASS / ACCEPTED — OFFLINE`
 - T002 STATUS: `PASS / COMMAND PREPARED`
 - T003 STATUS: `BLOCKED / TERMINAL`
 - T004–T007 STATUS: `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`
 - TERMINAL RESULT: `BLOCKED_T003_FINALIZER_GIT_EXECUTABLE_NOT_FOUND_BEFORE_SAVE`
 - PLAN FILE: `plan.md`
-- PREDECESSOR: `P002_LIVE_TARGET_FORENSIC_READBACK` — `ACCEPTED / CLOSED`
+- PREDECESSOR: `P003_FALLBACK_PERSISTENCE_ACCEPTANCE` — `BLOCKED / CLOSED`
 - PREDECESSOR ARCHIVE: `docs/plans/archive/P002_LIVE_TARGET_FORENSIC_READBACK.md`
-- REQUIRED REPORT ROOT: `.project_ops/reports/P003_FALLBACK_PERSISTENCE_ACCEPTANCE/`
+- REQUIRED REPORT ROOT: `.project_ops/reports/P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK/`
 
 ## Resolve Live-State Hold
 
 - KEEP Resolve open and `New Project 1` unchanged.
 - DO NOT save, close, reopen, switch, rename, delete, modify, import, export, render, run a Workspace script, repair, retry, or publish another command under P003.
-- No further P003 human gate is active. T004–T007 were cancelled by the terminal block.
+- No further P003 human gate is active. T004–T007 were cancelled by the terminal block. P004 has no active human gate while DRAFT.
 
 ## Critical Path
 
@@ -101,7 +101,7 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 3. T003: `BLOCKED / TERMINAL`; the single finalizer invocation failed before save because ambient `git` was unavailable.
 4. T004–T007: `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`.
 
-CURRENT CRITICAL CONSTRAINT: a fresh Browser Architect must choose the smallest robust mechanism that removes the ambient-`PATH` Git dependency without weakening repository identity authentication. Do not implement or select it in this session. Preserve the existing live Resolve state.
+CURRENT CRITICAL CONSTRAINT: command-bound absolute Git identity repair pending P004 authorization; prove one save/reopen persistence, then start PH2.
 
 ## Dependencies / Constraints
 
