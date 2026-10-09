@@ -100,7 +100,7 @@ Only decisions that materially constrain future work belong here.
 
 - DATE: 2026-10-09
 - PLAN: `P004_RESOLVE_REPOSITORY_IDENTITY_AND_PERSISTENCE_UNBLOCK`
-- STATUS: APPROVED — P004 READY_FOR_CODEX; T001 OFFLINE ONLY
+- STATUS: APPROVED — P004 READY_FOR_CODEX; T001 ACCEPTED; T002 PREPARATION/PUBLICATION ONLY
 - DECISION: Route A: resolve the exact absolute Git executable during offline command preparation, authenticate its canonical path and executable SHA-256, bind both into each command, and verify them inside Resolve before executing HEAD/branch checks. Apply to both the finalizer and read-only post-reopen verifier. Do not use ambient PATH or alter expected HEAD/branch enforcement. No new dependency or bridge/launcher modification.
 - WHY: both P003 finalizer and verifier execute bare Git, while existing runtime repository-root binding does not provide Git HEAD/branch verification. This is an environment discovery defect, not a caption defect.
 - SEQUENCING: P004 success proves one attributable save plus one close/reopen persistence readback for current Reel #3. Then PH2 caption production begins immediately, without full PH1 acceptance as an intermediate gate. Same-target replay/idempotency, formal full-target visual APPROVE/REJECT, and remaining PH1/ship checks become mandatory PRE-SHIP deferred work.
