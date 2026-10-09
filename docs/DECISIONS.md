@@ -127,3 +127,12 @@ Only decisions that materially constrain future work belong here.
 - DECISION: treat the Reel #2 caption identity mismatch as a bounded fidelity sub-fix, not as a global blocker. Generate one integrated production slice covering cuts, supported transitions, captions, and detection manifests for ramps/zoom/whip-slide/animation combos.
 - RULE: unresolved optional identity-bound caption authority may be omitted and reported for the preview if core semantic/timing validity remains intact; mappings must never be guessed.
 - NEXT: visual evidence selects the single highest-ROI production repair.
+
+
+## D015 — Correct active target: Reel #3 advanced production
+
+- DATE: 2026-10-09
+- STATUS: APPROVED / ACTIVE
+- DECISION: Reel #3 (`DZatr0EJt4B`) is the active production target. Reel #2 remains reference/reuse evidence only.
+- CORRECTION: supersede the Reel #2 integrated-preview detour. Do not regenerate basic captions; Reel #3 already has applied captions and structural overlay validation.
+- CURRENT MOVE: advanced caption animations on the existing Reel #3 target, followed immediately by Reel #3 transitions/VFX.

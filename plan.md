@@ -1,150 +1,91 @@
-# P005 — Production Vertical Slice Speedrun
+# P006 — Reel #3 Advanced Caption Animation + Transitions Speedrun
 
-- PLAN ID: `P005_PRODUCTION_VERTICAL_SLICE_SPEEDRUN`
+- PLAN ID: `P006_REEL3_ADVANCED_CAPTION_ANIMATION_TRANSITIONS_SPEEDRUN`
 - STATUS: **READY_FOR_CODEX**
-- MODE: **FEATURE / PRODUCTION ONLY**
+- MODE: **FEATURE / PRODUCTION**
 - DEADLINE: **SHIP THIS WEEK**
-- CURRENT AUTHORIZATION: **T001 ONLY**
+- ACTIVE REEL: **Reel #3 — DZatr0EJt4B**
+- CURRENT TARGET: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`
+- TARGET UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`
 
-## Win Condition
+## What Is Already Done
 
-Produce one **real editable Reel #2 output package** that combines the strongest working production path for:
+Do NOT rebuild basic captions.
 
-1. cuts / shot structure;
-2. executable transitions already supported;
-3. captions with the highest deterministic fidelity currently recoverable;
-4. motion/VFX detection manifest for ramps, zooms, whips/slides and caption animation combos.
+Reel #3 already has:
+- completed offline analysis/planning artifacts;
+- generated caption style + caption grammar;
+- existing imported/reviewable Resolve target timeline;
+- basic Text+ caption application already in place;
+- P002 structural validation of 112/112 overlays.
 
-The artifact wins. Reports exist only to explain what the artifact contains.
+The next production step is **advanced caption animation**, then **transitions/VFX**.
 
-## Existing Leverage — Reuse, Do Not Rebuild
+Reel #2 is reference/reuse evidence only. It is NOT the active production target.
 
-- cuts: `video_cloner/analysis/cuts.py`
-- transitions: `video_cloner/analysis/transitions.py`
-- transition execution/policy + flash path
-- motion analysis: `video_cloner/analysis/motion.py`
-- caption stack: `video_cloner/captions/*`
-- retained Reel #2 caption authorities and grammar
-- existing Step 3C/3D caption motion/lifecycle mechanisms
-- existing focused tests for captions, transitions, speed-ramp/zoom authority and flash
+## T001 — Reel #3 Caption Animation Production Plan + Generic Adapter — AUTHORIZED
 
-Known reality:
-- hard cuts already work;
-- flash transition has an executable authority path;
-- whip/slide detection exists but current MVP policy demotes it;
-- speed-ramp/zoom candidates exist but current planner intentionally keeps heuristic-only candidates non-actionable;
-- caption T001 failed because the legacy style file has 0 visual IDs while retained grammar/authorities contain identity-bound evidence.
+Goal:
+Use Reel #3's existing caption analysis/grammar and existing target captions to prepare the actual advanced animation payload for Reel #3.
 
-## Speedrun Rule
+Reuse:
+- `scripts/davinci/caption_animation_step_3C.py`
+- `resolve_workspace/resolve_apply_caption_animation_step_3C.py`
+- `tests/test_step4b_resolve_caption_animation_adapter.py`
+- existing caption motion/animation logic
 
-The caption identity mismatch is a **bounded sub-fix**, not a new project.
+Important:
+- the old Resolve Step 3C script is hardcoded to Reel #1 (`DZsqH7auhjt`); genericize/adapt it minimally for command-bound Reel #3 inputs rather than cloning/rebuilding it;
+- preserve the existing Reel #3 captions exactly;
+- do not regenerate captions;
+- do not change caption text, timing, font, size, or position except where animation itself requires animated Size/Center values;
+- animate only source-supported Reel #3 events;
+- static/ambiguous captions remain untouched.
 
-Do not block the whole production slice because one optional identity-bound authority cannot resolve.
+Required Reel #3 animation families:
+- scale;
+- slide;
+- scale_pop;
+- any other family already supported by existing generic production code and actually evidenced in Reel #3.
 
-For the preview package:
-- apply every authority that can be deterministically authenticated;
-- preserve core semantic/timing coverage;
-- mark unresolved identity-bound fidelity explicitly;
-- skip only the unresolved rows;
-- never invent mappings.
+Output:
+- Reel #3 animation plan/payload;
+- counts by animation family;
+- exact affected caption names/cue IDs;
+- focused tests;
+- ready-to-apply command/artifact for the existing Reel #3 target.
 
-A missing optional style/motion authority may reduce fidelity, but it must not prevent generating the baseline production artifact if the core caption package can remain structurally valid.
+STOP before live Resolve mutation.
 
-## T001 — Integrated Production Slice — AUTHORIZED
+## T002 — Apply Reel #3 Caption Animations + Visual Review — NEXT
 
-### Goal
+After T001 PASS:
+apply the prepared animations once to the EXISTING Reel #3 target timeline, save once if required, then human visual review.
 
-Generate the real Reel #2 editable package plus a machine-readable production manifest showing:
+No new timeline.
+No Reel #2.
+No basic-caption regeneration.
 
-- cut/shot count;
-- executed transition families/counts;
-- detected-but-not-executed transition candidates;
-- caption source coverage;
-- applied vs unresolved caption style/lifecycle/motion authority;
-- speed-ramp candidates;
-- zoom candidates;
-- other detected motion/VFX candidates;
-- caption animation families/combos present in source evidence.
+## T003 — Reel #3 Transitions / VFX — NEXT AFTER ANIMATION REVIEW
 
-### Caption blocker handling
+Use Reel #3's existing transition + motion analysis.
 
-First try the smallest deterministic bridge between retained Reel #2 grammar/accepted authorities and the legacy style input.
+Prioritize actual source-backed:
+1. executable transitions already supported;
+2. speed ramps;
+3. zooms;
+4. whip/slide/blur/crossfade candidates;
+5. animation combos.
 
-Allowed join evidence must be explicit, e.g. shared cue/event IDs, retained visual identity fields, exact source-evidence references, or exact canonical windows already present in retained artifacts.
+Implement only the highest-value real missing family per visual review.
 
-Forbidden:
-- fuzzy text matching;
-- approximate timing guesses;
-- Reel-ID-specific production branches;
-- hardcoded caption literals;
-- fabricated identity reconstruction.
+## Guardrails
 
-If some accepted rows still cannot bind, continue the preview with those rows marked `UNRESOLVED_NOT_APPLIED` rather than failing the entire package, provided semantic coverage/timing remain valid.
-
-### Cuts / transitions / VFX
-
-Run the existing real Reel #2 analysis/planning path.
-
-- preserve hard cuts;
-- execute supported high-confidence transition authority already implemented;
-- retain unsupported whip/slide as candidates unless a small existing generic path already promotes them safely;
-- emit speed-ramp/zoom candidates from existing analysis;
-- do NOT invent retime/zoom execution from heuristics alone;
-- identify actual source-backed high-value effect families present in Reel #2 for the NEXT bounded implementation step.
-
-The task is not to implement every VFX family. It is to produce the first integrated artifact and expose the actual highest-value missing executable family.
-
-### Allowed code changes
-
-Only if needed to produce the artifact:
-
-- smallest relevant canonical caption files;
-- smallest relevant planning/compile/transition adapter files;
-- directly corresponding tests.
-
-No dependencies, no architecture rewrite, no Git/persistence work, no cleanup/refactor mission.
-
-### PASS
-
-T001 passes when:
-
-- one real editable output package is generated;
-- caption semantic source coverage is exact;
-- caption lifecycle/lane structure validates;
-- resolvable caption authorities are applied;
-- unresolved identity-bound rows are listed, not guessed;
-- cut structure is present;
-- supported transitions are compiled;
-- detected motion/VFX candidates are summarized;
-- relevant focused tests pass;
-- output is ready for one Resolve visual review.
-
-Then STOP.
-
-## T002 — One Real Resolve Visual Review — NOT YET AUTHORIZED
-
-One import/render/review of the integrated slice.
-
-Review:
-- cuts/pacing;
-- transitions;
-- captions: font/weight/size/position/stroke/fill/opacity/timing/motion;
-- whether detected ramps/zooms/whips/slides matter visually enough to implement next.
-
-## T003 — Highest-ROI Production Repair — CONDITIONAL
-
-Only one bounded repair after visual evidence.
-
-Choose the single biggest visible gap:
-- caption identity/fidelity;
-- ramp execution;
-- zoom execution;
-- whip/slide execution;
-- animation combo handling;
-- another source-backed effect actually visible in the reel.
-
-No roadmap loop.
-
-## PRE-SHIP
-
-Persistence/idempotency/final certification remain release gates but are not current production work.
+- Reel #3 only.
+- Reel #2 is reference data only.
+- No Git/persistence work.
+- No basic caption rebuild.
+- No new caption architecture.
+- No report-only loop.
+- No speculative motion.
+- Every task must improve the existing Reel #3 target or prepare a directly applicable artifact for it.

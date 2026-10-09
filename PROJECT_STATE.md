@@ -1,47 +1,38 @@
 # PROJECT_STATE.md — Video Cloner Speedrun
 
 ## Objective
+Ship usable Video Cloner by end of week.
 
-Ship a usable Video Cloner by end of week.
+## Active Production Target
+- Reel #3: `DZatr0EJt4B`
+- Existing target timeline: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`
+- Target UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`
 
-## Current Bottleneck
-
-**Integrated visible production quality**, not Git/process infrastructure.
+## Current Reality
+- Reel #3 offline analysis/planning already exists.
+- Reel #3 target timeline already exists and is reviewable.
+- Basic Text+ captions are already applied.
+- P002 structurally mapped 112/112 overlays.
+- We are NOT rebuilding captions.
+- Reel #2 is retained reference/GOLD evidence only, not the active production target.
+- Previous Reel #2 integrated-preview detour is SUPERSEDED.
 
 ## Current Plan
+`P006_REEL3_ADVANCED_CAPTION_ANIMATION_TRANSITIONS_SPEEDRUN`
 
-`P005_PRODUCTION_VERTICAL_SLICE_SPEEDRUN`
-
-STATUS: `READY_FOR_CODEX`
-
-T001: `AUTHORIZED — INTEGRATED PRODUCTION SLICE`
-T002: `NOT_STARTED / NOT_AUTHORIZED`
-T003: `CONDITIONAL / NOT_AUTHORIZED`
-
-## Known Reality
-
-- Reel #2 retained caption GOLD/accepted authorities exist.
-- Caption attempt failed because legacy caption-style input has 0 visual IDs while retained grammar/accepted authorities contain identity-bound evidence.
-- This mismatch is a bounded fidelity issue, not permission to block all production output.
-- Cuts engine exists.
-- Transition detector exists.
-- Flash has executable support.
-- Whip/slide are currently detection/candidate only under MVP policy.
-- Motion analysis detects speed-ramp/zoom candidates; planner intentionally keeps heuristic-only candidates non-actionable.
-- Existing caption animation/lifecycle mechanisms and focused tests remain reusable.
+T001: `AUTHORIZED — REEL #3 ADVANCED CAPTION ANIMATION PREPARATION`
+T002: `NEXT — APPLY + VISUAL REVIEW`
+T003: `NEXT — TRANSITIONS/VFX`
 
 ## Critical Path
+1. Prepare Reel #3 advanced caption animation payload using existing captions.
+2. Apply once to existing Reel #3 target and visually review.
+3. Implement highest-value Reel #3 transitions/VFX next.
+4. Continue feature production until ship.
 
-1. Generate one integrated Reel #2 editable package now.
-2. One Resolve visual review.
-3. Fix the single biggest visible production gap.
-4. Continue feature production.
-
-## Speedrun Guardrails
-
-- No Git/persistence work until PRE-SHIP unless it literally blocks output.
-- No report-only tasks when an artifact can be produced.
-- No rebuilding existing caption/cut/transition/motion systems.
-- No speculative identity reconstruction.
-- Optional unresolved fidelity must not block a structurally valid preview package.
-- Implement effects based on actual Reel evidence, not wishlist breadth.
+## Guardrails
+- Reel #3 only for active production.
+- No Reel #2 production work.
+- No basic caption regeneration.
+- No Git/persistence ceremony.
+- No architecture rewrite.
