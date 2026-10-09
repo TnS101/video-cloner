@@ -39,6 +39,11 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 - P003 T001 is `PASS / ACCEPTED — OFFLINE`: the evidence-bound finalizer, dedicated read-only reopen verifier, focused tests, and report passed Browser Architect review.
 - Accepted T001 SHA-256: finalizer `79d1a8cafecc28eb791fbfa453df80ad02be70a432e861c84500f21b8ec28c4c`; verifier `f4493d0bab98f97fc39db4b4f2bb38427d7372a1dbac7db73e9bd9af02fd767c`; focused test `153d9ec232787be430e752b8a2f7a111487859df54f6b4c5428b0430faf29f38`.
 - T001 verification: focused tests `26 passed`; required affected regression `83 passed`; no queue publication or Resolve/live action occurred.
+- P003 T002 is `PASS / COMMAND PREPARED`: exactly one attributable save-capable finalizer command was published for run `20261008T120754374Z_11c3411415444aa2a83b816bf7bacb88` with command SHA-256 `c9d1acf2adf64d2e798b3a70a5614ef94ccbad5cc81d4cd2edda57cfb045869a`.
+- P003 is terminal `BLOCKED / CLOSED` at T003 with `BLOCKED_T003_FINALIZER_GIT_EXECUTABLE_NOT_FOUND_BEFORE_SAVE`.
+- The Resolve-hosted Python process could not locate `git` at the first repository identity check. Status/report/log SHA-256 are `b4d0dc5f86e6e10e53d213555eef53b66778133cca698b8ad2503ddbcf66e139`, `2d6e3c4e84a65441a5c52e6c52334a62bf9348d03b6a2901e9e730d0a0f1aa6c`, and `830752423d9e5f4585dce47fe0e199b50c9c175c91442ea2daa670f0a722f15b`.
+- Exactly one P003 finalizer invocation and one terminal failed result exist. No retry, replacement, or T004 command exists.
+- `SaveProject` was not called; `saves=0` and every other mutation counter was zero. Live project/target state was not reached or observed.
 - Current timeline, all 46 timelines, 45 protected/non-target timelines, and all 55 media-pool items were unchanged; all P002 mutation counters were zero.
 - Exact current target: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`, UID `4aaa91c0-c434-4439-a15a-92ce86e80256`.
 - Reel #2 GOLD remains exact: timeline `DcJRJtUKScu_offline_timeline_v1`, UID `4ad2a3c3-031c-464d-96aa-76a045608ad6`, DRT SHA-256 `99b11b92d55c40682f630fd4c52072e006c7e0b6494aef367bda175fb9d4af2e`.
@@ -47,9 +52,10 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 ## Current Constraint
 
-- The accepted fallback exists in Phase 6 regression support but is not bound to the exact P001/P002 evidence shape in the save-capable acceptance path.
-- The existing live target is still unsaved and Resolve remains open.
-- PH1 acceptance is blocked on one evidence-bound save, exact fail-closed same-target replay, reopen persistence/protected-state proof, and human visual decision.
+- Resolve-hosted repository identity authentication currently depends on ambient Git executable discovery and fails when Git is absent from the Resolve process `PATH`.
+- The next fresh Browser Architect must compare the smallest robust reuse/adaptation options: bind an authenticated absolute Git executable path, reuse an existing repository/runtime identity mechanism, or use a dependency-free HEAD verification mechanism only if materially safer and smaller.
+- No mechanism is selected or authorized in this session. P003 must not be repaired or retried.
+- PH1 remains not accepted: persistence, same-target replay, and human visual acceptance are unproven. PH2 remains blocked.
 
 ## Architecture State
 
@@ -61,12 +67,13 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 ## Current Plan Partition
 
 - CURRENT PLAN ID: `P003_FALLBACK_PERSISTENCE_ACCEPTANCE`
-- PLAN STATUS: `READY_FOR_CODEX`
+- PLAN STATUS: `BLOCKED / CLOSED`
 - INITIAL AUTHORIZATION: `T001 ONLY — OFFLINE IMPLEMENTATION / TESTS; NO COMMAND PUBLICATION; NO RESOLVE ACTION`
 - T001 STATUS: `PASS / ACCEPTED — OFFLINE`
-- T002 STATUS: `NEXT — NOT YET AUTHORIZED`
-- T003–T007 STATUS: `NOT_STARTED — NOT AUTHORIZED`
-- T002 AUTHORIZATION: Browser Architect authorization is still required before T002 may publish a finalizer command.
+- T002 STATUS: `PASS / COMMAND PREPARED`
+- T003 STATUS: `BLOCKED / TERMINAL`
+- T004–T007 STATUS: `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`
+- TERMINAL RESULT: `BLOCKED_T003_FINALIZER_GIT_EXECUTABLE_NOT_FOUND_BEFORE_SAVE`
 - PLAN FILE: `plan.md`
 - PREDECESSOR: `P002_LIVE_TARGET_FORENSIC_READBACK` — `ACCEPTED / CLOSED`
 - PREDECESSOR ARCHIVE: `docs/plans/archive/P002_LIVE_TARGET_FORENSIC_READBACK.md`
@@ -74,20 +81,18 @@ Deadline has passed. Optimize for the shortest critical path to a trustworthy pr
 
 ## Resolve Live-State Hold
 
-- KEEP Resolve open and `New Project 1` unchanged until a later explicit human gate.
-- DO NOT save, close, reopen, switch, rename, delete, modify, import, export, render, or run a Workspace script merely because P003 exists.
-- P003 live actions are sequential human gates. Each requires the preceding task report to PASS and explicit progression authorization.
-- If a Save/Discard prompt appears during the later authorized close after the P003 save, cancel and report it.
+- KEEP Resolve open and `New Project 1` unchanged.
+- DO NOT save, close, reopen, switch, rename, delete, modify, import, export, render, run a Workspace script, repair, retry, or publish another command under P003.
+- No further P003 human gate is active. T004–T007 were cancelled by the terminal block.
 
 ## Critical Path
 
-1. T001: `PASS / ACCEPTED — OFFLINE`; evidence-bound fallback/save boundary and dedicated read-only reopen verifier are checkpoint-ready.
-2. T002–T003: one attributable finalizer invocation; accept the existing target under the evidence-backed fallback and save exactly once.
-3. T004–T005: exercise the already-declared same-target `target_already_exists` fail-closed behavior with zero mutation.
-4. T005–T006: human close/reopen, then one read-only persistence/protected-state verification.
-5. T006–T007: human visual APPROVE/REJECT and evidence closure.
+1. T001: `PASS / ACCEPTED — OFFLINE`.
+2. T002: `PASS / COMMAND PREPARED`.
+3. T003: `BLOCKED / TERMINAL`; the single finalizer invocation failed before save because ambient `git` was unavailable.
+4. T004–T007: `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`.
 
-CURRENT CRITICAL MOVE: after the accepted T001 checkpoint is pushed and independently verified, execute T002 to authenticate the committed P003 implementation/evidence/runtime identities and prepare/publish exactly one save-capable finalizer command. T002 is next but not yet authorized. No command publication, Resolve/live action, save, close, or reopen is authorized by this checkpoint.
+CURRENT CRITICAL CONSTRAINT: a fresh Browser Architect must choose the smallest robust mechanism that removes the ambient-`PATH` Git dependency without weakening repository identity authentication. Do not implement or select it in this session. Preserve the existing live Resolve state.
 
 ## Dependencies / Constraints
 
@@ -141,11 +146,11 @@ CURRENT CRITICAL MOVE: after the accepted T001 checkpoint is pushed and independ
 
 ## Human Action Queue
 
-1. Before T002 authorization: leave Resolve/project/target open and untouched; run nothing.
-2. Later gates, only when explicitly authorized: one finalizer Workspace action; one fail-closed second-run Workspace action; close/reopen without accepting any prompt; one read-only verifier Workspace action; visual APPROVE/REJECT with notes.
+1. Preserve Resolve, project, and target open and unchanged.
+2. Run no Workspace action, save, close/reopen, repair, retry, or new command under P003.
 
 ## Latest Consequential Decision
 
-- DECISION: P003 will adapt the existing evidence-backed Phase 6 fallback/save support, preserve the frozen importer and its declared fail-closed second-run contract, and cross save/reopen/protected-state/visual gates in strict sequence.
-- STATUS: P003 remains READY_FOR_CODEX; T001 PASS / ACCEPTED — OFFLINE; T002 NEXT / NOT YET AUTHORIZED; T003–T007 NOT STARTED / NOT AUTHORIZED.
+- DECISION: close P003 at T003 after the one authorized finalizer invocation failed before save because the Resolve-hosted process could not locate ambient `git`. Do not repair or retry P003.
+- STATUS: P003 `BLOCKED / CLOSED`; T001 `PASS / ACCEPTED — OFFLINE`; T002 `PASS / COMMAND PREPARED`; T003 `BLOCKED / TERMINAL`; T004–T007 `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`.
 - DETAILS: `docs/DECISIONS.md` D011 and `plan.md`.

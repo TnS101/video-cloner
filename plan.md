@@ -2,10 +2,11 @@
 
 - PLAN ID: `P003_FALLBACK_PERSISTENCE_ACCEPTANCE`
 - PLAN NAME: Evidence-Bound Fallback, Persistence, and PH1 Acceptance
-- STATUS: `READY_FOR_CODEX`
+- STATUS: `BLOCKED / CLOSED`
 - INITIAL AUTHORIZATION: `T001 ONLY — OFFLINE IMPLEMENTATION / TESTS; NO COMMAND PUBLICATION; NO RESOLVE ACTION`
-- CURRENT CHECKPOINT: `T001 PASS / ACCEPTED — OFFLINE`
-- NEXT TASK: `T002 — NEXT / NOT YET AUTHORIZED`
+- CURRENT CHECKPOINT: `T003 BLOCKED / TERMINAL`
+- TERMINAL RESULT: `BLOCKED_T003_FINALIZER_GIT_EXECUTABLE_NOT_FOUND_BEFORE_SAVE`
+- NEXT TASK: `NONE — T004–T007 CANCELLED BY TERMINAL BLOCK`
 - PHASE: `PH1`
 - BROWSER SESSION: `BROW-P003_FALLBACK_PERSISTENCE_ACCEPTANCE`
 - CODEX SESSION: `CODEX-P003_FALLBACK_PERSISTENCE_ACCEPTANCE` (fresh session required)
@@ -19,9 +20,26 @@
 
 > One Plan = one observable result: decide PH1 acceptance for the exact existing P001 target by operationalizing the accepted structural/provenance fallback, proving one project save plus reopen persistence, exercising the already-declared fail-closed second-run behavior, preserving protected state, and recording a human visual APPROVE/REJECT.
 
-> P003 architecture and T001 offline implementation are accepted. T002 is next but is **not yet authorized**. Browser Architect authorization is still required before T002 may publish a finalizer command. No command publication, Resolve action, save, close, reopen, or visual gate is authorized by this checkpoint.
+> P003 is terminal `BLOCKED / CLOSED` at T003. T001 passed and was accepted offline. T002 passed and prepared exactly one command. The single T003 finalizer invocation failed at its first repository identity check because the Resolve-hosted Python process could not locate ambient `git`; `SaveProject` was not called and every mutation counter remained zero.
 
-> CURRENT CRITICAL MOVE: after the accepted T001 checkpoint is pushed and independently verified, T002 authenticates the committed P003 implementation/evidence/runtime identities and prepares/publishes exactly one save-capable finalizer command. Resolve remains open and unchanged; PH2 remains blocked.
+> TERMINAL CONSTRAINT: Resolve-hosted repository identity authentication currently depends on ambient Git executable discovery and fails when Git is absent from the Resolve process `PATH`. A fresh Browser Architect must compare the smallest robust reuse/adaptation options without weakening repository identity authentication. Do not select or implement a mechanism in this session. Resolve remains open and unchanged; PH1 is not accepted and PH2 remains blocked.
+
+## Terminal Disposition
+
+- final status: `BLOCKED / CLOSED`
+- terminal gate: `T003`
+- terminal result: `BLOCKED_T003_FINALIZER_GIT_EXECUTABLE_NOT_FOUND_BEFORE_SAVE`
+- T001: `PASS / ACCEPTED — OFFLINE`
+- T002: `PASS / COMMAND PREPARED`
+- T003: `BLOCKED / TERMINAL`
+- T004–T007: `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`
+- failed run: `20261008T120754374Z_11c3411415444aa2a83b816bf7bacb88`
+- command SHA-256: `c9d1acf2adf64d2e798b3a70a5614ef94ccbad5cc81d4cd2edda57cfb045869a`
+- status SHA-256: `b4d0dc5f86e6e10e53d213555eef53b66778133cca698b8ad2503ddbcf66e139`
+- report SHA-256: `2d6e3c4e84a65441a5c52e6c52334a62bf9348d03b6a2901e9e730d0a0f1aa6c`
+- log SHA-256: `830752423d9e5f4585dce47fe0e199b50c9c175c91442ea2daa670f0a722f15b`
+- no `SaveProject` or Resolve mutation occurred; live project/target state was not reached or observed.
+- persistence, same-target replay, and human visual acceptance remain unproven; PH1 remains not accepted.
 
 ## 1. Objective — One Observable Result
 
@@ -190,9 +208,7 @@ Codex MUST STOP / escalate for:
 
 ### T002 — Prepare One Save-Capable Finalization Command
 
-**Status:** `NEXT — NOT YET AUTHORIZED`
-
-Browser Architect authorization is still required before T002 may publish a finalizer command.
+**Status:** `PASS / COMMAND PREPARED`
 
 **Objective:** authenticate the exact repository, evidence, artifact, queue, and runtime identities and publish one attributable save-capable P003 finalizer command. T002 does not claim to directly observe current Resolve state.
 
@@ -204,7 +220,9 @@ Browser Architect authorization is still required before T002 may publish a fina
 
 ### T003 — Verify Fallback Finalization and One Save
 
-**Status:** `NOT_STARTED — NOT AUTHORIZED`
+**Status:** `BLOCKED / TERMINAL`
+
+**Terminal result:** `BLOCKED_T003_FINALIZER_GIT_EXECUTABLE_NOT_FOUND_BEFORE_SAVE`. The one authorized invocation failed before live-state capture or save because ambient `git` was unavailable to the Resolve-hosted Python process. `saves=0`; every other mutation counter was zero. No repair or retry is permitted in P003.
 
 **Objective:** consume the first P003 result without another live call.
 
@@ -216,7 +234,7 @@ Browser Architect authorization is still required before T002 may publish a fina
 
 ### T004 — Prepare the Declared Same-Target Second Run
 
-**Status:** `NOT_STARTED — NOT AUTHORIZED`
+**Status:** `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`
 
 **Objective:** publish one new-run-ID canonical import command for the same exact target to test the already-declared fail-closed contract.
 
@@ -228,7 +246,7 @@ Browser Architect authorization is still required before T002 may publish a fina
 
 ### T005 — Verify Fail-Closed Second Run and Prepare Reopen Readback
 
-**Status:** `NOT_STARTED — NOT AUTHORIZED`
+**Status:** `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`
 
 **Objective:** bind the exact expected failed command/result and, only if exact, publish one read-only post-reopen verifier command.
 
@@ -240,7 +258,7 @@ Browser Architect authorization is still required before T002 may publish a fina
 
 ### T006 — Verify Save/Reopen Persistence and Protected State
 
-**Status:** `NOT_STARTED — NOT AUTHORIZED`
+**Status:** `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`
 
 **Objective:** consume the post-reopen read-only report and decide machine acceptance.
 
@@ -252,7 +270,7 @@ Browser Architect authorization is still required before T002 may publish a fina
 
 ### T007 — Record Human Decision and Close P003 Evidence
 
-**Status:** `NOT_STARTED — NOT AUTHORIZED`
+**Status:** `NOT EXECUTED / CANCELLED BY TERMINAL BLOCK`
 
 **Objective:** record the human decision only; no live call and no product change.
 
