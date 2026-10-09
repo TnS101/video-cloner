@@ -24,6 +24,7 @@ import os
 import re
 import time
 import traceback
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -33,46 +34,7 @@ WORKSPACE_VERSION = (
     "persistent_modifier_keyframes_archived_reports"
 )
 
-PROJECT_ROOT = Path(
-    r"C:\Users\User\Downloads\Projects\Video Cloner"
-)
-VIDEO_ID = "DZsqH7auhjt"
-
-DATA_ROOT = PROJECT_ROOT / "data" / VIDEO_ID
-ANALYSIS_ROOT = DATA_ROOT / "analysis"
-DAVINCI_ROOT = DATA_ROOT / "davinci"
-
-PLAN_PATH = (
-    ANALYSIS_ROOT
-    / f"{VIDEO_ID}_caption_animation_plan_step_3C.json"
-)
-
-REPORT_PATH = (
-    DAVINCI_ROOT
-    / f"{VIDEO_ID}_resolve_animation_step_3C_report.json"
-)
-
-FIRST_REPORT_PATH = (
-    DAVINCI_ROOT
-    / f"{VIDEO_ID}_resolve_animation_step_3C_first_application_report.json"
-)
-
-IDEMPOTENCY_REPORT_PATH = (
-    DAVINCI_ROOT
-    / f"{VIDEO_ID}_resolve_animation_step_3C_idempotency_report.json"
-)
-
-STATE_PATH = (
-    DAVINCI_ROOT
-    / f"{VIDEO_ID}_resolve_animation_step_3C_state.json"
-)
-
-SOURCE_TARGETS_PATH = (
-    ANALYSIS_ROOT
-    / f"{VIDEO_ID}_caption_animation_step_3C_source_targets.json"
-)
-
-EXPECTED_V3_COUNT = 116
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 V3_NAME_RE = re.compile(
     r"^VC_TEXTPLUS_(?P<index>\d+)_(?P<cue>sub_\d+)$",
@@ -687,6 +649,122 @@ def get_text_tool(comp: Any) -> Any:
     return None
 
 
+def _collection_values(value: Any) -> List[Any]:
+    if isinstance(value, dict):
+        return list(value.values())
+    if isinstance(value, (list, tuple)):
+        return list(value)
+    try:
+        return list(value.values())
+    except Exception:
+        return []
+
+
+def _tool_regid(tool: Any) -> str:
+    try:
+        attrs = tool.GetAttrs() or {}
+    except Exception:
+        attrs = {}
+    return str(attrs.get("TOOLS_RegID") or "") if isinstance(attrs, dict) else ""
+
+
+def _parse_fcpx_color(value: Any) -> List[float]:
+    parts = [as_float(part) for part in str(value or "").split()]
+    if len(parts) != 4 or any(part is None for part in parts):
+        raise ValueError("caption_static_color")
+    return [float(part) for part in parts]
+
+
+def _carrier_static_styles(
+    fcpxml_path: Path,
+    selected: Sequence[Dict[str, Any]],
+    frame_width: int,
+) -> Dict[str, Dict[str, Any]]:
+    if frame_width <= 0:
+        raise ValueError("caption_static_frame_width")
+    by_number: Dict[int, Dict[str, Any]] = {}
+    for title in ET.parse(fcpxml_path).getroot().iter("title"):
+        match = re.search(r"VC Caption\s+(\d+)", str(title.get("name") or ""), re.IGNORECASE)
+        text_node = title.find("./text/text-style")
+        style_node = title.find("./text-style-def/text-style")
+        if match is None or text_node is None or style_node is None:
+            continue
+        font_size = as_float(style_node.get("fontSize"))
+        stroke_width = as_float(style_node.get("strokeWidth"))
+        shadow_offset = as_float(style_node.get("shadowOffset"))
+        if font_size is None or font_size <= 0 or stroke_width is None:
+            raise ValueError("caption_static_typography")
+        fill = _parse_fcpx_color(style_node.get("fontColor"))
+        outline = _parse_fcpx_color(style_node.get("strokeColor"))
+        shadow = _parse_fcpx_color(style_node.get("shadowColor") or "0 0 0 0")
+        by_number[int(match.group(1))] = {
+            "text": str(text_node.text or ""),
+            "Font": str(style_node.get("font") or "Arial"),
+            "Style": "Bold" if style_node.get("bold") == "1" else "Regular",
+            "Size": max(0.02, font_size / float(frame_width) * 1.5),
+            "Center": [0.5, 0.5],
+            "Enabled1": 1.0,
+            "Red1": fill[0], "Green1": fill[1], "Blue1": fill[2], "Alpha1": fill[3],
+            "Enabled2": 1.0 if stroke_width > 0 and outline[3] > 0 else 0.0,
+            "ElementShape2": 1.0,
+            "Red2": outline[0], "Green2": outline[1], "Blue2": outline[2], "Alpha2": outline[3],
+            "Thickness2": max(0.001, stroke_width / font_size),
+            "OutsideOnly2": 1.0,
+            "Enabled3": 1.0 if shadow[3] > 0 else 0.0,
+            "ElementShape3": 0.0,
+            "Red3": shadow[0], "Green3": shadow[1], "Blue3": shadow[2], "Alpha3": shadow[3],
+            "Offset3": [float(shadow_offset or 0.0) / frame_width] * 2,
+        }
+    result: Dict[str, Dict[str, Any]] = {}
+    for row in selected:
+        cue_id = str(row.get("cue_id") or "")
+        cue_match = re.fullmatch(r"sub_(\d+)", cue_id, re.IGNORECASE)
+        number = int(cue_match.group(1)) if cue_match else -1
+        style = by_number.get(number)
+        if style is None or style["text"] != str(row.get("text") or ""):
+            raise ValueError(f"caption_static_contract:{cue_id}")
+        result[cue_id] = style
+    return result
+
+
+def _set_static_input(tool: Any, name: str, value: Any) -> None:
+    try:
+        returned = tool.SetInput(name, value)
+    except Exception as exc:
+        raise RuntimeError(f"caption_static_write:{name}:{exc}") from exc
+    actual = read_input(tool, name, 0)
+    if isinstance(value, str):
+        matched = str(actual or "") == value
+    elif isinstance(value, (list, tuple)):
+        normalized = normalize_point(actual)
+        matched = normalized is not None and all(abs(normalized[index] - float(value[index])) <= 1e-5 for index in (0, 1))
+    else:
+        number = as_float(actual)
+        matched = number is not None and abs(number - float(value)) <= 1e-5
+    if not matched:
+        raise RuntimeError(
+            f"caption_static_readback:{name}:set_return={returned!r}:"
+            f"actual_type={type(actual).__name__}:actual={actual!r}"
+        )
+
+
+def _apply_static_style(tool: Any, style: Dict[str, Any]) -> Dict[str, Any]:
+    _set_static_input(tool, "StyledText", style["text"])
+    for name in ("Font", "Style", "Size", "Center", "Enabled1", "Red1", "Green1", "Blue1", "Alpha1"):
+        _set_static_input(tool, name, style[name])
+    for element in (2, 3):
+        _set_static_input(tool, f"Enabled{element}", 0.0)
+    if style["Enabled2"]:
+        _set_static_input(tool, "Enabled2", style["Enabled2"])
+        for name in ("ElementShape2", "Red2", "Green2", "Blue2", "Alpha2", "Thickness2", "OutsideOnly2"):
+            _set_static_input(tool, name, style[name])
+    if style["Enabled3"]:
+        _set_static_input(tool, "Enabled3", style["Enabled3"])
+        for name in ("ElementShape3", "Red3", "Green3", "Blue3", "Alpha3", "Offset3"):
+            _set_static_input(tool, name, style[name])
+    return {key: style[key] for key in ("text", "Font", "Style", "Size", "Center", "Enabled2", "Enabled3")}
+
+
 def find_input(tool: Any, input_name: str) -> Any:
     try:
         input_object = tool.FindInput(input_name)
@@ -1029,21 +1107,11 @@ def input_targets_are_correct(
     )
 
 
-def apply_authorized_animation(
-    comp: Any,
+def validated_animation_targets(
     tool: Any,
-    payload: Optional[Dict[str, Any]],
+    payload: Dict[str, Any],
     duration_frames: int,
-) -> Dict[str, Any]:
-    """Apply one already-authorized STEP 4A payload and prove temporal readback."""
-    if payload is None:
-        return {
-            "ok": True,
-            "selected": False,
-            "modified": False,
-            "keyframes_written": 0,
-            "readback": [],
-        }
+) -> Tuple[str, List[Dict[str, Any]]]:
     if not isinstance(payload, dict):
         raise ValueError("animation_payload_type")
 
@@ -1061,7 +1129,11 @@ def apply_authorized_animation(
 
     input_name = str(payload.get("property") or "")
     source_type = str(payload.get("source_type") or "")
-    if (input_name, source_type) not in {("Center", "slide"), ("Size", "scale")}:
+    if (input_name, source_type) not in {
+        ("Center", "slide"),
+        ("Size", "scale"),
+        ("Size", "scale_pop"),
+    }:
         raise ValueError("animation_property_or_type")
     if not str(payload.get("source_evidence_id") or ""):
         raise ValueError("animation_source_evidence_id")
@@ -1103,6 +1175,31 @@ def apply_authorized_animation(
 
     if find_input(tool, input_name) is None:
         raise RuntimeError(f"animation_input_not_found:{input_name}")
+
+    return input_name, targets
+
+
+def apply_authorized_animation(
+    comp: Any,
+    tool: Any,
+    payload: Optional[Dict[str, Any]],
+    duration_frames: int,
+) -> Dict[str, Any]:
+    """Apply one authorized payload and prove persistent temporal readback."""
+    if payload is None:
+        return {
+            "ok": True,
+            "selected": False,
+            "modified": False,
+            "keyframes_written": 0,
+            "readback": [],
+        }
+
+    input_name, targets = validated_animation_targets(
+        tool,
+        payload,
+        duration_frames,
+    )
     if input_targets_are_correct(tool, input_name, targets):
         return {
             "ok": True,
@@ -1161,7 +1258,7 @@ def apply_authorized_animation(
     }
 
 
-def run() -> Dict[str, Any]:
+def _legacy_run() -> Dict[str, Any]:
     source_payload = load_source_targets()
     source_items = source_payload["items"]
 
@@ -1566,7 +1663,9 @@ def run() -> Dict[str, Any]:
 
     failures: List[str] = []
 
-    if len(v3_after) != EXPECTED_V3_COUNT:
+    if len(v3_after) != int(
+        source_payload.get("expected_caption_count") or len(v3_after)
+    ):
         failures.append("v3_candidate_count_mismatch")
 
     if mapped_count != selected_animation_count:
@@ -1636,7 +1735,9 @@ def run() -> Dict[str, Any]:
         "source_targets": str(SOURCE_TARGETS_PATH),
         "summary": {
             "v3_candidate_count": len(v3_after),
-            "plan_item_count": EXPECTED_V3_COUNT,
+            "plan_item_count": int(
+                source_payload.get("expected_caption_count") or len(v3_after)
+            ),
             "selected_animation_count": (
                 selected_animation_count
             ),
@@ -1741,73 +1842,508 @@ def run() -> Dict[str, Any]:
     return report
 
 
-def main() -> None:
+def _required_payload(context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    command = (context or {}).get("command") or {}
+    payload = command.get("payload")
+    if not isinstance(payload, dict):
+        raise ValueError("command_payload")
+
+    required = {
+        "video_id",
+        "target_timeline_name",
+        "target_timeline_uid",
+        "animation_plan_path",
+        "expected_caption_count",
+        "caption_track_index",
+    }
+    missing = sorted(required - set(payload))
+    if missing:
+        raise ValueError(f"command_payload_missing:{','.join(missing)}")
+    if payload.get("apply_caption_animation") is not True:
+        raise ValueError("apply_caption_animation_not_authorized")
+    if payload.get("regenerate_captions") is not False:
+        raise ValueError("caption_regeneration_must_be_false")
+    if payload.get("carrier_fallback") is True:
+        for key in ("static_fcpxml_path", "frame_width", "carrier_track_index"):
+            if key not in payload:
+                raise ValueError(f"command_payload_missing:{key}")
+        if payload.get("owned_carrier_rollback_permitted") is not True:
+            raise ValueError("carrier_rollback_not_authorized")
+    return payload
+
+
+def _repository_path(value: Any) -> Path:
+    if not isinstance(value, str) or not value:
+        raise ValueError("animation_plan_path")
+    candidate = Path(value)
+    resolved = candidate.resolve() if candidate.is_absolute() else (PROJECT_ROOT / candidate).resolve()
     try:
-        report = run()
+        resolved.relative_to(PROJECT_ROOT)
+    except ValueError as exc:
+        raise ValueError("animation_plan_outside_repository") from exc
+    if not resolved.is_file():
+        raise ValueError("animation_plan_missing")
+    return resolved
 
-        summary = report["summary"]
 
-        if report["ok"]:
-            show_message(
-                "Video Cloner — Step 3C complete",
-                (
-                    "Caption animation cloning finished.\n\n"
-                    f"V3 clips: "
-                    f"{summary['v3_candidate_count']}\n"
-                    f"Animated clips: "
-                    f"{summary['selected_animation_count']}\n"
-                    f"Modified: "
-                    f"{summary['modified_count']}\n"
-                    f"Already correct: "
-                    f"{summary['already_correct_count']}\n"
-                    f"Persistent keyframes: "
-                    f"{summary['readback_keyframe_count']}\n"
-                    f"Failures: "
-                    f"{summary['failed_count']}\n\n"
-                    f"Mode report:\n"
-                    f"{report.get('mode_report') or REPORT_PATH}\n\n"
-                    f"Latest report:\n{REPORT_PATH}"
-                ),
-            )
-        else:
-            show_message(
-                "Video Cloner — Step 3C failed",
-                (
-                    "Caption animation cloning failed "
-                    "validation.\n\n"
-                    + "\n".join(report["failures"])
-                    + f"\n\nReport:\n{REPORT_PATH}"
-                ),
-                error=True,
-            )
+def _timeline_uid(timeline: Any) -> str:
+    try:
+        return str(timeline.GetUniqueId() or "")
+    except Exception:
+        return ""
 
-    except Exception as exc:
-        failure_report = {
-            "ok": False,
-            "step": "Major Step 3C",
-            "workspace_version": WORKSPACE_VERSION,
-            "status": "exception",
-            "exception": (
-                f"{type(exc).__name__}: {exc}"
-            ),
-            "traceback": traceback.format_exc(),
-            "failures": ["workspace_exception"],
-        }
 
+def _caption_items(timeline: Any, track_index: int) -> List[Any]:
+    try:
+        return list(timeline.GetItemListInTrack("video", track_index) or [])
+    except Exception:
+        return []
+
+
+def _item_uid(item: Any) -> str:
+    try:
+        return str(item.GetUniqueId() or "")
+    except Exception:
+        return ""
+
+
+def _find_carrier_source(timeline: Any, minimum_duration: int) -> Dict[str, Any]:
+    for item in _caption_items(timeline, 1):
         try:
-            write_json(REPORT_PATH, failure_report)
+            media = item.GetMediaPoolItem()
+            duration = int(item.GetDuration())
+            source_start = int(item.GetLeftOffset())
         except Exception:
-            pass
+            continue
+        if media is not None and duration >= minimum_duration and source_start >= 0:
+            return {"media_pool_item": media, "source_start": source_start}
+    raise RuntimeError("caption_carrier_source_missing")
 
-        show_message(
-            "Video Cloner — Step 3C exception",
-            (
-                f"{type(exc).__name__}: {exc}\n\n"
-                f"Report:\n{REPORT_PATH}"
-            ),
-            error=True,
+
+def _ensure_carrier_track(timeline: Any, track_index: int) -> bool:
+    try:
+        count = int(timeline.GetTrackCount("video") or 0)
+    except Exception as exc:
+        raise RuntimeError("caption_carrier_track_count") from exc
+    if count == track_index - 1:
+        if timeline.AddTrack("video") is not True:
+            raise RuntimeError("caption_carrier_track_add")
+        return True
+    if count < track_index:
+        raise RuntimeError("caption_carrier_track_gap")
+    if _caption_items(timeline, track_index):
+        raise RuntimeError("caption_carrier_track_not_empty")
+    return False
+
+
+def _set_item_name(item: Any, name: str) -> None:
+    try:
+        if item.SetName(name) is True and safe_name(item) == name:
+            return
+    except Exception:
+        pass
+    try:
+        if item.SetProperty("Name", name) is True and safe_name(item) == name:
+            return
+    except Exception:
+        pass
+    raise RuntimeError("caption_carrier_name")
+
+
+def _append_carrier(
+    pool: Any,
+    timeline: Any,
+    source: Dict[str, Any],
+    row: Dict[str, Any],
+    track_index: int,
+) -> Any:
+    before = {_item_uid(item) for item in _caption_items(timeline, track_index) if _item_uid(item)}
+    duration = int(row["duration_frames"])
+    clip_info = {
+        "mediaPoolItem": source["media_pool_item"],
+        "startFrame": int(source["source_start"]),
+        "endFrame": int(source["source_start"]) + duration,
+        "mediaType": 1,
+        "trackIndex": track_index,
+        "recordFrame": int(row["start_frame"]),
+    }
+    returned = pool.AppendToTimeline([clip_info])
+    returned_items = list(returned) if isinstance(returned, (list, tuple)) else []
+    candidates = [item for item in _caption_items(timeline, track_index) if _item_uid(item) and _item_uid(item) not in before]
+    item = returned_items[0] if len(returned_items) == 1 else candidates[0] if len(candidates) == 1 else None
+    if (
+        item is None
+        or safe_start(item) != int(row["start_frame"])
+        or safe_end(item) != int(row["end_frame"])
+    ):
+        raise RuntimeError(f"caption_carrier_geometry:{row.get('cue_id')}")
+    _set_item_name(item, str(row["name"]))
+    return item
+
+
+def _create_textplus(item: Any) -> Tuple[Any, Any]:
+    try:
+        if int(item.GetFusionCompCount() or 0) != 0:
+            raise RuntimeError("caption_carrier_existing_comp")
+        comp = item.AddFusionComp()
+    except Exception as exc:
+        raise RuntimeError(f"caption_carrier_comp:{exc}") from exc
+    if comp is None or int(item.GetFusionCompCount() or 0) != 1:
+        raise RuntimeError("caption_carrier_comp_readback")
+    tools = _collection_values(comp.GetToolList(False) or {})
+    media_out = next((tool for tool in tools if _tool_regid(tool) == "MediaOut"), None)
+    if media_out is None:
+        raise RuntimeError("caption_carrier_media_out")
+    tool = comp.AddTool("TextPlus", -32768, -32768)
+    if tool is None or _tool_regid(tool) != "TextPlus":
+        raise RuntimeError("caption_carrier_textplus")
+    if media_out.ConnectInput("Input", tool.FindMainOutput(1)) is not True:
+        raise RuntimeError("caption_carrier_connection")
+    return comp, tool
+
+
+def _item_opacity(item: Any) -> float:
+    try:
+        value = (item.GetProperty() or {}).get("Opacity")
+    except Exception:
+        value = None
+    opacity = as_float(value)
+    if opacity is None:
+        raise RuntimeError("caption_source_opacity_readback")
+    return opacity
+
+
+def _set_item_opacity(item: Any, value: float) -> None:
+    if item.SetProperty("Opacity", value) is not True or abs(_item_opacity(item) - value) > 1e-5:
+        raise RuntimeError("caption_source_opacity_write")
+
+
+def _selected_plan_items(plan: Dict[str, Any]) -> List[Dict[str, Any]]:
+    if plan.get("ok") is not True:
+        raise ValueError("animation_plan_not_ok")
+    items = plan.get("items")
+    if not isinstance(items, list):
+        raise ValueError("animation_plan_items")
+    selected = [row for row in items if isinstance(row, dict) and row.get("selected")]
+    if not selected:
+        raise ValueError("animation_plan_selected_empty")
+    cue_ids = [str(row.get("cue_id") or "") for row in selected]
+    if any(not cue_id for cue_id in cue_ids) or len(cue_ids) != len(set(cue_ids)):
+        raise ValueError("animation_plan_cue_identity")
+    return selected
+
+
+def _bind_plan_items(
+    captions: Sequence[Any],
+    selected: Sequence[Dict[str, Any]],
+) -> List[Tuple[Dict[str, Any], Any]]:
+    bound: List[Tuple[Dict[str, Any], Any]] = []
+    used: set[int] = set()
+    for row in selected:
+        start = as_int(row.get("start_frame"))
+        end = as_int(row.get("end_frame"))
+        duration = as_int(row.get("duration_frames"))
+        matches = [
+            item
+            for item in captions
+            if safe_start(item) == start
+            and safe_end(item) == end
+            and end is not None
+            and start is not None
+            and end - start == duration
+        ]
+        if len(matches) != 1 or id(matches[0]) in used:
+            raise ValueError(f"caption_geometry_identity:{row.get('cue_id')}")
+        used.add(id(matches[0]))
+        bound.append((row, matches[0]))
+    return bound
+
+
+def _runtime_animation(row: Dict[str, Any], tool: Any) -> Dict[str, Any]:
+    animation = row.get("animation")
+    if not isinstance(animation, dict):
+        raise ValueError("animation_plan_payload")
+    family = str(animation.get("animation_type") or "")
+    source_id = str(animation.get("source_event_id") or "")
+    keyframes = animation.get("keyframes")
+    if not source_id or not isinstance(keyframes, list):
+        raise ValueError("animation_plan_source_evidence")
+    stable_frame = int(row["duration_frames"]) - 1
+
+    if family in {"scale", "scale_pop"}:
+        base = as_float(read_input(tool, "Size", stable_frame))
+        if base is None or base <= 0:
+            raise ValueError(f"caption_static_size:{row.get('cue_id')}")
+        prop = "Size"
+        values = [
+            {
+                "frame": keyframe.get("frame"),
+                "relative_time": keyframe.get("relative_time"),
+                "value": base * float(keyframe["size_multiplier"]),
+            }
+            for keyframe in keyframes
+        ]
+    elif family == "slide":
+        base = normalize_point(read_input(tool, "Center", stable_frame))
+        if base is None:
+            raise ValueError(f"caption_static_center:{row.get('cue_id')}")
+        prop = "Center"
+        values = [
+            {
+                "frame": keyframe.get("frame"),
+                "relative_time": keyframe.get("relative_time"),
+                "value": [
+                    base[0] + float(keyframe["center_offset"][0]),
+                    base[1] + float(keyframe["center_offset"][1]),
+                ],
+            }
+            for keyframe in keyframes
+        ]
+    else:
+        raise ValueError(f"animation_family:{family}")
+
+    return {
+        "authority": "visual_observed",
+        "source_evidence_id": source_id,
+        "source_type": family,
+        "property": prop,
+        "keyframes": values,
+    }
+
+
+def _run_carrier_fallback(
+    project: Any,
+    timeline: Any,
+    payload: Dict[str, Any],
+    selected: Sequence[Dict[str, Any]],
+    bound: Sequence[Tuple[Dict[str, Any], Any]],
+) -> List[Dict[str, Any]]:
+    if any(get_fusion_comp(item) is not None for _, item in bound):
+        raise RuntimeError("caption_carrier_mixed_source_representation")
+    styles = _carrier_static_styles(
+        _repository_path(payload["static_fcpxml_path"]),
+        selected,
+        int(payload["frame_width"]),
+    )
+    original_opacity = [(item, _item_opacity(item)) for _, item in bound]
+    if any(abs(value - 100.0) > 1e-5 for _, value in original_opacity):
+        raise RuntimeError("caption_source_opacity_precondition")
+    carrier_track = int(payload["carrier_track_index"])
+    try:
+        existing_tracks = int(timeline.GetTrackCount("video") or 0)
+    except Exception as exc:
+        raise RuntimeError("caption_carrier_track_count") from exc
+    if existing_tracks >= carrier_track and _caption_items(timeline, carrier_track):
+        raise RuntimeError("caption_carrier_track_not_empty")
+    source = _find_carrier_source(timeline, max(int(row["duration_frames"]) for row in selected))
+    pool = project.GetMediaPool()
+    if pool is None:
+        raise RuntimeError("caption_carrier_media_pool")
+
+    created: List[Any] = []
+    added_track = False
+    prepared: List[Tuple[Dict[str, Any], Any, Any, Any, Dict[str, Any], Dict[str, Any]]] = []
+    try:
+        added_track = _ensure_carrier_track(timeline, carrier_track)
+        for row in selected:
+            item = _append_carrier(pool, timeline, source, row, carrier_track)
+            created.append(item)
+            comp, tool = _create_textplus(item)
+            static_readback = _apply_static_style(tool, styles[str(row["cue_id"])])
+            animation = _runtime_animation(row, tool)
+            validated_animation_targets(tool, animation, int(row["duration_frames"]))
+            prepared.append((row, item, comp, tool, animation, static_readback))
+
+        results = []
+        for row, item, comp, tool, animation, static_readback in prepared:
+            applied = apply_authorized_animation(comp, tool, animation, int(row["duration_frames"]))
+            results.append({
+                "cue_id": row["cue_id"],
+                "name": row["name"],
+                "start_frame": row["start_frame"],
+                "end_frame": row["end_frame"],
+                "animation_type": animation["source_type"],
+                "source_evidence_id": animation["source_evidence_id"],
+                "carrier": "media_backed_fusion_textplus",
+                "static_contract": static_readback,
+                **applied,
+            })
+        for _, source_item in bound:
+            _set_item_opacity(source_item, 0.0)
+        return results
+    except Exception:
+        for item, opacity in original_opacity:
+            try:
+                _set_item_opacity(item, opacity)
+            except Exception:
+                pass
+        owned = list(_caption_items(timeline, carrier_track)) if existing_tracks < carrier_track else created
+        if owned:
+            try:
+                timeline.DeleteClips(owned, False)
+            except Exception:
+                pass
+        if added_track:
+            try:
+                timeline.DeleteTrack("video", carrier_track)
+            except Exception:
+                pass
+        raise
+
+
+def run(resolve: Any = None, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    payload = _required_payload(context)
+    plan_path = _repository_path(payload["animation_plan_path"])
+    plan = load_json(plan_path)
+    selected = _selected_plan_items(plan)
+    requested_cues = payload.get("caption_cue_ids")
+    if requested_cues is not None:
+        if not isinstance(requested_cues, list) or not requested_cues or len(requested_cues) != len(set(map(str, requested_cues))):
+            raise ValueError("caption_cue_ids")
+        requested = {str(value) for value in requested_cues}
+        available = {str(row.get("cue_id") or "") for row in selected}
+        if not requested <= available:
+            raise ValueError("caption_cue_ids_not_selected")
+        selected = [row for row in selected if str(row.get("cue_id") or "") in requested]
+    expected_count = as_int(payload["expected_caption_count"])
+    track_index = as_int(payload["caption_track_index"])
+    if expected_count is None or expected_count <= 0 or track_index is None or track_index <= 0:
+        raise ValueError("caption_contract_counts")
+    if int((plan.get("summary") or {}).get("v3_item_count") or 0) != expected_count:
+        raise ValueError("animation_plan_caption_count")
+    if payload.get("expected_selected_caption_count") is not None and int(payload["expected_selected_caption_count"]) != len(selected):
+        raise ValueError("animation_plan_selected_count")
+    if payload.get("expected_static_untouched_count") is not None and int(payload["expected_static_untouched_count"]) != expected_count - len(selected):
+        raise ValueError("animation_plan_static_count")
+
+    resolve_app = resolve if resolve is not None else get_resolve()
+    manager = resolve_app.GetProjectManager()
+    project = manager.GetCurrentProject()
+    if project is None:
+        raise RuntimeError("resolve_project_missing")
+    expected_project = str(payload.get("expected_project") or "")
+    if expected_project and str(project.GetName() or "") != expected_project:
+        raise ValueError("resolve_project_identity")
+    timeline = project.GetCurrentTimeline()
+    if timeline is None:
+        raise RuntimeError("resolve_timeline_missing")
+    if safe_name(timeline) != str(payload["target_timeline_name"]):
+        raise ValueError("resolve_timeline_name")
+    if _timeline_uid(timeline) != str(payload["target_timeline_uid"]):
+        raise ValueError("resolve_timeline_uid")
+
+    captions = _caption_items(timeline, track_index)
+    if len(captions) != expected_count:
+        raise ValueError("resolve_caption_count")
+    bound = _bind_plan_items(captions, selected)
+    track_before = scan_tracks(timeline)
+    direct = [(row, item, get_fusion_comp(item)) for row, item in bound]
+    use_carrier = all(comp is None for _, _, comp in direct)
+    if use_carrier:
+        if payload.get("carrier_fallback") is not True:
+            raise RuntimeError("caption_carrier_fallback_not_authorized")
+        results = _run_carrier_fallback(project, timeline, payload, selected, bound)
+        carrier_track = int(payload["carrier_track_index"])
+    elif any(comp is None for _, _, comp in direct):
+        raise RuntimeError("caption_mixed_carrier_representation")
+    else:
+        results = []
+        carrier_track = track_index
+    prepared = []
+
+    # Validate every selected payload before the first mutation.
+    for row, item, comp in ([] if use_carrier else direct):
+        tool = get_text_tool(comp) if comp else None
+        if comp is None or tool is None:
+            raise RuntimeError(f"caption_textplus_missing:{row.get('cue_id')}")
+        animation = _runtime_animation(row, tool)
+        validated_animation_targets(tool, animation, int(row["duration_frames"]))
+        prepared.append((row, item, comp, tool, animation, identity(tool, item)))
+
+    for row, item, comp, tool, animation, before in prepared:
+        result = apply_authorized_animation(
+            comp,
+            tool,
+            animation,
+            int(row["duration_frames"]),
         )
+        results.append({
+            "cue_id": row["cue_id"],
+            "name": row.get("name"),
+            "start_frame": row["start_frame"],
+            "end_frame": row["end_frame"],
+            "animation_type": animation["source_type"],
+            "source_evidence_id": animation["source_evidence_id"],
+            "identity_before": before,
+            "identity_after": identity(tool, item),
+            **result,
+        })
+
+    if payload.get("save_project") is not True or manager.SaveProject() is not True:
+        raise RuntimeError("resolve_project_save_failed")
+    timeline = project.GetCurrentTimeline()
+    if (
+        timeline is None
+        or safe_name(timeline) != str(payload["target_timeline_name"])
+        or _timeline_uid(timeline) != str(payload["target_timeline_uid"])
+    ):
+        raise RuntimeError("resolve_timeline_reacquire_failed")
+    rebound = _bind_plan_items(_caption_items(timeline, carrier_track), selected)
+    for result, (row, item) in zip(results, rebound):
+        comp = get_fusion_comp(item)
+        tool = get_text_tool(comp) if comp else None
+        if tool is None:
+            raise RuntimeError(f"caption_readback_missing:{result['cue_id']}")
+        animation = _runtime_animation(row, tool)
+        input_name, targets = validated_animation_targets(
+            tool,
+            animation,
+            safe_end(item) - safe_start(item),
+        )
+        if not input_targets_are_correct(tool, input_name, targets):
+            raise RuntimeError(f"caption_persistent_readback:{result['cue_id']}")
+        result["identity_after"] = identity(tool, item)
+        result["persistent_readback"] = True
+    if not use_carrier and scan_tracks(timeline) != track_before:
+        raise RuntimeError("timeline_structure_changed")
+    if use_carrier:
+        source_after = _caption_items(timeline, track_index)
+        if len(source_after) != expected_count or any(_item_opacity(item) != 0.0 for _, item in _bind_plan_items(source_after, selected)):
+            raise RuntimeError("caption_source_overlay_readback")
+    else:
+        protected = ("name", "start", "end", "text", "font", "style")
+        for result in results:
+            if any(result["identity_before"].get(key) != result["identity_after"].get(key) for key in protected):
+                raise RuntimeError(f"caption_identity_changed:{result['cue_id']}")
+
+    counts: Dict[str, int] = {}
+    for result in results:
+        family = result["animation_type"]
+        counts[family] = counts.get(family, 0) + 1
+    return {
+        "ok": True,
+        "workspace_version": WORKSPACE_VERSION,
+        "video_id": payload["video_id"],
+        "target_timeline_name": payload["target_timeline_name"],
+        "target_timeline_uid": payload["target_timeline_uid"],
+        "animation_plan_path": str(plan_path),
+        "plan_hash": plan.get("plan_hash"),
+        "selected_caption_count": len(results),
+        "animation_family_counts": counts,
+        "modified_count": sum(bool(row.get("modified")) for row in results),
+        "already_correct_count": sum(bool(row.get("already_correct")) for row in results),
+        "static_untouched_count": expected_count - len(results),
+        "caption_identity_preserved": True,
+        "timeline_structure_preserved": not use_carrier,
+        "carrier_type": "media_backed_fusion_textplus_overlay" if use_carrier else "existing_fusion_textplus",
+        "source_basic_titles_preserved": use_carrier,
+        "items": results,
+    }
 
 
-if os.environ.get("VC_DISABLE_WORKSPACE_AUTORUN") != "1":
+def main() -> None:
+    raise SystemExit("Run this adapter through one command-bound VC Agent task.")
+
+
+if __name__ == "__main__" and os.environ.get("VC_DISABLE_WORKSPACE_AUTORUN") != "1":
     main()

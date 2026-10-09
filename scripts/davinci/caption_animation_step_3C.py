@@ -6,8 +6,9 @@ Source-faithful caption-animation planning and validation.
 Commands:
 
     prepare
-        Reads the merged analysis and the successful Step 3B.2 size plan/report.
-        Produces a strict animation plan for the existing 116 V3 Text+ clips.
+        Reads the merged analysis and an existing caption contract (or the
+        legacy Step 3B.2 size plan/report). Produces a strict animation plan
+        for those existing Text+ clips.
 
     validate
         Validates either the first Resolve application or the second-run
@@ -130,6 +131,11 @@ def cue_number(cue_id: str) -> int:
     return int(match.group(1)) if match else 10**9
 
 
+def canonical_cue_id(value: Any) -> str:
+    number = cue_number(str(value or ""))
+    return f"sub_{number:03d}" if number < 10**9 else ""
+
+
 def event_quality(event: Dict[str, Any]) -> Tuple[float, int, int]:
     animation = event.get("animation") or {}
     confidence = as_float(animation.get("confidence")) or 0.0
@@ -148,7 +154,7 @@ def collect_detected_events(
             continue
 
         animation = node.get("animation")
-        cue_id = str(node.get("cue_id") or "").strip()
+        cue_id = canonical_cue_id(node.get("cue_id"))
 
         if not cue_id or not isinstance(animation, dict):
             continue
@@ -163,7 +169,7 @@ def collect_detected_events(
         if not animation_type:
             continue
 
-        raw_events.append(node)
+        raw_events.append({**node, "cue_id": cue_id})
 
     deduplicated: Dict[str, Dict[str, Any]] = {}
 
@@ -244,7 +250,11 @@ def collect_v3_rows(*documents: Any) -> Dict[str, Dict[str, Any]]:
             if not isinstance(node, dict):
                 continue
 
-            cue_id = str(node.get("cue_id") or "").strip()
+            cue_id = canonical_cue_id(
+                node.get("cue_id")
+                or node.get("subtitle_id")
+                or node.get("id")
+            )
             if not re.fullmatch(r"sub_\d+", cue_id):
                 continue
 
@@ -259,6 +269,8 @@ def collect_v3_rows(*documents: Any) -> Dict[str, Dict[str, Any]]:
                 "style_profile_id",
                 "start_frame",
                 "end_frame",
+                "timeline_start_frame",
+                "timeline_end_frame",
                 "duration_frames",
                 "timeline_frame",
                 "timeline_seconds",
@@ -276,8 +288,12 @@ def collect_v3_rows(*documents: Any) -> Dict[str, Dict[str, Any]]:
     cleaned: Dict[str, Dict[str, Any]] = {}
 
     for cue_id, row in rows.items():
-        start_frame = as_int(row.get("start_frame"))
-        end_frame = as_int(row.get("end_frame"))
+        start_frame = as_int(
+            row.get("start_frame", row.get("timeline_start_frame"))
+        )
+        end_frame = as_int(
+            row.get("end_frame", row.get("timeline_end_frame"))
+        )
         duration_frames = as_int(row.get("duration_frames"))
 
         if start_frame is None:
@@ -295,8 +311,6 @@ def collect_v3_rows(*documents: Any) -> Dict[str, Dict[str, Any]]:
             start_frame is None
             or duration_frames is None
             or duration_frames <= 0
-            or base_size is None
-            or base_size <= 0
         ):
             continue
 
@@ -304,6 +318,11 @@ def collect_v3_rows(*documents: Any) -> Dict[str, Dict[str, Any]]:
         row["end_frame"] = end_frame
         row["duration_frames"] = duration_frames
         row["base_size"] = base_size
+        row.setdefault("cue_index", cue_number(cue_id))
+        row.setdefault(
+            "name",
+            f"VC_TEXTPLUS_{row['cue_index']:04d}_{cue_id}",
+        )
 
         cleaned[cue_id] = row
 
@@ -633,13 +652,18 @@ def normalize_animation_event(
 
 def prepare_command(args: argparse.Namespace) -> int:
     analysis = load_json(args.analysis)
-    size_plan = load_json(args.font_size_plan)
-    size_report = load_json(args.font_size_report)
+    if args.caption_contract:
+        caption_documents = [load_json(args.caption_contract)]
+    else:
+        caption_documents = [
+            load_json(args.font_size_plan),
+            load_json(args.font_size_report),
+        ]
 
     events, source_detected_count, source_type_counts = collect_detected_events(
         analysis
     )
-    v3_rows = collect_v3_rows(size_plan, size_report)
+    v3_rows = collect_v3_rows(*caption_documents)
 
     rejected_events: List[Dict[str, Any]] = []
     accepted_by_cue: Dict[str, List[Dict[str, Any]]] = {}
@@ -757,10 +781,24 @@ def prepare_command(args: argparse.Namespace) -> int:
         "inputs": {
             "analysis": str(Path(args.analysis)),
             "analysis_sha256": file_sha256(args.analysis),
-            "font_size_plan": str(Path(args.font_size_plan)),
-            "font_size_plan_sha256": file_sha256(args.font_size_plan),
-            "font_size_report": str(Path(args.font_size_report)),
-            "font_size_report_sha256": file_sha256(args.font_size_report),
+            "caption_contract": (
+                str(Path(args.caption_contract)) if args.caption_contract else None
+            ),
+            "caption_contract_sha256": (
+                file_sha256(args.caption_contract) if args.caption_contract else None
+            ),
+            "font_size_plan": (
+                str(Path(args.font_size_plan)) if args.font_size_plan else None
+            ),
+            "font_size_plan_sha256": (
+                file_sha256(args.font_size_plan) if args.font_size_plan else None
+            ),
+            "font_size_report": (
+                str(Path(args.font_size_report)) if args.font_size_report else None
+            ),
+            "font_size_report_sha256": (
+                file_sha256(args.font_size_report) if args.font_size_report else None
+            ),
         },
         "expected_v3_count": args.expected_v3_count,
         "summary": {
@@ -961,11 +999,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     prepare = subparsers.add_parser("prepare")
     prepare.add_argument("--analysis", required=True)
-    prepare.add_argument("--font-size-plan", required=True)
-    prepare.add_argument("--font-size-report", required=True)
+    prepare.add_argument("--caption-contract")
+    prepare.add_argument("--font-size-plan")
+    prepare.add_argument("--font-size-report")
     prepare.add_argument("--output", required=True)
     prepare.add_argument("--validation", required=True)
-    prepare.add_argument("--expected-v3-count", type=int, default=116)
+    prepare.add_argument("--expected-v3-count", type=int, required=True)
     prepare.add_argument("--expected-source-detected", type=int, default=0)
 
     validate = subparsers.add_parser("validate")
@@ -985,6 +1024,12 @@ def main() -> int:
     args = build_parser().parse_args()
 
     if args.command == "prepare":
+        if bool(args.caption_contract) == bool(
+            args.font_size_plan and args.font_size_report
+        ):
+            raise ValueError(
+                "provide --caption-contract or both legacy font-size inputs"
+            )
         return prepare_command(args)
 
     if args.command == "validate":
