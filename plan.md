@@ -1,196 +1,138 @@
-# plan.md — S007 OSS-First Proven-Code Integration
+# plan.md — S007 OSS Caption-Animation Overdrive
 
-- STAGE ID: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
-- STAGE NAME: Replace custom wheel-reinvention with proven OSS mechanisms
-- STATUS: `READY`
-- MODE: `PRODUCTION`
-- ACTIVE REEL AFTER DISPOSABLE SPIKES: `DZatr0EJt4B`
-- PRIOR TARGET: `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B` (pre-reinstall; unavailable)
-- CURRENT TARGET: reconstruct accepted Reel #3 baseline from `data/DZatr0EJt4B/davinci/DZatr0EJt4B_mvp_timeline.fcpxml`, then record new identity
-- HUMAN DIRECTIVE: **OSS-FIRST IS MANDATORY**
-- DEFAULT RISK: `R1`, with R2 only for live Resolve compatibility/visual checks
+- STATUS: ACTIVE
+- DATE: 2026-10-10
+- ACTIVE UNIT: OSS-002
+- PRODUCT MODE: SPEEDRUN
+- PRIORITY: visible production fidelity, not detector-framework perfection
 
-## 1. Human-Set Outcome
+## Outcome
 
-Ship Video Cloner by end of week using proven mechanisms instead of continuing custom API experiments.
+Replace the frozen custom caption-animation detection route with the strongest proven OSS mechanisms we can reuse/adapt quickly, while keeping the already-proven editable Resolve carrier.
 
-Before Video Cloner custom-builds any material mechanism, it MUST:
-1. identify the best proven OSS/existing implementation;
-2. verify license/maintenance/evidence;
-3. run a bounded compatibility test;
-4. REUSE / ADAPT / COMBINE when viable;
-5. BUILD only after the proven route fails a named requirement.
+The next visible milestone is:
 
-## 2. Immediate reason for this Stage
+> high-coverage, compound caption animations on Reel #3 that are editable in Resolve and pass one batch human visual review.
 
-The custom caption-animation carrier path entered an agentic repair loop:
-- custom carrier assumptions;
-- native crashes;
-- item rediscovery bug;
-- structural identity mismatch;
-- repeated canaries without visible Reel #3 progress.
+## Frozen Evidence — DONE
 
-Meanwhile, `samuelgursky/davinci-resolve-mcp` already contains a live-tested MIT nested-timeline Text+ route that directly solves exact track/frame/duration placement while preserving editable Text+.
+- OSS-001 nested Text+ carrier: PASS.
+- `sub_008` live editable animation application: PASS.
+- Existing Step 3C custom plan: 16 selected captions (10 scale / 6 slide / 0 scale_pop).
+- Human batch review: REJECTED for production fidelity/coverage.
+- Root limitation: systematic misses plus representation mismatch; source animations frequently combine motion and size change.
+- Decision: preserve custom detector artifacts, but do not tune/re-canary them.
 
-Therefore custom caption carrier development is frozen.
+## Step 1 — OSS Capability Spike — ACTIVE
 
-## OSS Queue Authority
+Use existing vetted research before any new broad research.
 
-Canonical sequential adoption queue:
-`docs/research/OSS_ADOPTION_QUEUE.md`
+Primary pool:
 
-Exactly one OSS work unit may be `ACTIVE` at a time.
+1. `heygen-com/hyperframes@46f6cb356785bed79e1ce7b79d7e7accc697786a` — Apache-2.
+2. `kurbaitaev/ghost-editor@9f197e4e65691d190ba63efa6c061d9c43f02cf6` — MIT.
+3. video-style-kit / EditDNA patterns already recorded in the research file.
+4. Remotion only if its commercial/custom license is explicitly acceptable for the required component.
 
-Current:
-- `OSS-002` — advanced Reel #3 caption animation using the proven `davinci-resolve-mcp` carrier.
+For each serious candidate, inspect actual code paths and answer only:
 
-Completed:
-- `OSS-001` — PASS on official Resolve Free 21.0.4.5 with exact track/start/duration + editable inner Text+ readback.
-- `OSS-003` — transitions.
-- `OSS-004` — core motion/VFX.
-- `OSS-005` — speed ramps/retiming.
+- Does it detect/derive animation from reference evidence, or only render supplied animation?
+- What reusable representation does it expose: transform curves, keyframes, recipes, caption identities, motion primitives?
+- Can it express compound transforms (translation + scale at minimum)?
+- Can we reuse/adapt it quickly and legally?
+- How does it map into our proven Resolve carrier?
 
-Cuts/rough-cut/timing remain queued for generalization because current Reel #3 cut baseline already works.
+Do not equate popularity with capability.
 
-## 3. Proven-code authority
+## Step 2 — Same-Evidence Benchmark
 
-Research artifact:
-`docs/research/OSS_PROVEN_CODE_RESEARCH_20261009.md`
+Benchmark no more than the two strongest compatible routes/compositions on Reel #3.
 
-Priority evidence tiers:
-- `PROVEN_A`: live-tested exact-runtime mechanism OR mature active library with strong tests/benchmarks.
-- `PROVEN_B`: credible implementation/tests/demos but less exact proof.
-- `REFERENCE_ONLY`: weak adoption/license/proof; do not copy blindly.
+Use:
 
-Stars alone are not proof.
+- the same source timestamps/frames;
+- captions where custom detection missed obvious motion;
+- examples with combined movement + size change;
+- human visual evidence as ground truth.
 
-## 4. IN scope
+Score:
 
-- vendor/adapt minimal proven OSS mechanisms with license attribution;
-- bounded compatibility tests on disposable Resolve timelines/projects;
-- replace custom caption carrier with `davinci-resolve-mcp` nested-timeline Text+ route;
-- audit existing VC cuts/timing/transitions/motion against proven OSS before future custom work;
-- use real visual/output evidence to choose next integration;
-- preserve existing Reel #3 analysis and 16-caption animation detection plan.
+- coverage / missed animations;
+- classification/recipe correctness;
+- translation direction and amplitude;
+- scale timing/amplitude;
+- compound motion support;
+- integration cost;
+- license/runtime risk.
 
-## 5. OUT of scope
+Select `REUSE / ADAPT / COMBINE / REPLACE`.
 
-- more custom caption-carrier designs before the nested-timeline route is tested;
-- more ordinal/geometry/name-matching canaries;
-- rebuilding basic captions;
-- Reel #2 production;
-- architecture rewrite;
-- broad dependency migration unrelated to current Win Condition;
-- copying AGPL/custom-license/no-license code without an explicit licensing decision.
+Stop research when more information is unlikely to change the winner.
 
-## 6. Stage Steps
+## Step 3 — Resolve Adaptation
 
-| Step | Risk | Result | Done When | Status |
-|---|---|---|---|---|
-| 1 | R1 | Freeze custom routes + pin research decisions | Research artifact + candidate pins/licenses/decisions exist | DONE |
-| 2 | R1/R2 | Reproduce proven nested-timeline Text+ route on disposable timeline | Exact track/start/duration + editable inner Text+ readback pass on user's Resolve | DONE — PASS on Free 21.0.4.5 |
-| 3 | R1/R2 | Reconstruct accepted Reel #3 baseline, bind new target identity, then adapt nested Text+ route for one Reel #3 animated caption | Visual caption/style/timing/animation match accepted; no unrelated mutation | ACTIVE |
-| 4 | R1/R2 | Roll out the already-selected 16 Reel #3 animations | 10 scale + 6 slide applied via proven route and human-reviewed | TODO |
-| 5 | R1 | Proven-code capability map for transitions/motion | Each Reel #3 gap mapped to proven route before code | TODO |
-| 6 | R1/R2 | Integrate next highest-ROI proven transition/motion route | Visible Reel #3 improvement from proven implementation | TODO |
-| 7 | R2 | Integrated Reel #3 core-style review | Human accepts basic style baseline | TODO |
+Keep the OSS-001 carrier frozen.
 
-Cuts remain preserved unless a real benchmark failure appears.
+Map the winning OSS animation representation into editable Resolve Text+/Fusion channels.
 
-## 7. Step 2 — exact current task
+Rules:
 
-Use pinned source:
-`samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5`
+- no new carrier;
+- no global identity theorem;
+- no per-caption micro-canaries;
+- one bounded representative application, then batch;
+- preserve original captions reversibly until batch verification;
+- application must support independent transform channels required by the source.
 
-Primary reference:
-`tests/live_workaround_verification.py::case_nested_title`
+## Step 4 — Batch Human Review
 
-Mechanism:
-1. Create disposable source timeline.
-2. `InsertFusionTitleIntoTimeline("Text+")`.
-3. Configure Text+ in source timeline.
-4. `source_timeline.GetMediaPoolItem()`.
-5. Create disposable target timeline with multiple video tracks.
-6. Place source-timeline media item with `MediaPool.AppendToTimeline` using:
-   - `trackIndex`
-   - `recordFrame`
-   - `startFrame`
-   - `endFrame` (exclusive)
-7. Verify exact track/start/duration.
-8. Reach inner timeline with `placedItem.GetMediaPoolItem().GetTimeline()`.
-9. Verify Text+ remains editable and Fusion comp/tool remains reachable.
+Apply the OSS-backed caption animation layer across Reel #3 and review as one batch.
 
-Do not touch Reel #3 during Step 2.
+Review:
 
-### Attribution
-If code is copied/adapted, preserve MIT notice and record source path + pinned commit.
+- coverage;
+- missed animations;
+- false positives;
+- compound transform fidelity;
+- timing;
+- direction;
+- magnitude;
+- obvious visual mismatch.
 
-## 8. Step 2 kill criteria
+If usable: close OSS-002 immediately.
 
-PASS:
-- mechanism works on user's Resolve in disposable state.
+If not usable: compare the second proven route/composition. Do not return to the frozen custom detector.
 
-FAIL:
-- exact documented mechanism cannot work on current runtime after one bounded adaptation.
+## Step 5 — OSS-003 Transitions
 
-If FAIL:
-- compare only the next proven candidates (`mhadifilms/dvr`, `pydavinci`, or official Resolve mechanism);
-- do NOT invent carrier V4.
+Immediately after OSS-002 acceptance:
 
-## 9. Rules for every later capability
+- reuse/adapt the strongest proven transition mechanism from the existing research queue;
+- prioritize source-visible transitions;
+- batch review;
+- no unrelated refactors.
 
-Before coding:
-1. search `OSS_PROVEN_CODE_RESEARCH_20261009.md`;
-2. if a proven route exists, test/adapt it first;
-3. if not, run a targeted search;
-4. record `REUSE / ADAPT / COMBINE / BUILD / IGNORE`;
-5. only BUILD after incompatibility evidence.
+Then proceed to OSS-004 motion/VFX and OSS-005 speed ramps.
 
-## 10. Selected proven routes already approved for benchmark
+## Build Gate
 
-- Resolve title/control: `davinci-resolve-mcp`
-- Cuts: PySceneDetect; auto-editor; TransNetV2 fallback
-- Rough cuts: auto-editor
-- Word timing: WhisperX / VideoLingo
-- Animation/transition render/reference: HyperFrames
-- Timeline IR: OpenTimelineIO
-- Style-process references: ghost-editor, video-style-kit, EditDNA
-- QA patterns: video-editor-agent
-- Content automation: MoneyPrinterTurbo
-- Remotion: technically strong but license-gated
-- OpenChatCut: reference only unless AGPL strategy approved
+Greenfield detector work is forbidden unless:
 
-## 11. Reporting
+1. the strongest two compatible proven OSS routes have been tested on the same evidence;
+2. both fail a named product requirement;
+3. the missing mechanism cannot be obtained by combining existing components.
 
-R1:
-short result only:
-- OSS source + pin
-- mechanism reused
-- compatibility result
-- files changed
-- real artifact/readback
+Even then, build only the missing mechanism.
 
-R2:
-durable evidence only when a live Resolve action is required.
+## Future Input Adapter Track — QUEUED
 
-No report-only stages.
+After the current Reel #3 visual baseline is usable, add source adapters for:
 
-## 12. True BLOCK conditions
+- reference videos / frame windows;
+- CSS/JS/GSAP;
+- pure code;
+- GIF / frame sequence;
+- short partial-animation MP4/GIF;
+- Resolve templates/timelines/project artifacts.
 
-- best proven candidate has incompatible license;
-- proven route requires unavailable runtime/hardware;
-- exact compatibility test fails and no second proven route exists;
-- human-set target/Win Condition changes;
-- destructive live action needs approval.
-
-A failed custom mechanism is NOT permission to invent another before proven OSS is exhausted.
-
-## 13. Stage Exit
-
-S007 exits when:
-- advanced Reel #3 caption animation uses a proven reused mechanism;
-- current transition/motion gaps have proven-code decisions;
-- at least one next visible transition/motion improvement is integrated from a proven route;
-- the human accepts the integrated basic Reel #3 style baseline.
-
-Then continue unseen/raw Reel generalization, still under OSS-first law.
+Normalize these to a common animation recipe, then apply through editor adapters. This is intentionally not on the current critical path.

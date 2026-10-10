@@ -1,5 +1,28 @@
 # OSS_PROVEN_CODE_RESEARCH_20261009.md
 
+## 2026-10-10 Production Visual Review Override — OSS-002
+
+Human visual evidence changes the production decision.
+
+- The Resolve application layer is proven: OSS-001 + persisted `sub_008` establish editable Text+ placement and animation application.
+- The custom Step 3C caption-animation detector is **FROZEN / REJECTED FOR PRODUCTION**.
+- It selected only 16 captions and visibly misses many real animations.
+- The source contains compound transforms (for example movement + size change) that the simple `scale` / `slide` taxonomy does not model adequately.
+- Therefore no more custom detector tuning is authorized on the speedrun critical path.
+
+### Active OSS action
+
+Promote the strongest already-vetted animation/style candidates from benchmark/reference status to an immediate bounded adaptation spike:
+
+1. HyperFrames first for concrete animation runtime / seekable GSAP / caption-identity / synthetic-reference mechanisms.
+2. ghost-editor and video-style-kit/EditDNA patterns for concrete reusable extraction/recipe mechanisms.
+3. Keep the proven davinci-resolve-mcp Text+ carrier as the editor application layer.
+4. Verify whether each candidate actually derives animation from reference evidence versus only rendering supplied recipes; do not invent capability.
+5. Benchmark at most two serious compatible routes/compositions on the same Reel #3 evidence, then choose `REUSE / ADAPT / COMBINE / REPLACE`.
+
+Future architecture should also support animation exemplar adapters for CSS/JS/GSAP, code, GIF/frame sequences, short MP4/GIF samples and supported Resolve template/timeline artifacts, all normalized into a common animation recipe before editor-specific execution.
+
+
 ## Decision
 
 **OSS-FIRST is now a hard product-development rule for Video Cloner.**

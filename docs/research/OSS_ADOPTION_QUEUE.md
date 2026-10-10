@@ -1,128 +1,147 @@
-# OSS_ADOPTION_QUEUE.md — Video Cloner Sequential Proven-Code Queue
+# OSS_ADOPTION_QUEUE.md — Video Cloner Proven-Code Queue
 
-- STATUS: ACTIVE
-- POLICY: `REUSE > ADAPT > COMBINE > BUILD`
-- HUMAN AUTHORITY: the human may reorder this queue at any time.
-- RULE: exactly **one** OSS work unit is `ACTIVE` at a time.
-- CURRENT UNIT: `OSS-002`
-- ACTIVE REEL FOR PRODUCTION INTEGRATION: `DZatr0EJt4B`
-- RESEARCH BASELINE: `docs/research/OSS_PROVEN_CODE_RESEARCH_20261009.md`
+- UPDATED: 2026-10-10
+- MODE: SPEEDRUN / PROVEN-CODE-FIRST
+- RULE: `REUSE > ADAPT > COMBINE > BUILD`
+- ACTIVE: `OSS-002`
 
-This file answers one question at all times:
+## Production Override — 2026-10-10
 
-> **Which proven OSS mechanism are we adapting/reusing right now, and what comes next?**
+Human visual review overrules the prior assumption that the existing Video Cloner caption-animation detector was good enough to roll forward.
 
-A work unit changes status only at a meaningful compatibility/integration boundary. Do not create micro-units for individual tests.
+### Frozen route
 
-## Queue
+Existing custom Step 3C plan:
 
-| ID | Layer / Capability | Primary Proven Route | Backup / Secondary | Immediate Product Outcome | Status | BUILD Gate |
-|---|---|---|---|---|---|---|
-| OSS-001 | Resolve editable Text+ placement / caption carrier | `samuelgursky/davinci-resolve-mcp@94c7a885...` nested-timeline Text+ | `mhadifilms/dvr`, `pydavinci` | Stable editable Text+ can be placed at exact track/start/duration in Resolve | **PASS / INTEGRATED** | Only if proven nested-timeline route and next proven wrapper route fail exact compatibility |
-| OSS-002 | Advanced caption animation on Reel #3 | proven Text+ carrier from OSS-001 + existing VC detection; HyperFrames as animation/reference benchmark | ghost-editor recipes; Remotion only if license approved | Reconstruct accepted Reel #3 baseline, then apply preserved 16-caption plan: 10 scale + 6 slide, visually accepted | **ACTIVE** | Only if proven Text+/animation route cannot express required motion |
-| OSS-003 | Transitions | Resolve MCP verified API/workaround ledger + HyperFrames transition catalog/runtime | OpenChatCut reference; Remotion license-gated | Source-backed Reel #3 transitions become executable/editable | QUEUED | Only after proven routes fail named transition family |
-| OSS-004 | Core motion / VFX | HyperFrames for animation/synthetic truth + Resolve MCP for editor application | OpenCV; RAFT/GMFlow when optical-flow evidence is required | Highest-ROI Reel #3 motion/VFX family becomes executable (blur/whip/zoom/etc. based on source evidence) | QUEUED | Only after relevant proven mechanism fails on measured Reel #3 gap |
-| OSS-005 | Speed ramps / retiming | Resolve MCP capability ledger / known DRT-OTIO route where public API is insufficient; HyperFrames speed-ramp reference | auto-editor effects | Source-backed speed ramps can be represented and reproduced | QUEUED | Only after verified Resolve/existing route cannot meet retime requirement |
-| OSS-006 | Cuts / scene detection | PySceneDetect | TransNetV2 | Preserve current cuts now; on generalization, benchmark proven detector before changing cut logic | QUEUED — TRIGGERED BY CUT FAILURE | Only after benchmark failure on actual corpus |
-| OSS-007 | Auto rough-cut / silence / motion intervals | auto-editor | timkulbaev/ai-video-editor patterns | Raw footage can be deterministically shortened/segmented without agentic editing loops | QUEUED — GENERALIZATION | Only after auto-editor cannot express required interval logic |
-| OSS-008 | Caption word timing / alignment | WhisperX | VideoLingo forced-alignment/chunking | Word-level caption timing becomes robust on unseen/raw reels | QUEUED — GENERALIZATION | Only after measured alignment failure |
-| OSS-009 | Timeline IR / interchange | OpenTimelineIO | FCPXML/auto-editor format mechanisms | Avoid custom generic timeline IR if multi-editor/interchange becomes necessary | QUEUED — ON TRIGGER | Only if OTIO cannot express named contract |
-| OSS-010 | Style-template / editing-DNA schema | current VC schema + audit of EditDNA / video-style-kit / ghost-editor | ai-video-agent patterns | Strengthen reusable style representation without replacing proven working core | QUEUED — AFTER CORE VISUAL BASELINE | Only after schema comparison identifies a missing contract |
-| OSS-011 | QA / visual acceptance tooling | video-editor-agent QA patterns + existing VC readback | render-first frame/dB comparisons | Catch visual/audio regressions before human review | QUEUED — AFTER CORE VISUAL BASELINE | Only if existing + adapted QA cannot catch named failures |
-| OSS-012 | Content-automation ecosystem | MoneyPrinterTurbo patterns + VideoLingo + ghost-editor workflow | ShortGPT/reference pipelines | Connect Video Cloner to scripts/assets/TTS/subtitles/publishing without rebuilding solved orchestration | QUEUED — POST CORE CLONER | Custom ecosystem glue only after reuse audit |
+- 16 selected captions;
+- 10 `scale`;
+- 6 `slide`;
+- 0 `scale_pop`.
 
-## Visual-layer production order
+What the live evidence proves:
 
-For the **current Reel #3 ship path**, the visual sequence is:
+- the Resolve application carrier works;
+- one persisted `sub_008` slide is visible/editable;
+- many real source animations remain undetected;
+- several source captions use compound motion such as translation + scale;
+- the simple custom taxonomy is not close enough to production fidelity.
 
-1. **Caption carrier / placement** — OSS-001.
-2. **Advanced caption animation** — OSS-002.
-3. **Transitions** — OSS-003.
-4. **Core motion / VFX** — OSS-004.
-5. **Speed ramps / retiming** — OSS-005.
-6. **Integrated Reel #3 visual review**.
+Decision: **FROZEN / REJECTED FOR PRODUCTION. No further tuning.**
 
-Cuts are already accepted baseline behavior, so we do **not** reopen them just because OSS-006 exists. OSS-006/007/008 become active when unseen/raw Reel generalization begins or a measured regression triggers them.
+## Sequential Queue
 
-## Generalization / automation order
+### OSS-001 — Editable Resolve Text+ carrier — PASS / CLOSED
 
-After the current Reel #3 core visual baseline:
+Primary:
+- `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5`
+- MIT.
 
-7. **Cuts / scene detection benchmark** — OSS-006, only if current cut logic fails.
-8. **Auto rough-cut** — OSS-007.
-9. **Word timing / alignment** — OSS-008.
-10. **Timeline IR** — OSS-009 only if multi-editor/interchange requires it.
-11. **Style schema audit** — OSS-010.
-12. **QA layer** — OSS-011.
-13. **Content automation ecosystem** — OSS-012.
-
-The human may explicitly reorder these based on product value.
-
-## Work-unit state contract
-
-Each unit has exactly one of:
-
-- `ACTIVE` — the only OSS mechanism currently being integrated.
-- `QUEUED` — next planned capability.
-- `TRIGGERED` — a measured product failure activated it.
-- `PASS / INTEGRATED` — proven route works in Video Cloner.
-- `FAIL / INCOMPATIBLE` — proven route failed a documented requirement; proceed to backup candidate.
-- `DEFERRED` — human moved it out of the Critical Path.
-
-When an ACTIVE unit finishes:
-
-1. record exact source repo + pinned commit + license;
-2. record compatibility result;
-3. record reused/adapted mechanism;
-4. update `PROJECT_STATE.md` CURRENT OSS ITEM;
-5. move the next human-approved queue unit to `ACTIVE`;
-6. continue production.
-
-Do not create a new custom mechanism unless the unit's BUILD Gate is satisfied.
-
-## Completed work unit — OSS-001
-
-### Source
-`samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5`
-
-### Result
-**PASS / INTEGRATED** on official DaVinci Resolve Free `21.0.4.5`.
-
-Live run:
-`20261009T163045758Z_1e449e5f407e4301ade1a95de239daf4`
-
-Verified:
+Proven:
 - native Text+ insertion;
-- source timeline MediaPoolItem;
-- exact nested placement on V3;
-- exact record frame `86500` from target start `86400`;
-- exact 90-frame duration with exclusive end semantics;
-- `MediaPoolItem.GetTimeline()` reach-back;
-- post-placement StyledText edit/readback;
-- cleanup of both disposable timelines;
-- Reel #3 untouched.
+- nested source timeline;
+- source MediaPoolItem;
+- exact `AppendToTimeline` placement;
+- placed-item `GetTimeline()`;
+- inner Text+ reach-back/editability.
 
-No further carrier compatibility experiments are justified.
+Keep frozen as the application primitive.
 
-## Current work unit — OSS-002
+### OSS-002 — Caption animation detection/representation/application — ACTIVE / OSS OVERDRIVE
 
-### Objective
-Use the proven OSS-001 carrier for advanced caption animation on Reel #3.
+Objective:
+- replace the frozen custom detector with proven OSS adaptation that materially improves coverage and compound-motion fidelity.
 
-### Production prerequisite
-The old Resolve project/timeline is unavailable after reinstall. Reconstruct the accepted baseline from:
+Primary first adaptation target:
+- `heygen-com/hyperframes@46f6cb356785bed79e1ce7b79d7e7accc697786a`
+- Apache-2.
+- Audit concrete reusable animation/runtime/GSAP/caption-identity/synthetic-reference mechanisms.
+- Do **not** assume it is a complete reference-video detector; verify exact capability.
 
-`data/DZatr0EJt4B/davinci/DZatr0EJt4B_mvp_timeline.fcpxml`
+Supporting candidate pool:
+- `kurbaitaev/ghost-editor@9f197e4e65691d190ba63efa6c061d9c43f02cf6` — MIT.
+- video-style-kit / EditDNA patterns already captured in research.
+- Remotion only behind explicit license approval.
 
-This stored MVP baseline contains the accepted 112-caption structure. After import, record the NEW project/timeline identity; never reuse the pre-reinstall UID by assumption.
+Execution:
+- map winning OSS representation through OSS-001 Resolve carrier.
 
-### First visible gate
-Apply one source-supported caption animation through the proven nested-timeline carrier, then require human visual acceptance before rolling out the remaining selected captions.
+Acceptance:
+- materially better coverage than 16-caption custom plan;
+- compound transforms supported where present;
+- editable Resolve output;
+- batch HUMAN_REVIEW accepted.
 
-### Preserved rollout plan
-- 16 selected captions
-- 10 scale
-- 6 slide
+Build gate:
+- no greenfield detector work before the strongest two compatible OSS routes/compositions fail the same named requirement.
 
-### Next
-After Reel #3 caption animation is accepted, move to `OSS-003` transitions.
+### OSS-003 — Transitions — NEXT
+
+Primary:
+- reuse/adapt proven transition mechanisms/patterns from HyperFrames + Resolve-compatible primitives.
+
+Goal:
+- apply source-backed transitions visibly and editably.
+- no reopening cuts.
+
+### OSS-004 — Core motion / VFX
+
+Use proven mechanisms from HyperFrames / Resolve primitives and established CV components only where source evidence requires them.
+
+Potential CV primitives already researched:
+- OpenCV;
+- RAFT / GMFlow where optical-flow evidence materially improves a required effect.
+
+### OSS-005 — Speed ramps / retiming
+
+Reuse proven retiming mechanisms; integrate only source-backed ramps.
+
+### OSS-006 — Cuts / scene detection
+
+Current cuts are accepted.
+
+Only reopen on actual failure/generalization evidence.
+
+Candidates:
+- PySceneDetect;
+- TransNetV2 fallback.
+
+### OSS-007 — Auto rough-cut
+- auto-editor.
+
+### OSS-008 — Caption timing/alignment
+- WhisperX;
+- VideoLingo.
+
+### OSS-009 — Timeline IR/interchange
+- OpenTimelineIO.
+
+### OSS-010 — Style schema
+- current VC profile + EditDNA/video-style-kit/ghost-editor audit.
+
+### OSS-011 — QA / acceptance
+- reusable render/readback/human-review acceptance layer.
+
+### OSS-012 — Content automation
+- MoneyPrinterTurbo + VideoLingo/ghost-editor patterns.
+
+## Visual Critical Path
+
+`OSS-002 caption animations`
+-> `OSS-003 transitions`
+-> `OSS-004 motion/VFX`
+-> `OSS-005 speed ramps`
+-> integrated visual review.
+
+## Future Animation Exemplar Sources
+
+After the current critical path, the animation system should accept adapters for:
+
+- reference-video frames/clips;
+- CSS/JS/GSAP;
+- pure code;
+- GIFs;
+- frame sequences;
+- very short MP4/GIF samples;
+- Resolve templates/timelines/DRT/DRP-like project artifacts where supported.
+
+All should normalize to a common animation recipe/representation before editor-specific application.

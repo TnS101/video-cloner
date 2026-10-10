@@ -173,3 +173,22 @@ Only decisions that materially constrain future work belong here.
 - WHY: repeated custom canaries consumed time while upstream code already measured the same Resolve API limitation and published a working route.
 - REVISIT: only if the human changes the policy.
 
+## D019 — Freeze custom caption-animation detector; switch OSS-002 to OSS overdrive
+- Date: 2026-10-10
+- Status: APPROVED / HUMAN DIRECTIVE
+- Evidence:
+  - OSS-001 and the successful persisted `sub_008` animation prove the Resolve Text+ application carrier works.
+  - Batch human review rejects the custom Step 3C detector for production: it detects only a small subset of visible source animations, misses many captions, and reduces compound motion such as translation + scale into an inadequate simple `scale` / `slide` taxonomy.
+  - More tuning has lower Strategic ROI than adapting proven OSS during the speedrun.
+- Decision:
+  - freeze the current custom caption-animation detector/16-caption plan for production;
+  - preserve its artifacts only as historical/regression evidence;
+  - do not run more detector tuning, micro-canaries or custom taxonomy expansion;
+  - make OSS-002 an OSS-first capability spike/adaptation, starting from the vetted HyperFrames / ghost-editor / video-style-kit/EditDNA pool;
+  - verify concrete code capability before assuming any framework is a complete visual detector;
+  - use the same Reel #3 frames/timestamps + human visual evidence for comparison;
+  - keep the proven `davinci-resolve-mcp` Text+ carrier as the Resolve application layer;
+  - after at most two serious compatible OSS routes/compositions, choose `REUSE / ADAPT / COMBINE / REPLACE`;
+  - greenfield detector work is allowed only if both fail a named product requirement.
+- Next: once OSS-002 passes batch human review, move immediately to OSS-003 transitions.
+- Stable architecture direction: future animation exemplar adapters may accept reference clips, CSS/JS/GSAP, code, GIF/frame sequences, short partial-animation samples, and Resolve templates/timelines, normalized into a common animation recipe before editor-specific application.

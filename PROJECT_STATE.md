@@ -1,107 +1,121 @@
-# PROJECT_STATE.md — Video Cloner Current Operational Truth
+# PROJECT_STATE.md — Video Cloner Volatile Truth
+
+- LAST UPDATED: 2026-10-10
+- ACTIVE STAGE: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
+- ACTIVE UNIT: `OSS-002_CAPTION_ANIMATION_OSS_OVERDRIVE`
+- STATUS: `ACTIVE`
 
 ## Human Directives
 
 - REAL OBJECTIVE: ship a usable Video Cloner by end of week.
 - ACTIVE PRODUCTION REEL: `DZatr0EJt4B` (Reel #3).
-- PRIOR RESOLVE TARGET (pre-reinstall): `VIDEO_CLONER_P001_DZatr0EJt4B_20261007_4CE37F9BC61B`.
-- PRIOR TARGET UID: `4aaa91c0-c434-4439-a15a-92ce86e80256`.
-- CURRENT PRODUCTION TARGET: **TO BE RECONSTRUCTED** after Resolve reinstall; do not assume the prior UID survives.
-- RECONSTRUCTION AUTHORITY: `data/DZatr0EJt4B/davinci/DZatr0EJt4B_mvp_timeline.fcpxml` (accepted 112-caption baseline).
-- PRIORITY: production-value work only.
-- **NEW HARD DIRECTIVE: OSS-FIRST / PROVEN-CODE-FIRST.**
-- Before custom-building any material mechanism, Video Cloner must search/audit/test existing proven code and prefer `REUSE > ADAPT > COMBINE > BUILD`.
-- BUILD is allowed only after the best compatible proven route fails a bounded compatibility test or cannot meet a named product requirement.
-- No silent Reel/target/phase pivot.
+- ACTIVE RESOLVE PROJECT: `VIDEO_CLONER_REEL3_FREE2104`.
+- ACTIVE TIMELINE: `VIDEO_CLONER_DZatr0EJt4B_MVP_V1`.
+- ACTIVE TIMELINE UID: `a89f3e7c-50d9-4969-b2b6-b01548b66879`.
+- RESOLVE: Free `21.0.4.5` on Windows.
+- BASELINE AUTHORITY: `data/DZatr0EJt4B/davinci/DZatr0EJt4B_mvp_timeline.fcpxml`.
+- CUTS/AUDIO + 112 Basic Title captions are accepted baseline. Do not reopen cuts unless evidence shows a real failure.
+- HARD DEVELOPMENT LAW: `REUSE > ADAPT > COMBINE > BUILD`.
+- HARD 2026-10-10 DIRECTIVE: the current custom caption-animation detection/analysis route is **FROZEN / REJECTED FOR PRODUCTION**. Preserve it as evidence; do not tune it further.
+- The proven Resolve Text+ carrier remains accepted and must not be conflated with the rejected detector.
 
 ## Win Condition
 
-Analyze a reference Reel and reproduce the core/basic principles of that editor's style well enough to create a usable, editable clone.
+Analyze a reference video and reproduce the editor's core visible behavior into an editable clone:
 
-## Mode
+1. captions + caption animations;
+2. cuts;
+3. transitions;
+4. core motion / VFX;
+5. speed/retiming where present;
+6. reusable style/animation authority that can generalize beyond one Reel.
 
-- MODE: `PRODUCTION`
-- DEADLINE: end of week
-- DEFAULT DEVELOPMENT POLICY: `OSS_FIRST`
-- CURRENT RISK: `R1` until live Resolve compatibility test requires R2
+The near-term win is not perfect reconstruction. It is a visibly credible, editable clone built with the fastest proven mechanisms.
 
 ## Current Position
 
-### Preserved working baseline
-- Reel #3 offline analysis/planning exists.
-- The pre-reinstall Reel #3 Resolve project/timeline is not currently available in the new Project Library; the accepted Reel #3 baseline remains reconstructible from the stored MVP FCPXML.
-- Basic captions remain the accepted baseline.
-- Existing cuts/shot structure remain preserved.
-- Caption animation detection plan exists:
-  - 112 captions total;
-  - 16 selected animations;
-  - 10 scale;
-  - 6 slide.
-- Native Resolve Text+ insertion + Fusion comp + Center→Path was proven on a disposable canary.
+### Proven / keep
 
-### Custom route status
-- Custom media-backed Fusion carrier: **KILLED** after native Resolve crashes.
-- Custom original-caption structural/ordinal canary sequence: **FROZEN** by human directive.
-- No further custom carrier/caption-placement mechanism may be invented before proven OSS is tested.
+- Reel #3 baseline is live in the official Resolve environment.
+- Canonical Reel #3 analysis artifacts survived cleanup; manifest integrity audit previously returned 23/23 exact hashes.
+- `OSS-001` carrier is **PASS / INTEGRATED** using:
+  `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5` (MIT).
+- Proven carrier primitive:
+  native Text+ -> owned source timeline -> source MediaPoolItem -> exact `AppendToTimeline` placement -> placed MediaPoolItem -> `GetTimeline()` -> inner editable Text+.
+- Live run `20261010T070036510Z_01093b6b3bcb4cc996a8844ee181fe34` proved that an existing animation-plan entry can be turned into persisted editable Resolve motion. `sub_008 = "this"` visibly slides and was human-accepted as fidelity-approximate.
+- This proves the **application/execution layer works**.
+
+### Human-rejected / freeze
+
+The existing custom caption-animation detector / Step 3C plan is frozen for production.
+
+Human batch review established:
+
+- it selected only 16 caption animations out of a source containing visibly many more;
+- many real animations are missed;
+- the simple `scale` / `slide` taxonomy does not represent common combined behavior such as translation + scale;
+- the applied batch is not close enough to 1:1 to justify further tuning;
+- execution success on `sub_008` isolates the bottleneck upstream: **coverage + representation + animation understanding**, not the Resolve carrier.
+
+Existing custom artifacts remain useful as regression evidence and historical ground truth, but receive no more production tuning.
 
 ## Main Constraint
 
-Not "how do we invent another caption carrier?"
+Find the fastest proven OSS route that materially improves:
 
-The bottleneck is now:
-**reconstruct the accepted Reel #3 baseline in the new Resolve 21.0.4.5 Free environment, then apply the already-proven nested Text+ mechanism to visible Reel #3 caption animation.**
+- animation coverage;
+- composable motion representation;
+- fidelity to reference;
+- editable application in Resolve.
 
-## Current Stage
+Do not spend another loop improving the rejected heuristic detector.
 
-- STAGE ID: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
-- STATUS: `ACTIVE`
-- CURRENT MOVE: OSS-001 is PASS; reconstruct the accepted Reel #3 baseline, then execute OSS-002 using the proven nested Text+ route.
-- RESEARCH AUTHORITY: `docs/research/OSS_PROVEN_CODE_RESEARCH_20261009.md`
+## Current Move — OSS-002 Overdrive
 
-## Current OSS Work Unit
+Use the existing vetted OSS research as the starting pool, with a bounded capability audit:
 
-- QUEUE: `docs/research/OSS_ADOPTION_QUEUE.md`
-- ACTIVE UNIT: `OSS-002`
-- LAYER: Advanced caption animation on Reel #3
-- PROVEN CARRIER: `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5` nested-timeline Text+ route
-- OSS-001 EVIDENCE: PASS on official DaVinci Resolve Free `21.0.4.5`, run `20261009T163045758Z_1e449e5f407e4301ade1a95de239daf4`
-- CURRENT ACTION: reconstruct Reel #3 from the accepted MVP FCPXML, establish the new target identity, then apply one visually reviewed animated caption using the proven carrier.
-- DONE WHEN: one Reel #3 advanced caption animation is placed through the proven nested-timeline route and human visual review accepts it.
-- NEXT UNIT AFTER PASS: `OSS-003` — transitions.
+1. **HyperFrames** — active first adaptation target for animation/runtime/seekable GSAP/caption identity patterns and synthetic/reference rendering.
+2. **ghost-editor** / **video-style-kit / EditDNA patterns** — inspect only concrete reusable caption/style/motion extraction or recipe mechanisms.
+3. Combine the strongest compatible mechanisms with the already-proven OSS-001 Resolve carrier.
+4. Benchmark against the **same Reel #3 frames/timestamps and human visual evidence**, not synthetic unit tests alone.
 
-## Current Proven Route
+Important: do not assume any candidate is a complete visual detector merely because it is a strong animation framework. Verify the exact capability, then choose `REUSE / ADAPT / COMBINE / REPLACE`.
 
-Primary:
-`samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5`
+### OSS-002 done when
 
-Mechanism:
-nested timeline + `InsertFusionTitleIntoTimeline("Text+")` + `AppendToTimeline(trackIndex, recordFrame, startFrame, endFrame)`.
+- caption-animation coverage is materially higher than the frozen 16-caption plan;
+- compound motion can be represented at minimum as independent translation + scale channels where the source requires it;
+- the result is applied as editable Resolve output through the proven carrier;
+- one batch human review says fidelity is usable enough to move on.
 
-Evidence:
-the upstream repository contains live Resolve verification and documents this exact route as the working workaround for chosen-track Text+ placement.
+## Kill / Anti-loop Rules
 
-## Mandatory Next Routes by Capability
+- The custom Step 3C detector is already killed for production: **NO MORE TUNING**.
+- Maximum two serious compatible OSS routes may be benchmarked before selecting a winner/composition.
+- Do not create a greenfield detector until proven compatible OSS routes fail a named product requirement.
+- A mock/test PASS does not outrank live render/readback/human visual evidence.
+- Human systematic visual rejection is a valid kill signal.
+- Process/safety machinery must not become the product.
 
-- cuts/scenes: PySceneDetect / auto-editor before custom;
-- word timing: WhisperX / VideoLingo before custom;
-- transitions/caption render/synthetic truth: HyperFrames before custom;
-- generic timeline interchange: OpenTimelineIO before custom;
-- Resolve API limitations/workarounds: davinci-resolve-mcp first;
-- content-automation expansion: MoneyPrinterTurbo / ghost-editor / video-editor-agent patterns first.
+## Critical Path
 
-## Deferred / Pre-ship Debt
+`OSS-002 caption-animation OSS adaptation`
+-> batch visual acceptance
+-> `OSS-003 transitions`
+-> `OSS-004 core motion/VFX`
+-> `OSS-005 speed ramps`
+-> integrated Reel #3 review
+-> generalization test.
 
-- save/reopen persistence proof;
-- repository identity proof;
-- same-target idempotency;
-- release certification.
+## Future Animation Exemplar Inputs — Queued, Not Current Side Quest
 
-These do not outrank current visible production work.
+The stable architecture must later accept multiple animation exemplars through adapters, including:
 
-## Human Action
+- reference-video frames/clips;
+- CSS / JS / GSAP animations;
+- pure-code animation definitions;
+- GIFs / frame sequences;
+- short MP4/GIF samples of partial captions, VFX or transitions;
+- DaVinci templates, timelines, DRT/DRP-style project artifacts where technically/licensing-wise usable.
 
-Reconstruct the Reel #3 accepted baseline in Resolve from `DZatr0EJt4B_mvp_timeline.fcpxml` if the pre-reinstall project cannot be recovered; then allow Codex to bind the new timeline identity before OSS-002 live mutation.
-
-## Anti-loop Kill Rule
-
-If a proven mechanism exists and we are writing a custom equivalent without first testing it, **STOP**.
+These sources should normalize into a common animation recipe/representation and then flow through editor-specific application adapters. Do not implement this multi-input layer before the current OSS-002/003/004 speedrun path produces the usable Reel #3 clone.

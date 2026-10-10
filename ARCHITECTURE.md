@@ -1,8 +1,8 @@
 # ARCHITECTURE.md — Video Cloner Stable System Boundaries
 
 - STATUS: APPROVED
-- VERSION: A001
-- LAST UPDATED: 2026-10-09
+- VERSION: A002
+- LAST UPDATED: 2026-10-10
 - BASELINE: `video-cloner-canonical-cleanup-20261007`
 
 > Stable architecture only. **Do not place current Reel/target, active stage, temporary sequencing, current blocker or sprint status here.** Those belong in `PROJECT_STATE.md`.
@@ -34,6 +34,8 @@ video-cloner CLI  OR  video_cloner.pipeline API
         v
 ingest/reuse
  -> analysis
+ -> animation exemplar/source adapters
+ -> normalized animation recipe / style authority
  -> transition policy
  -> planning
  -> profiles/style authority
@@ -60,6 +62,8 @@ No public API launches Resolve directly.
 | `video_cloner.config` / contracts | validated runtime/tool/identity inputs | no hidden machine constants |
 | `video_cloner.ingestion` | deterministic media ingest/prep | reusable artifacts |
 | `video_cloner.analysis.*` | cuts/transcript/rhythm/caption/motion/transitions/occlusion evidence | capability separation + provenance |
+| animation exemplar adapters | ingest reference-video evidence or external exemplars such as CSS/JS/GSAP/code, GIF/frame sequences, short clips and supported Resolve templates/timelines | normalize to editor-independent animation recipes; no live mutation |
+| animation execution adapters | map normalized animation recipes into editable editor-native constructs | source representation stays separate from Resolve application |
 | `video_cloner.planning.*` | merge/plan/validate/compile edit decisions | deterministic validated plan |
 | caption/style/profile modules | convert evidence into reusable visual/edit authority | no silent live mutation |
 | `video_cloner.resolve.fcpxml` | editable offline timeline compilation | deterministic output contract |
@@ -105,6 +109,7 @@ No public API launches Resolve directly.
 - agentic editor control as the deterministic execution engine;
 - speculative multi-editor redesign without an approved product requirement;
 - rebuilding historical script forests as runtime;
+- coupling animation understanding to one detector, one exemplar format or one renderer;
 - forcing one dependency/runtime environment when adapters already isolate concerns.
 
 ## 10. Architecture Change Triggers

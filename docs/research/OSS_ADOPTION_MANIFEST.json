@@ -1,169 +1,125 @@
 {
-  "generated_at": "2026-10-09",
-  "policy": "OSS_FIRST_PROVEN_CODE_FIRST",
-  "primary_immediate": {
-    "repo": "samuelgursky/davinci-resolve-mcp",
-    "commit": "94c7a885d53f13be78522ce96561a9e9e21d64c5",
-    "license": "MIT",
-    "mechanism": "nested timeline Text+ placement via CreateEmptyTimeline + InsertFusionTitleIntoTimeline + Timeline.GetMediaPoolItem + MediaPool.AppendToTimeline(trackIndex, recordFrame, startFrame, endFrame)",
-    "decision": "ADOPT_NOW"
+  "generated_at": "2026-10-10",
+  "policy": "REUSE > ADAPT > COMBINE > BUILD",
+  "active_unit": "OSS-002",
+  "production_override": {
+    "status": "HUMAN_VISUAL_REVIEW_REJECTED_CUSTOM_DETECTOR",
+    "decision": "FREEZE_CUSTOM_CAPTION_ANIMATION_DETECTOR",
+    "evidence": [
+      "OSS-001 carrier passed and is not the bottleneck",
+      "sub_008 persisted as editable visible motion",
+      "custom Step 3C plan selected only 16 animations",
+      "human review sees many additional source animations",
+      "source contains compound translation+scale behavior not represented by simple scale/slide taxonomy",
+      "batch output is not close enough to 1:1 for more tuning to justify speedrun cost"
+    ],
+    "production_use": "NO_MORE_TUNING",
+    "preservation": "keep artifacts as regression/history only"
   },
-  "approved_benchmarks": [
-    {
-      "repo": "Breakthrough/PySceneDetect",
-      "commit": "81c414cb4b706e58648f98efd381024790b1565f",
-      "license": "BSD-3-Clause",
-      "decision": "REUSE_CUTS"
-    },
-    {
-      "repo": "WyattBlue/auto-editor",
-      "commit": "5ab59aba3b8961aeef2c156300a7259d026e98fe",
-      "license": "Unlicense",
-      "decision": "BENCHMARK_ROUGH_CUT_EXPORT"
-    },
-    {
-      "repo": "m-bain/whisperX",
-      "commit": "771b4a14a9486f8fd5aef18ef49e35d639523dd3",
-      "license": "BSD-2-Clause",
-      "decision": "REUSE_WORD_TIMING"
-    },
-    {
-      "repo": "Huanshere/VideoLingo",
-      "commit": "01f843492759be9bbfd1a5cb697b799cc9de1609",
-      "license": "Apache-2.0",
-      "decision": "ADAPT_CAPTION_ALIGNMENT"
-    },
-    {
+  "primary_immediate": {
+    "layer": "caption_animation_detection_representation_application",
+    "decision": "ADAPT_NOW_OSS_OVERDRIVE",
+    "first_candidate": {
       "repo": "heygen-com/hyperframes",
-      "commit": "46f6cb356785bed79e1ce7b79d7e7accc697786a",
+      "pin": "46f6cb356785bed79e1ce7b79d7e7accc697786a",
       "license": "Apache-2.0",
-      "decision": "BENCHMARK_ANIMATION_TRANSITIONS_RENDER"
+      "role": "audit/reuse animation runtime, seekable GSAP, caption identity and synthetic/reference mechanisms; verify detection capability rather than assume it"
     },
-    {
-      "repo": "AcademySoftwareFoundation/OpenTimelineIO",
-      "commit": "00c22fa3a64256d8d3dcafbc7276492185dd970d",
-      "license": "Apache-2.0",
-      "decision": "REUSE_IF_TIMELINE_IR_NEEDED"
-    },
-    {
-      "repo": "mhadifilms/dvr",
-      "commit": "dcc592be88e462a4d4cc58f6be77631e56cf96ee",
+    "supporting_candidates": [
+      {
+        "repo": "kurbaitaev/ghost-editor",
+        "pin": "9f197e4e65691d190ba63efa6c061d9c43f02cf6",
+        "license": "MIT",
+        "role": "audit reusable style/motion extraction and recipe mechanisms"
+      },
+      {
+        "repo": "video-style-kit / EditDNA patterns",
+        "role": "audit existing recorded style-clone schemas and extraction patterns"
+      }
+    ],
+    "resolve_application_dependency": {
+      "repo": "samuelgursky/davinci-resolve-mcp",
+      "pin": "94c7a885d53f13be78522ce96561a9e9e21d64c5",
       "license": "MIT",
-      "decision": "ADAPT_WRAPPER_HELPERS"
+      "status": "PASS_INTEGRATED_FROZEN_CARRIER"
     },
-    {
-      "repo": "kurbaitaev/ghost-editor",
-      "commit": "9f197e4e65691d190ba63efa6c061d9c43f02cf6",
-      "license": "MIT",
-      "decision": "REFERENCE_STYLE_RECIPES"
-    },
-    {
-      "repo": "MEX-creator/easy-edit",
-      "commit": "8591e4f9ba88894b2a78e4c0d47d47bd4a53c818",
-      "license": "MIT",
-      "decision": "AUDIT_DIRECT_STYLE_CLONE_SCHEMA"
-    },
-    {
-      "repo": "0xsline/OpenChatCut",
-      "commit": "2e6f4a29b784200cfb32b859b16f2561592bc3e8",
-      "license": "AGPL-3.0",
-      "decision": "REFERENCE_ONLY_LICENSE_GATED"
-    },
-    {
-      "repo": "harry0703/MoneyPrinterTurbo",
-      "commit": "b819f7e1213ca2bc444cbf53ad3e0e3080c8a866",
-      "license": "MIT",
-      "decision": "REFERENCE_CONTENT_AUTOMATION"
-    }
-  ],
-  "queue_authority": "docs/research/OSS_ADOPTION_QUEUE.md",
-  "current_unit": {
-    "id": "OSS-002",
-    "layer": "Advanced caption animation on Reel #3",
-    "proven_dependency": "OSS-001 nested timeline Text+ carrier",
-    "repo": "samuelgursky/davinci-resolve-mcp",
-    "commit": "94c7a885d53f13be78522ce96561a9e9e21d64c5",
-    "status": "ACTIVE",
-    "prerequisite": "Reconstruct accepted Reel #3 baseline from data/DZatr0EJt4B/davinci/DZatr0EJt4B_mvp_timeline.fcpxml and record new target identity",
-    "done_when": "one Reel #3 advanced caption animation is visually accepted using the proven carrier",
-    "next": "OSS-003"
+    "done_when": [
+      "materially higher animation coverage than frozen 16-caption plan",
+      "compound translation+scale representation where source requires it",
+      "editable Resolve application through proven carrier",
+      "batch human visual review accepted"
+    ],
+    "build_gate": "Test at most the two strongest compatible OSS routes/compositions on the same evidence before greenfield detector work."
   },
   "sequential_units": [
-    [
-      "OSS-001",
-      "Resolve Text+ placement",
-      "PASS_INTEGRATED"
-    ],
-    [
-      "OSS-002",
-      "Advanced caption animation",
-      "ACTIVE"
-    ],
-    [
-      "OSS-003",
-      "Transitions",
-      "QUEUED"
-    ],
-    [
-      "OSS-004",
-      "Core motion/VFX",
-      "QUEUED"
-    ],
-    [
-      "OSS-005",
-      "Speed ramps/retiming",
-      "QUEUED"
-    ],
-    [
-      "OSS-006",
-      "Cuts/scene detection",
-      "QUEUED_TRIGGERED_BY_FAILURE"
-    ],
-    [
-      "OSS-007",
-      "Auto rough-cut",
-      "QUEUED_GENERALIZATION"
-    ],
-    [
-      "OSS-008",
-      "Caption word timing",
-      "QUEUED_GENERALIZATION"
-    ],
-    [
-      "OSS-009",
-      "Timeline IR/interchange",
-      "QUEUED_ON_TRIGGER"
-    ],
-    [
-      "OSS-010",
-      "Style-template schema",
-      "QUEUED_POST_CORE"
-    ],
-    [
-      "OSS-011",
-      "QA/acceptance",
-      "QUEUED_POST_CORE"
-    ],
-    [
-      "OSS-012",
-      "Content automation ecosystem",
-      "QUEUED_POST_CORE"
-    ]
+    {
+      "id": "OSS-001",
+      "name": "Resolve editable Text+ carrier",
+      "status": "PASS_CLOSED"
+    },
+    {
+      "id": "OSS-002",
+      "name": "Caption animation OSS overdrive",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "OSS-003",
+      "name": "Transitions",
+      "status": "NEXT"
+    },
+    {
+      "id": "OSS-004",
+      "name": "Core motion/VFX",
+      "status": "QUEUED"
+    },
+    {
+      "id": "OSS-005",
+      "name": "Speed ramps/retiming",
+      "status": "QUEUED"
+    },
+    {
+      "id": "OSS-006",
+      "name": "Cuts/scene detection",
+      "status": "DEFER_UNLESS_FAILURE"
+    },
+    {
+      "id": "OSS-007",
+      "name": "Auto rough-cut",
+      "status": "QUEUED"
+    },
+    {
+      "id": "OSS-008",
+      "name": "Caption timing/alignment",
+      "status": "QUEUED"
+    },
+    {
+      "id": "OSS-009",
+      "name": "Timeline IR/interchange",
+      "status": "QUEUED"
+    },
+    {
+      "id": "OSS-010",
+      "name": "Style schema",
+      "status": "QUEUED"
+    },
+    {
+      "id": "OSS-011",
+      "name": "QA/acceptance",
+      "status": "QUEUED"
+    },
+    {
+      "id": "OSS-012",
+      "name": "Content automation",
+      "status": "QUEUED"
+    }
   ],
-  "oss001_result": {
-    "status": "PASS_INTEGRATED",
-    "resolve_version": "21.0.4.5",
-    "edition": "Free",
-    "run_id": "20261009T163045758Z_1e449e5f407e4301ade1a95de239daf4",
-    "verified": [
-      "native Text+",
-      "nested timeline MediaPoolItem",
-      "V3 placement",
-      "record frame 86500",
-      "duration 90",
-      "GetTimeline reach-back",
-      "post-placement StyledText edit/readback",
-      "cleanup"
-    ]
-  }
+  "future_animation_exemplar_inputs": [
+    "reference video frames/clips",
+    "CSS/JS/GSAP",
+    "pure code animations",
+    "GIF",
+    "frame sequence",
+    "short MP4/GIF partial animation or VFX sample",
+    "DaVinci template/timeline/DRT/DRP-like artifacts"
+  ]
 }
