@@ -12,9 +12,12 @@ import pytest
 from resolve_workspace.modules import oss002_sub008_production_canary as canary
 from resolve_workspace.modules import oss002_16_caption_batch_rollout as batch
 from resolve_workspace.modules import oss002_oss_animation_representative_batch as oss_adapter
+from resolve_workspace.modules import oss002_full_caption_motion_rollout as full_rollout
 from scripts.davinci import prepare_oss002_sub008_production_canary as prepare
 from scripts.davinci import prepare_oss002_16_caption_batch_rollout as prepare_batch
 from scripts.davinci import prepare_oss002_oss_animation_representative_batch as prepare_oss_batch
+from scripts.davinci import prepare_oss002_full_caption_motion_rollout as prepare_full_rollout
+from scripts.analysis import build_oss002_full_caption_motion_rollout as full_builder
 from video_cloner.animation_recipe import validate_recipe
 from video_cloner.caption_motion_oss import ROUTE_TEMPLATE, _template_transforms
 
@@ -226,7 +229,7 @@ def run_batch(resolve):
 
 def test_production_canary_binds_new_uid_and_applies_exact_nested_replacement():
     resolve = Resolve(); result = run(resolve)
-    assert result["ok"] is True
+    assert result["ok"] is True, result
     assert result["inline_recovery"]["match_count"] == 0
     assert result["inline_recovery"]["deleted"] is False
     assert result["target"]["unique_id"] == resolve.project.target.uid
@@ -546,3 +549,97 @@ def test_oss_representative_publisher_emits_one_exact_command(tmp_path):
     assert payload["task"] == oss_adapter.TASK_ID
     assert payload["payload"]["target_ordinals"] == [9, 12, 15, 26]
     assert payload["payload"]["target_timeline_uid"] == oss_adapter.EXPECTED_TIMELINE_UID
+
+
+def test_full_rollout_builder_emits_all_112_and_preserves_compound_channels(tmp_path, monkeypatch):
+    accepted = json.loads((ROOT / prepare_oss_batch.RECIPES).read_text(encoding="utf-8"))
+    accepted_by_ordinal = {int(row["caption_id"].rsplit("_", 1)[-1]): row for row in accepted["recipes"]}
+    monkeypatch.setattr(full_builder, "select_localization_event", lambda _events, ordinal: {"event_id": f"event-{ordinal}"})
+
+    def fake_recipe(_video, caption, _event, _route):
+        ordinal = int(caption["ordinal"])
+        if ordinal in accepted_by_ordinal:
+            return accepted_by_ordinal[ordinal]
+        delta = 0.02 if ordinal % 2 else 0.0
+        return {
+            "schema": "video_cloner.caption_animation_recipe", "schema_version": 1,
+            "caption_id": caption["caption_id"], "text": caption["text"],
+            "start_frame": caption["start_frame"], "duration": caption["duration"],
+            "channels": {
+                "position": [{"frame": 0, "value": [delta, 0.0], "interpolation": "linear"}, {"frame": max(0, caption["duration"] - 1), "value": [0.0, 0.0], "interpolation": "linear"}],
+                "scale": [{"frame": 0, "value": [0.8 if ordinal % 3 == 0 else 1.0] * 2, "interpolation": "linear"}, {"frame": max(0, caption["duration"] - 1), "value": [1.0, 1.0], "interpolation": "linear"}],
+            },
+            "confidence": 0.6, "provenance": {"route": "test"},
+        }
+
+    monkeypatch.setattr(full_builder, "derive_recipe", fake_recipe)
+    style = tmp_path / "style.json"
+    style.write_text('{"style_events": []}', encoding="utf-8")
+    recipes, manifest = full_builder.build(ROOT / "input/DZatr0EJt4B.mp4", ROOT / prepare_full_rollout.FCPXML, style, ROOT / prepare_oss_batch.RECIPES)
+    assert len(manifest["captions"]) == 112 and manifest["counts"]["total_captions"] == 112
+    assert manifest["counts"]["meaningful_motion"] + manifest["counts"]["static"] == 112
+    assert all(set(row["channels"]) == {"position", "scale"} for row in recipes["recipes"])
+
+
+def _full_project():
+    project = _oss_project()
+    for timeline in project.timelines:
+        if timeline.name.startswith("_VC_OSS002_SUB") and timeline.name != full_rollout.LEGACY_NAME:
+            timeline.name = timeline.name.rsplit("_", 1)[0] + "_2ec99e623a75"
+    result = oss_adapter.run(Resolve(project), {"run_id": "ossrun_abcdef123456", "command": _oss_command()})
+    assert result["ok"] is True
+    for ordinal, expected in full_rollout.REPRESENTATIVE_NAMES.items():
+        source = next(timeline for timeline in project.timelines if timeline.name.startswith(f"_VC_OSS002_OSS_SUB{ordinal:03d}_"))
+        source.name = expected
+    return project
+
+
+def _full_command():
+    manifest, recipes, fcpxml = (ROOT / prepare_full_rollout.MANIFEST, ROOT / prepare_full_rollout.RECIPES, ROOT / prepare_full_rollout.FCPXML)
+    return {"task": full_rollout.TASK_ID, "mode": full_rollout.MODE, "run_id": "fullrun_abcdef123456", "payload": {
+        "repository_root": str(ROOT), "expected_project": full_rollout.rep.EXPECTED_PROJECT,
+        "target_timeline": full_rollout.rep.EXPECTED_TIMELINE, "target_timeline_uid": full_rollout.rep.EXPECTED_TIMELINE_UID,
+        "expected_caption_count": 112, "expected_video_track_count": 3, "expected_existing_nested_count": 20,
+        "manifest_path": prepare_full_rollout.MANIFEST, "manifest_sha256": sha(manifest),
+        "recipe_path": prepare_full_rollout.RECIPES, "recipe_sha256": sha(recipes),
+        "fcpxml_path": prepare_full_rollout.FCPXML, "fcpxml_sha256": sha(fcpxml), "save_after_verification": True,
+    }}
+
+
+def test_full_rollout_reconciles_step3c_without_duplicates_and_saves_once():
+    project = _full_project()
+    saves_before = [event[0] for event in project.events].count("save")
+    result = full_rollout.run(Resolve(project), {"run_id": "fullrun_abcdef123456", "command": _full_command()})
+    assert result["ok"] is True, result
+    assert result["counts"] == {"expected_final_replacements": 56, "extraction_failures": 32, "meaningful_motion": 56, "representatives_reused": 4, "static": 56, "step3c_removed_static": 4, "step3c_superseded": 11, "total_captions": 112}
+    nested = full_rollout._nested_by_name(project.target)
+    assert len(nested) == 56 and not any(full_rollout.STEP3C_PATTERN.match(name) for name in nested)
+    assert full_rollout.LEGACY_NAME in nested and set(full_rollout.REPRESENTATIVE_NAMES.values()).issubset(nested)
+    assert project.target.tracks[2][9].enabled is True  # sub_010: rejected static replacement removed
+    assert project.target.tracks[2][12].enabled is False  # sub_013: superseded by OSS motion
+    assert project.target.GetTrackCount("video") == 3
+    assert [event[0] for event in project.events].count("save") == saves_before + 1
+    json.dumps(result)
+
+
+def test_full_rollout_rolls_back_after_old_items_are_removed():
+    project = _full_project()
+    before = full_rollout.rep._stable_nested(project.target, project.target.base)
+    project.pool.append_fail_at = project.pool.append_count + 52
+    result = full_rollout.run(Resolve(project), {"run_id": "fullrun_abcdef123456", "command": _full_command()})
+    assert result["ok"] is False and result["rollback"]["ok"] is True
+    assert full_rollout.rep._stable_nested(project.target, project.target.base) == before
+    assert project.target.GetTrackCount("video") == 3
+
+
+def test_full_rollout_publisher_is_single_bounded_command(tmp_path):
+    (tmp_path / "AGENTS.md").write_text("test", encoding="utf-8")
+    for relative in (prepare_full_rollout.FCPXML, prepare_full_rollout.RECIPES, prepare_full_rollout.MANIFEST):
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / relative, destination)
+    receipt = prepare_full_rollout.publish(tmp_path)
+    payload = json.loads((tmp_path / receipt["command_path"]).read_text(encoding="utf-8"))
+    assert payload["task"] == full_rollout.TASK_ID
+    assert payload["payload"]["expected_existing_nested_count"] == 20
+    assert payload["payload"]["save_after_verification"] is True

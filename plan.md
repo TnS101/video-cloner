@@ -90,9 +90,9 @@ Rules:
 
 Implemented and focused-tested for position, scale, simultaneous position+scale, bounded placement, exact rollback, and accepted `sub_008` preservation. One four-caption production command is pending; Codex does not execute it.
 
-## Step 4 — Batch Human Review — NEXT
+## Step 4 — Representative Human Review — DONE
 
-Execute and review the four-caption representative OSS-backed batch before any full Reel rollout.
+Human accepted the four-caption OSS-backed batch as materially closer to source. Motion extraction is closed to further route benchmarking.
 
 Review:
 
@@ -105,11 +105,19 @@ Review:
 - magnitude;
 - obvious visual mismatch.
 
-If usable: close OSS-002 immediately.
+## Step 5 — Full Reel #3 Motion Rollout — READY
 
-If not usable: compare the second proven route/composition. Do not return to the frozen custom detector.
+- Authority: 112 captions; 56 meaningful-motion; 56 static/no-motion; 32 explicit extraction failures.
+- Preserve accepted `sub_008` plus representatives `sub_009`, `sub_012`, `sub_015`, `sub_026`.
+- Supersede 11 rejected Step 3C replacements with OSS motion; remove 4 rejected static replacements and re-enable originals.
+- Expected final state: 56 authoritative V3 replacements, no duplicate ordinal, no rejected Step 3C item, one save after complete verification.
+- Next gate: one full Reel #3 human motion review.
 
-## Step 5 — OSS-003 Transitions
+## Step 6 — OSS-002B Caption Lifecycle / Persistence — QUEUED
+
+Timebox one OSS-first stage after motion acceptance. Investigate at most two proven text-tracking/grouping compositions; integrate quickly or record word-by-word lifecycle as a known limitation.
+
+## Step 7 — OSS-003 Transitions
 
 Immediately after OSS-002 acceptance:
 

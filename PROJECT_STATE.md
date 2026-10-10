@@ -3,7 +3,7 @@
 - LAST UPDATED: 2026-10-10
 - ACTIVE STAGE: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
 - ACTIVE UNIT: `OSS-002_CAPTION_ANIMATION_OSS_OVERDRIVE`
-- STATUS: `HUMAN_REVIEW`
+- STATUS: `FULL_ROLLOUT_READY / HUMAN_REVIEW`
 
 ## Human Directives
 
@@ -70,14 +70,21 @@ Find the fastest proven OSS route that materially improves:
 
 Do not spend another loop improving the rejected heuristic detector.
 
-## Current Move — OSS-002 Representative Human Review
+## Current Move — OSS-002 Full Motion Rollout
 
 - Source audit proved HyperFrames supplies a seekable independent-channel animation representation/runtime, not reference-video motion detection.
 - Source audit proved ghost-editor uses Gemini-authored edit analysis plus GSAP recipes, not deterministic transform extraction.
 - Bounded Reel #3 benchmark: OpenCV sparse LK affine `57.4/100` (2/5 cases); OpenCV multi-scale edge-template tracking `89.8/100` (5/5 cases).
-- Decision: **COMBINE** OpenCV template-derived position/scale curves + HyperFrames-inspired independent seekable channels + frozen OSS-001 Resolve carrier.
-- Normalized recipes exist for `sub_009`, `sub_012`, `sub_015`, and `sub_026`; all were missed by the frozen Step 3C plan and include simultaneous position + scale.
-- One bounded production command is ready for execution and visual review. It preserves accepted `sub_008`, the existing 16 nested items, the 112-caption authority, and saves only after complete technical verification.
+- Human accepted **COMBINE**: OpenCV template-derived position/scale curves + HyperFrames-inspired independent seekable channels + frozen OSS-001 Resolve carrier. Do not benchmark another motion route.
+- Full Reel #3 extraction accounts for all 112 caption ordinals: 56 meaningful-motion, 56 static/no-motion, and 32 explicit localization-evidence failures included in the static count rather than guessed.
+- Reconciliation authority preserves accepted `sub_008` and the four accepted OSS representatives; supersedes 11 rejected Step 3C items with OSS motion; removes 4 rejected static Step 3C items and re-enables their originals.
+- Expected final state: 56 authoritative nested replacements on shared V3, no rejected Step 3C replacement, exactly one replacement per motion ordinal, and one `SaveProject` after full verification.
+
+## Queued Gap — OSS-002B Caption Lifecycle / Persistence
+
+- Status: `QUEUED`; do not solve during motion rollout.
+- Source captions often retain earlier words and build multi-word/stacked compositions while the current generated authority remains word-by-word.
+- After full motion acceptance, run one bounded OSS-first spike (maximum two serious routes, roughly 1–2 hours), then integrate quickly or record the limitation and proceed to OSS-003.
 
 ### OSS-002 done when
 
@@ -97,8 +104,9 @@ Do not spend another loop improving the rejected heuristic detector.
 
 ## Critical Path
 
-`OSS-002 caption-animation OSS adaptation`
--> batch visual acceptance
+`OSS-002 full accepted-motion rollout`
+-> full Reel #3 motion review
+-> `OSS-002B` bounded lifecycle/persistence spike
 -> `OSS-003 transitions`
 -> `OSS-004 core motion/VFX`
 -> `OSS-005 speed ramps`

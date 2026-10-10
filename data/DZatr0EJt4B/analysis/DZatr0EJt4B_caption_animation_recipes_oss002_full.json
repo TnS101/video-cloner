@@ -1,0 +1,7384 @@
+{
+  "decision": "COMBINE_ACCEPTED_FULL_ROLLOUT",
+  "recipes": [
+    {
+      "caption_id": "sub_001",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.023438
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.00625
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.001563
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.001042
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6556,
+      "duration": 5,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0003",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          0.1,
+          0.267,
+          0.433,
+          0.7,
+          0.9
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 0,
+      "text": "Since"
+    },
+    {
+      "caption_id": "sub_003",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.042153,
+              -0.029388
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.001563
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.675,
+              0.675
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6722,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0001",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          0.033,
+          0.5,
+          0.9
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 8,
+      "text": "was"
+    },
+    {
+      "caption_id": "sub_006",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.007222,
+              0.000313
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.025,
+              1.025
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5462,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0008",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          1.333,
+          1.4
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 32,
+      "text": "been"
+    },
+    {
+      "caption_id": "sub_007",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.008333,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.008333,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.008333,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.3795,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0009",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          1.5,
+          1.522222,
+          1.544444,
+          1.566667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 35,
+      "text": "building"
+    },
+    {
+      "caption_id": "sub_008",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.053704,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.011111,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.8243,
+      "duration": 5,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0010",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          1.7,
+          1.833,
+          2.0,
+          2.033,
+          2.2
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 39,
+      "text": "this"
+    },
+    {
+      "caption_id": "sub_009",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.185185,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.12963,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.121296,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              -0.103704,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              -0.103704,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              -0.103704,
+              0.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              -0.103704,
+              0.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              -0.091667,
+              0.0
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.349,
+      "duration": 9,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0011",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          1.7,
+          1.8,
+          1.833,
+          2.0,
+          2.033,
+          2.1,
+          2.2,
+          2.3,
+          2.4
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 44,
+      "text": "business,"
+    },
+    {
+      "caption_id": "sub_010",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.007292
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.004167
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7051,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_continuous_visual_identity_0019",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          2.7,
+          2.8,
+          3.167
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 59,
+      "text": "and"
+    },
+    {
+      "caption_id": "sub_011",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.007292
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.003646
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6921,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_continuous_visual_identity_0018",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          2.7,
+          2.8,
+          3.167
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 62,
+      "text": "we"
+    },
+    {
+      "caption_id": "sub_012",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.129074,
+              -0.037682
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.65,
+              0.65
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5543,
+      "duration": 2,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0014",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          2.5,
+          2.9
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 65,
+      "text": "only"
+    },
+    {
+      "caption_id": "sub_013",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.026019,
+              0.042578
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.018229
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.005208
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.7,
+              0.7
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.57,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0017",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          2.7,
+          2.867,
+          3.033,
+          3.2
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 67,
+      "text": "work"
+    },
+    {
+      "caption_id": "sub_014",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.002778,
+              0.016146
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.000926,
+              0.003125
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6953,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0020",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          2.8,
+          3.033,
+          3.2
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 71,
+      "text": "with"
+    },
+    {
+      "caption_id": "sub_015",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.006319,
+              -0.016478
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.000926,
+              0.004687
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.775,
+              0.775
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5622,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0021",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          2.8,
+          3.033,
+          3.2
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 74,
+      "text": "the"
+    },
+    {
+      "caption_id": "sub_016",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.042188
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.019792
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.014583
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.007292
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.002083
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.57,
+      "duration": 7,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0024",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          2.9,
+          3.0,
+          3.033,
+          3.1,
+          3.167,
+          3.2
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 77,
+      "text": "best."
+    },
+    {
+      "caption_id": "sub_017",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.039734,
+              0.010755
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.007211,
+              -0.03013
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.025,
+              1.025
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.775,
+              0.775
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.4008,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0027",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          3.9,
+          3.933333,
+          3.966667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 93,
+      "text": "And"
+    },
+    {
+      "caption_id": "sub_018",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.002593,
+              -0.021224
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.030556,
+              -0.021875
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.017593,
+              -0.011458
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.975,
+              0.975
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5848,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0028",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          4.0,
+          4.267,
+          4.4,
+          4.7
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 96,
+      "text": "that's"
+    },
+    {
+      "caption_id": "sub_019",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.095532,
+              0.035299
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.019444,
+              -0.014063
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.675,
+              0.675
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.4134,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0029",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          4.0,
+          4.367,
+          4.7
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 100,
+      "text": "why"
+    },
+    {
+      "caption_id": "sub_020",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.011111,
+              -0.020313
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.012963,
+              -0.010417
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.003704,
+              0.000521
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6736,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0035",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          4.267,
+          4.4,
+          4.6,
+          4.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 103,
+      "text": "they"
+    },
+    {
+      "caption_id": "sub_021",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.01853,
+              -0.02377
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.005556,
+              -0.002083
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.725,
+              0.725
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5637,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0033",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          4.2,
+          4.5,
+          4.833
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 107,
+      "text": "flew"
+    },
+    {
+      "caption_id": "sub_022",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.056481,
+              -0.023438
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.00566,
+              -0.005618
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.016771,
+              0.000632
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.025,
+              1.025
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.025,
+              1.025
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.4686,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0031",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          4.2,
+          4.467,
+          4.6,
+          4.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 110,
+      "text": "me"
+    },
+    {
+      "caption_id": "sub_023",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.058333,
+              -0.023958
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.001852,
+              -0.004167
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.012963,
+              0.001563
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.4439,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0034",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          4.2,
+          4.467,
+          4.6,
+          4.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 114,
+      "text": "out,"
+    },
+    {
+      "caption_id": "sub_024",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.046296,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.002778,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7105,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0042",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          5.1,
+          5.4,
+          5.6
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 119,
+      "text": "to"
+    },
+    {
+      "caption_id": "sub_025",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.010185,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.000926,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.000926,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7928,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_continuous_visual_identity_0044",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          5.3,
+          5.633,
+          5.8,
+          5.9
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 122,
+      "text": "share"
+    },
+    {
+      "caption_id": "sub_026",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.083472,
+              -0.006693
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.046296,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.035185,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              -0.00463,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              -0.001852,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.65,
+              0.65
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.401,
+      "duration": 8,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0041",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          5.033,
+          5.167,
+          5.2,
+          5.4,
+          5.467,
+          5.6,
+          5.633,
+          5.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 126,
+      "text": "everything"
+    },
+    {
+      "caption_id": "sub_027",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.021296,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.013889,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.011111,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              -0.007407,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              -0.006481,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              -0.006481,
+              0.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              -0.006481,
+              0.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7991,
+      "duration": 8,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0045",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          5.4,
+          5.467,
+          5.5,
+          5.6,
+          5.7,
+          5.8,
+          5.9,
+          6.0
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 134,
+      "text": "I've"
+    },
+    {
+      "caption_id": "sub_028",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.012037,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.000926,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.8346,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0046",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          5.467,
+          5.6,
+          5.7,
+          5.9
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 142,
+      "text": "learned"
+    },
+    {
+      "caption_id": "sub_029",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6622,
+      "duration": 8,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0052",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          6.2,
+          6.3,
+          6.4,
+          6.467
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 146,
+      "text": "working"
+    },
+    {
+      "caption_id": "sub_031",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7854,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0054",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          6.6,
+          6.7
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 158,
+      "text": "the"
+    },
+    {
+      "caption_id": "sub_032",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 11,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 11,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7722,
+      "duration": 12,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0057",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          6.767,
+          6.8,
+          6.9,
+          6.967,
+          7.0
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 161,
+      "text": "country's"
+    },
+    {
+      "caption_id": "sub_033",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.8722,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0066",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          7.1,
+          7.133,
+          7.2,
+          7.3
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 173,
+      "text": "top"
+    },
+    {
+      "caption_id": "sub_034",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.034259,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.034259,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.034259,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.019745,
+              0.000117
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.012963,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.014514,
+              -0.000117
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.012963,
+              0.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.975,
+              0.975
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.025,
+              1.025
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.2411,
+      "duration": 8,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0068",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          7.5,
+          7.633,
+          7.7,
+          8.0,
+          8.067,
+          8.2,
+          8.3,
+          8.4
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 177,
+      "text": "agents"
+    },
+    {
+      "caption_id": "sub_036",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.8706,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0070",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          7.967,
+          8.000333,
+          8.033667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 191,
+      "text": "the"
+    },
+    {
+      "caption_id": "sub_040",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.003681,
+              -0.000651
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.047292,
+              -0.002214
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.05,
+              1.05
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.85,
+              0.85
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5001,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0073",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          9.3,
+          9.333333,
+          9.366667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 225,
+      "text": "creative,"
+    },
+    {
+      "caption_id": "sub_041",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.022396
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.013021
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5374,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_continuous_visual_identity_0075",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          9.5,
+          9.767,
+          10.2
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 232,
+      "text": "we're"
+    },
+    {
+      "caption_id": "sub_042",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.017708
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.004687
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.003646
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5782,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_continuous_visual_identity_0076",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          9.5,
+          9.667,
+          9.7,
+          10.1
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 235,
+      "text": "looking"
+    },
+    {
+      "caption_id": "sub_043",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.010937
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.005729
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.005729
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5583,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0084",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          10.1,
+          10.122222,
+          10.144444,
+          10.166667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 239,
+      "text": "at"
+    },
+    {
+      "caption_id": "sub_045",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.013021
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.004687
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.001563
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.8303,
+      "duration": 6,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0090",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          10.6,
+          10.767,
+          10.9,
+          11.1,
+          11.267,
+          11.4
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 247,
+      "text": "that's"
+    },
+    {
+      "caption_id": "sub_046",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.0125
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.004687
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.001563
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.8463,
+      "duration": 6,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0091",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          10.6,
+          10.767,
+          10.9,
+          11.1,
+          11.267,
+          11.4
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 253,
+      "text": "never"
+    },
+    {
+      "caption_id": "sub_047",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.016146
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.011458
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.009375
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.004687
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.003646
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.002604
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.002604
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.002604
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.002604
+            ]
+          },
+          {
+            "frame": 9,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 9,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7049,
+      "duration": 10,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0092",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          10.7,
+          10.767,
+          10.8,
+          10.933,
+          11.0,
+          11.1,
+          11.267,
+          11.4,
+          11.5,
+          11.6
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 259,
+      "text": "satisfied"
+    },
+    {
+      "caption_id": "sub_048",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.9303,
+      "duration": 5,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0093",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          11.267,
+          11.3
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 269,
+      "text": "with"
+    },
+    {
+      "caption_id": "sub_050",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.861,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0095",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          11.633,
+          11.7,
+          11.767,
+          11.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 279,
+      "text": "rat."
+    },
+    {
+      "caption_id": "sub_051",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.010185,
+              -0.006771
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.00463,
+              -0.002083
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              -0.00463,
+              -0.001042
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              -0.00463,
+              -0.000521
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6799,
+      "duration": 7,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0100",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          12.2,
+          12.3,
+          12.367,
+          12.4,
+          12.6
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 289,
+      "text": "Every"
+    },
+    {
+      "caption_id": "sub_052",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.047222,
+              -0.017708
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              -0.000926,
+              -0.002083
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 9,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 9,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5199,
+      "duration": 10,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0099",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          12.1,
+          12.3,
+          12.5,
+          12.533
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 296,
+      "text": "project"
+    },
+    {
+      "caption_id": "sub_055",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.115741,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.09537,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.064815,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              -0.050926,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              -0.049074,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              -0.049074,
+              0.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              -0.049074,
+              0.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              -0.043519,
+              0.0
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              -0.025,
+              0.0
+            ]
+          },
+          {
+            "frame": 9,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 9,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.205,
+      "duration": 10,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0106",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          12.867,
+          12.9,
+          13.0,
+          13.133,
+          13.2,
+          13.3,
+          13.333,
+          13.5,
+          13.567,
+          13.6
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 315,
+      "text": "opportunity"
+    },
+    {
+      "caption_id": "sub_056",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.021736,
+              0.014922
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.05044,
+              -0.02362
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              -0.000498,
+              -0.000794
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              -0.000498,
+              -0.000794
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.65,
+              0.65
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.65,
+              0.65
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.975,
+              0.975
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.975,
+              0.975
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.4831,
+      "duration": 7,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0107",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          13.567,
+          13.591917,
+          13.616833,
+          13.64175,
+          13.666667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 325,
+      "text": "to"
+    },
+    {
+      "caption_id": "sub_057",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.013542
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.004687
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.001563
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7446,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0110",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          13.9,
+          14.0,
+          14.067,
+          14.1
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 332,
+      "text": "get"
+    },
+    {
+      "caption_id": "sub_058",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.024479
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.008854
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.002604
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6927,
+      "duration": 6,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0111",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          13.9,
+          14.0,
+          14.067,
+          14.1
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 336,
+      "text": "better"
+    },
+    {
+      "caption_id": "sub_059",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.012037,
+              0.002083
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7306,
+      "duration": 5,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0117",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          14.733,
+          14.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 342,
+      "text": "and"
+    },
+    {
+      "caption_id": "sub_060",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.012037,
+              0.002083
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6605,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0116",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          14.733,
+          14.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 347,
+      "text": "push"
+    },
+    {
+      "caption_id": "sub_061",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.012037,
+              0.002083
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7486,
+      "duration": 5,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0115",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          14.733,
+          14.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 351,
+      "text": "our"
+    },
+    {
+      "caption_id": "sub_062",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.008333,
+              0.007812
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.003704,
+              0.003646
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.003704,
+              0.003646
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5919,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0118",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          14.8,
+          14.822222,
+          14.844444,
+          14.866667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 356,
+      "text": "work"
+    },
+    {
+      "caption_id": "sub_063",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.001852,
+              0.010937
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.795,
+      "duration": 5,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0119",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          15.1,
+          15.167
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 360,
+      "text": "even"
+    },
+    {
+      "caption_id": "sub_064",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.016667,
+              0.000521
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.00463,
+              -0.001042
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7333,
+      "duration": 7,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0121",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          15.4,
+          15.467,
+          15.5
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 365,
+      "text": "further."
+    },
+    {
+      "caption_id": "sub_065",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.005556,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7718,
+      "duration": 5,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0122",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          15.7,
+          15.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 377,
+      "text": "Because"
+    },
+    {
+      "caption_id": "sub_066",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.016667,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.002778,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5902,
+      "duration": 6,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0123",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          15.9,
+          15.933,
+          16.0
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 382,
+      "text": "the"
+    },
+    {
+      "caption_id": "sub_067",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.001852,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7468,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0124",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          16.2,
+          16.267
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 388,
+      "text": "standard"
+    },
+    {
+      "caption_id": "sub_068",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.031968,
+              0.038333
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.12081,
+              0.038333
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.12081,
+              0.038333
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.675,
+              0.675
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.675,
+              0.675
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.675,
+              0.675
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.3595,
+      "duration": 5,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0125",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          16.4,
+          16.422222,
+          16.444444,
+          16.466667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 392,
+      "text": "we're"
+    },
+    {
+      "caption_id": "sub_069",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.019769,
+              0.008477
+            ]
+          },
+          {
+            "frame": 10,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.975,
+              0.975
+            ]
+          },
+          {
+            "frame": 10,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5763,
+      "duration": 11,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0129",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          17.1,
+          17.2
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 397,
+      "text": "chasing"
+    },
+    {
+      "caption_id": "sub_070",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.019271
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.011458
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.008333
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.002083
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.001042
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 9,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 7,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 8,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 9,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.744,
+      "duration": 10,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0130",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          17.2,
+          17.267,
+          17.3,
+          17.433,
+          17.5,
+          17.567,
+          17.6,
+          17.8,
+          17.867,
+          17.9
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 408,
+      "text": "isn't"
+    },
+    {
+      "caption_id": "sub_071",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.011458
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.8605,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0131",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          17.267,
+          17.6,
+          17.933
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 418,
+      "text": "where"
+    },
+    {
+      "caption_id": "sub_072",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.041667,
+              0.002604
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.041667,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.048148,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.048148,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.048148,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.3398,
+      "duration": 6,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0133",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          17.4,
+          17.5,
+          17.6,
+          17.867,
+          17.933,
+          18.2
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 421,
+      "text": "the"
+    },
+    {
+      "caption_id": "sub_073",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.014583
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.004167
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.000521
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5452,
+      "duration": 6,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0134",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          17.433,
+          17.567,
+          17.7,
+          17.9,
+          18.0,
+          18.2
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 427,
+      "text": "industry"
+    },
+    {
+      "caption_id": "sub_074",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.003704,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.002431,
+              0.001302
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.875,
+              0.875
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.4834,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0135",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          18.1,
+          18.133333,
+          18.166667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 433,
+      "text": "is"
+    },
+    {
+      "caption_id": "sub_076",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.9811,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0136",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          18.5,
+          18.6,
+          18.767,
+          18.9
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 444,
+      "text": "it's"
+    },
+    {
+      "caption_id": "sub_077",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.012963,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.022731,
+              -7.8e-05
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.025,
+              1.025
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.495,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_continuous_visual_identity_0137",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          18.667,
+          19.1,
+          19.4
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 448,
+      "text": "where"
+    },
+    {
+      "caption_id": "sub_081",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.090741,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.090741,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7049,
+      "duration": 5,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0139",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          19.5,
+          19.6,
+          19.833,
+          19.9,
+          20.0
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 468,
+      "text": "committed"
+    },
+    {
+      "caption_id": "sub_082",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.9875,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0140",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          19.7,
+          19.722222,
+          19.744444,
+          19.766667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 473,
+      "text": "to"
+    },
+    {
+      "caption_id": "sub_084",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.012963,
+              0.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.012963,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.012963,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.025,
+              0.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              0.065741,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.011111,
+              0.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 6,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.3737,
+      "duration": 7,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0141",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          20.1,
+          20.267,
+          20.4,
+          20.5,
+          20.7,
+          20.833,
+          21.0
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 482,
+      "text": "the"
+    },
+    {
+      "caption_id": "sub_086",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.9399,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0142",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          20.567,
+          20.6
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 494,
+      "text": "at"
+    },
+    {
+      "caption_id": "sub_090",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.027083
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.005729
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.001563
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.623,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0144",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          21.4,
+          21.533,
+          21.767,
+          21.9
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 513,
+      "text": "So"
+    },
+    {
+      "caption_id": "sub_091",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.009375
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.004167
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6783,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0146",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          21.433,
+          21.466333,
+          21.499667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 517,
+      "text": "if"
+    },
+    {
+      "caption_id": "sub_092",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.005729
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.7414,
+      "duration": 2,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_continuous_visual_identity_0148",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          21.533,
+          21.9
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 520,
+      "text": "you"
+    },
+    {
+      "caption_id": "sub_093",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.051042
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.002083
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6233,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0143",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          21.4,
+          21.6,
+          21.8
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 522,
+      "text": "want"
+    },
+    {
+      "caption_id": "sub_094",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.00625
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.002604
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6258,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0152",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          22.1,
+          22.133333,
+          22.166667
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 525,
+      "text": "to"
+    },
+    {
+      "caption_id": "sub_095",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              -0.001563
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.652,
+      "duration": 2,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0149",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          21.9,
+          22.6
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 528,
+      "text": "level"
+    },
+    {
+      "caption_id": "sub_096",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.010937
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6157,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0151",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          22.0,
+          22.4,
+          22.6
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 530,
+      "text": "up"
+    },
+    {
+      "caption_id": "sub_098",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.000926,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.6685,
+      "duration": 6,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0155",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          22.4,
+          22.5,
+          22.6
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 537,
+      "text": "brand,"
+    },
+    {
+      "caption_id": "sub_099",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              -0.116319,
+              -0.051432
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              -0.018519,
+              -0.001042
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              -0.015741,
+              -0.002083
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              -0.00463,
+              -0.001042
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.65,
+              0.65
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 4,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 5,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.4101,
+      "duration": 6,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0157",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          22.9,
+          23.0,
+          23.033,
+          23.1,
+          23.133
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 547,
+      "text": "or"
+    },
+    {
+      "caption_id": "sub_104",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.088333,
+              -0.010521
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.7,
+              0.7
+            ]
+          },
+          {
+            "frame": 1,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.5697,
+      "duration": 2,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_continuous_visual_identity_0158",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          23.3,
+          24.167
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 567,
+      "text": "your"
+    },
+    {
+      "caption_id": "sub_106",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 3,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.8725,
+      "duration": 4,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0159",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          23.9,
+          23.967,
+          24.0
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 572,
+      "text": "like"
+    },
+    {
+      "caption_id": "sub_111",
+      "channels": {
+        "position": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "scale": [
+          {
+            "frame": 0,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "frame": 2,
+            "interpolation": "linear",
+            "value": [
+              1.0,
+              1.0
+            ]
+          }
+        ]
+      },
+      "confidence": 0.8962,
+      "duration": 3,
+      "provenance": {
+        "animation_classification_used": false,
+        "component": "opencv",
+        "localization_event_id": "style_event_caption_tracklet_0161",
+        "reference_video": "input\\DZatr0EJt4B.mp4",
+        "route": "opencv_multiscale_template",
+        "sample_timestamps": [
+          25.0,
+          25.033
+        ]
+      },
+      "schema": "video_cloner.caption_animation_recipe",
+      "schema_version": 1,
+      "start_frame": 600,
+      "text": "to"
+    }
+  ],
+  "reel": "DZatr0EJt4B",
+  "route": "opencv_multiscale_template",
+  "schema": "video_cloner.caption_animation_recipe_set",
+  "schema_version": 1,
+  "sources": {
+    "fcpxml": {
+      "path": "data\\DZatr0EJt4B\\davinci\\DZatr0EJt4B_mvp_timeline.fcpxml",
+      "sha256": "681048a9840ae8939d9ccc48446afbe9660e8af63576a19133ee3fab51145eaa"
+    },
+    "localization": {
+      "animation_classification_used": false,
+      "path": "data\\DZatr0EJt4B\\analysis\\DZatr0EJt4B_caption_style.json",
+      "sha256": "2f891b56dfeeb0d098ee1573207bed8c1fae4551f20d4b723adcc298e7ddea70"
+    },
+    "video": {
+      "path": "input\\DZatr0EJt4B.mp4",
+      "sha256": "e0b60e0cfd647894033c8daa5d1b285d4b3d0d22f83a9ccc80a0ebbe99817911"
+    }
+  }
+}

@@ -64,7 +64,21 @@
         "sub_015",
         "sub_026"
       ],
-      "status": "PRODUCTION_COMMAND_READY_FOR_HUMAN_REVIEW"
+      "status": "HUMAN_ACCEPTED_MATERIALLY_CLOSER_TO_SOURCE"
+    },
+    "full_rollout": {
+      "manifest": "data/DZatr0EJt4B/analysis/DZatr0EJt4B_caption_motion_rollout_manifest.json",
+      "recipes": "data/DZatr0EJt4B/analysis/DZatr0EJt4B_caption_animation_recipes_oss002_full.json",
+      "total_captions": 112,
+      "meaningful_motion": 56,
+      "static_or_no_motion": 56,
+      "extraction_failures": 32,
+      "accepted_legacy_preserved": 1,
+      "accepted_representatives_reused": 4,
+      "step3c_superseded_with_oss": 11,
+      "step3c_removed_and_original_enabled": 4,
+      "expected_final_replacements": 56,
+      "status": "PRODUCTION_COMMAND_READY"
     },
     "done_when": [
       "materially higher animation coverage than frozen 16-caption plan",
@@ -83,7 +97,13 @@
     {
       "id": "OSS-002",
       "name": "Caption animation OSS overdrive",
-      "status": "REPRESENTATIVE_HUMAN_REVIEW"
+      "status": "FULL_ROLLOUT_READY"
+    },
+    {
+      "id": "OSS-002B",
+      "name": "Caption lifecycle/persistence",
+      "status": "QUEUED_AFTER_FULL_MOTION_REVIEW",
+      "constraint": "Maximum two serious OSS routes; integrate quickly or record word-by-word limitation."
     },
     {
       "id": "OSS-003",

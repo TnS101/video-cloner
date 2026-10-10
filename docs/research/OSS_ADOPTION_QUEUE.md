@@ -46,7 +46,7 @@ Proven:
 
 Keep frozen as the application primitive.
 
-### OSS-002 — Caption animation detection/representation/application — REPRESENTATIVE HUMAN REVIEW
+### OSS-002 — Caption animation detection/representation/application — FULL ROLLOUT READY
 
 Objective:
 - replace the frozen custom detector with proven OSS adaptation that materially improves coverage and compound-motion fidelity.
@@ -63,7 +63,10 @@ Selected composition:
 - OpenCV multi-scale edge-template tracking: `89.8/100`, 5/5 real Reel #3 benchmark cases.
 - OpenCV sparse LK affine comparison: `57.4/100`, 2/5 cases.
 - Decision: **COMBINE** template extraction + HyperFrames-style independent channels + OSS-001 carrier.
-- Four missed captions (`sub_009`, `sub_012`, `sub_015`, `sub_026`) are ready for representative production review.
+- Four missed captions (`sub_009`, `sub_012`, `sub_015`, `sub_026`) passed representative production review.
+- Human accepted the representative batch as materially closer to source; no further motion-route benchmark is authorized.
+- Full authority: 112 captions, 56 meaningful-motion, 56 static/no-motion, 32 extraction failures recorded explicitly.
+- Reconciliation: preserve `sub_008` + four representatives; supersede 11 Step 3C items; remove 4 Step 3C static items and re-enable originals; expected final replacement count 56.
 
 Execution:
 - map winning OSS representation through OSS-001 Resolve carrier.
@@ -76,6 +79,10 @@ Acceptance:
 
 Build gate:
 - no greenfield detector work before the strongest two compatible OSS routes/compositions fail the same named requirement.
+
+### OSS-002B — Caption lifecycle / persistence — QUEUED
+
+Source captions may persist across word intervals and form multi-word/stacked compositions. After full motion review, run one bounded OSS-first spike using at most two text-tracking/grouping compositions. Do not fold this gap into motion rollout or return to Reel #2 heuristics.
 
 ### OSS-003 — Transitions — NEXT
 

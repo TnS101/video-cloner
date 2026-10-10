@@ -195,8 +195,11 @@ Only decisions that materially constrain future work belong here.
 
 ## D020 — Combine OpenCV transform extraction with independent animation channels
 - Date: 2026-10-10
-- Status: SELECTED / REPRESENTATIVE HUMAN REVIEW
+- Status: ACCEPTED / FULL REEL ROLLOUT
 - Evidence: HyperFrames implements seekable animation representation/rendering but not reference-video detection; ghost-editor delegates motion analysis to Gemini. On five real Reel #3 cases, sparse LK affine scored `57.4/100` with 2/5 coverage and multi-scale edge-template tracking scored `89.8/100` with 5/5 coverage.
 - Decision: **COMBINE** OpenCV multi-scale edge-template tracking for reference-derived position/scale curves, a HyperFrames-inspired independent-channel recipe, and the frozen OSS-001 nested Text+ carrier.
 - Boundary: keep caption timing/text authority unchanged; do not use the frozen Step 3C classification as motion authority.
 - Next proof: one four-caption representative production batch covering translation, scale, and simultaneous translation+scale while preserving accepted `sub_008`.
+- Human result: representative batch is materially closer to source; the motion route is accepted and no second motion benchmark is required.
+- Full authority: 112 ordinals, 56 meaningful-motion, 56 static/no-motion, 32 explicit localization failures; final reconciliation removes all 15 rejected Step 3C production items.
+- Separate gap: queue `OSS-002B` caption lifecycle/persistence after full motion review; do not solve it inside transform rollout.
