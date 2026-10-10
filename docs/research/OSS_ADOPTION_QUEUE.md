@@ -3,7 +3,7 @@
 - UPDATED: 2026-10-10
 - MODE: SPEEDRUN / PROVEN-CODE-FIRST
 - RULE: `REUSE > ADAPT > COMBINE > BUILD`
-- ACTIVE: `OSS-002`
+- ACTIVE: `OSS-002B` (STOPPED / NO WINNER)
 
 ## Production Override — 2026-10-10
 
@@ -46,7 +46,7 @@ Proven:
 
 Keep frozen as the application primitive.
 
-### OSS-002 — Caption animation detection/representation/application — FULL ROLLOUT READY
+### OSS-002 — Caption animation detection/representation/application — PASS / INTEGRATED
 
 Objective:
 - replace the frozen custom detector with proven OSS adaptation that materially improves coverage and compound-motion fidelity.
@@ -66,6 +66,7 @@ Selected composition:
 - Four missed captions (`sub_009`, `sub_012`, `sub_015`, `sub_026`) passed representative production review.
 - Human accepted the representative batch as materially closer to source; no further motion-route benchmark is authorized.
 - Full authority: 112 captions, 56 meaningful-motion, 56 static/no-motion, 32 extraction failures recorded explicitly.
+- Production run `20261010T105509634Z_5d7d0cc58b344d24a62f0fee7795f9e0` persisted the 56/56 state and passed save verification; human review accepted detected motion as materially better.
 - Reconciliation: preserve `sub_008` + four representatives; supersede 11 Step 3C items; remove 4 Step 3C static items and re-enable originals; expected final replacement count 56.
 
 Execution:
@@ -80,7 +81,18 @@ Acceptance:
 Build gate:
 - no greenfield detector work before the strongest two compatible OSS routes/compositions fail the same named requirement.
 
-### OSS-002B — Caption lifecycle / persistence — QUEUED
+### OSS-002B — Localization coverage recovery — STOPPED / NO ADOPTION
+
+Audited and benchmarked on 12 real failed captions / 36 anchor frames:
+
+- `PaddlePaddle/PaddleOCR@95dc316a8490a350c1d1fcf3bc80bf83d4e52450` (`3.3.2`, Apache-2.0): candidate boxes on 35/36 anchors; correct expected-caption selection 0/12; tracker recovery 0/12.
+- `JaidedAI/EasyOCR@c4f3cd7225efd4f85451bd8b4a7646ae9a092420` (`1.7.2`, Apache-2.0): candidate boxes on 33/36 anchors; correct expected-caption selection 0/12; tracker recovery 0/12.
+- Both failed closed with zero accepted false localizations.
+- Root cause: OCR detects real baked text, but the expected V2 token at the same timestamp is generally different; this is a cross-authority association gap, not a text-detector-quality gap.
+
+Decision: adopt neither, do not lower thresholds, do not run all 32, and do not publish a Resolve batch. Human must decide whether a tiny missing association mechanism is justified.
+
+### OSS-002C — Caption lifecycle / persistence — QUEUED
 
 Source captions may persist across word intervals and form multi-word/stacked compositions. After full motion review, run one bounded OSS-first spike using at most two text-tracking/grouping compositions. Do not fold this gap into motion rollout or return to Reel #2 heuristics.
 
@@ -136,7 +148,10 @@ Candidates:
 
 ## Visual Critical Path
 
-`OSS-002 caption animations`
+`OSS-002 caption animations` (PASS)
+-> `OSS-002B localization fallback` (STOPPED / no winner)
+-> human association-mechanism decision
+-> `OSS-002C lifecycle/persistence`
 -> `OSS-003 transitions`
 -> `OSS-004 motion/VFX`
 -> `OSS-005 speed ramps`

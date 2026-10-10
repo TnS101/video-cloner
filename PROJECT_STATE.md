@@ -2,8 +2,8 @@
 
 - LAST UPDATED: 2026-10-10
 - ACTIVE STAGE: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
-- ACTIVE UNIT: `OSS-002_CAPTION_ANIMATION_OSS_OVERDRIVE`
-- STATUS: `FULL_ROLLOUT_READY / HUMAN_REVIEW`
+- ACTIVE UNIT: `OSS-002B_LOCALIZATION_COVERAGE_RECOVERY`
+- STATUS: `BOUNDED_BENCHMARK_STOPPED / NO_OSS_WINNER`
 
 ## Human Directives
 
@@ -70,7 +70,7 @@ Find the fastest proven OSS route that materially improves:
 
 Do not spend another loop improving the rejected heuristic detector.
 
-## Current Move — OSS-002 Full Motion Rollout
+## Accepted Production State — OSS-002 Full Motion Rollout
 
 - Source audit proved HyperFrames supplies a seekable independent-channel animation representation/runtime, not reference-video motion detection.
 - Source audit proved ghost-editor uses Gemini-authored edit analysis plus GSAP recipes, not deterministic transform extraction.
@@ -78,13 +78,22 @@ Do not spend another loop improving the rejected heuristic detector.
 - Human accepted **COMBINE**: OpenCV template-derived position/scale curves + HyperFrames-inspired independent seekable channels + frozen OSS-001 Resolve carrier. Do not benchmark another motion route.
 - Full Reel #3 extraction accounts for all 112 caption ordinals: 56 meaningful-motion, 56 static/no-motion, and 32 explicit localization-evidence failures included in the static count rather than guessed.
 - Reconciliation authority preserves accepted `sub_008` and the four accepted OSS representatives; supersedes 11 rejected Step 3C items with OSS motion; removes 4 rejected static Step 3C items and re-enables their originals.
-- Expected final state: 56 authoritative nested replacements on shared V3, no rejected Step 3C replacement, exactly one replacement per motion ordinal, and one `SaveProject` after full verification.
+- Live run `20261010T105509634Z_5d7d0cc58b344d24a62f0fee7795f9e0` persisted 56 authoritative nested replacements on V3, 56 original/static captions, no rejected Step 3C replacement, and passed `SaveProject` verification.
+- Human review accepted the detected motion as substantially closer to the reference; localization coverage remains the dominant gap.
 
-## Queued Gap — OSS-002B Caption Lifecycle / Persistence
+## Current Result — OSS-002B Localization Coverage Recovery
 
-- Status: `QUEUED`; do not solve during motion rollout.
+- PaddleOCR `3.3.2` and EasyOCR `1.7.2` were source-audited under Apache-2.0 and benchmarked on the same 12 real Reel #3 failures / 36 anchor frames.
+- They found candidate text on 35/36 and 33/36 anchors respectively, but each selected the expected V2 caption text correctly on `0/12` cases and therefore recovered `0/12` tracker seeds.
+- The failure is an authority-association mismatch: visible baked text at those frames differs from the expected V2 caption token. Examples include `with -> to share/Everything`, `scene -> biggest/THESE`, and `you -> it's`.
+- Both routes failed closed with zero accepted false localizations. No fallback was integrated, no 32-caption pass was run, and no Resolve command was published.
+- Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002b_text_localization_benchmark.json`.
+
+## Queued Gap — OSS-002C Caption Lifecycle / Persistence
+
+- Status: `QUEUED`; not started.
 - Source captions often retain earlier words and build multi-word/stacked compositions while the current generated authority remains word-by-word.
-- After full motion acceptance, run one bounded OSS-first spike (maximum two serious routes, roughly 1–2 hours), then integrate quickly or record the limitation and proceed to OSS-003.
+- The next human decision is whether the now-proven missing association mechanism justifies a tiny BUILD task; do not silently continue OCR or start lifecycle/persistence.
 
 ### OSS-002 done when
 
@@ -104,9 +113,10 @@ Do not spend another loop improving the rejected heuristic detector.
 
 ## Critical Path
 
-`OSS-002 full accepted-motion rollout`
--> full Reel #3 motion review
--> `OSS-002B` bounded lifecycle/persistence spike
+`OSS-002 full accepted-motion rollout` (PASS / persisted)
+-> `OSS-002B` text-localization fallback benchmark (STOPPED / no winner)
+-> human decision on the missing association mechanism
+-> `OSS-002C` bounded lifecycle/persistence spike
 -> `OSS-003 transitions`
 -> `OSS-004 core motion/VFX`
 -> `OSS-005 speed ramps`

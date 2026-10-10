@@ -2,7 +2,7 @@
 
 - STATUS: ACTIVE
 - DATE: 2026-10-10
-- ACTIVE UNIT: OSS-002
+- ACTIVE UNIT: OSS-002B
 - PRODUCT MODE: SPEEDRUN
 - PRIORITY: visible production fidelity, not detector-framework perfection
 
@@ -105,19 +105,30 @@ Review:
 - magnitude;
 - obvious visual mismatch.
 
-## Step 5 — Full Reel #3 Motion Rollout — READY
+## Step 5 — Full Reel #3 Motion Rollout — DONE
 
 - Authority: 112 captions; 56 meaningful-motion; 56 static/no-motion; 32 explicit extraction failures.
 - Preserve accepted `sub_008` plus representatives `sub_009`, `sub_012`, `sub_015`, `sub_026`.
 - Supersede 11 rejected Step 3C replacements with OSS motion; remove 4 rejected static replacements and re-enable originals.
 - Expected final state: 56 authoritative V3 replacements, no duplicate ordinal, no rejected Step 3C item, one save after complete verification.
-- Next gate: one full Reel #3 human motion review.
+- Live run `20261010T105509634Z_5d7d0cc58b344d24a62f0fee7795f9e0` persisted the 56/56 reconciliation and passed save verification.
+- Human review: detected motion is substantially closer to source; remaining coverage gap is concentrated in localization.
 
-## Step 6 — OSS-002B Caption Lifecycle / Persistence — QUEUED
+## Step 6 — OSS-002B Localization Coverage Recovery — STOPPED / NO WINNER
 
-Timebox one OSS-first stage after motion acceptance. Investigate at most two proven text-tracking/grouping compositions; integrate quickly or record word-by-word lifecycle as a known limitation.
+- Audited only PaddleOCR `3.3.2` and EasyOCR `1.7.2`, both Apache-2.0.
+- Same-evidence benchmark: 12 real failed captions / 36 anchor frames.
+- Candidate text detection: PaddleOCR 35/36 anchors; EasyOCR 33/36.
+- Correct expected-caption selection: 0/12 for both; downstream tracker recovery: 0/12 for both.
+- Root cause: the expected V2 token is generally not the baked text visible at the same frame, so OCR cannot supply the missing cross-authority association.
+- Decision: adopt neither; keep the primary localization and accepted tracker unchanged; do not run all 32 or publish a Resolve batch.
+- Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002b_text_localization_benchmark.json`.
 
-## Step 7 — OSS-003 Transitions
+## Step 7 — OSS-002C Caption Lifecycle / Persistence — QUEUED
+
+Do not start until the human decides whether to authorize the tiny missing association mechanism exposed by OSS-002B. Then timebox one OSS-first lifecycle/persistence stage; integrate quickly or record word-by-word lifecycle as a known limitation.
+
+## Step 8 — OSS-003 Transitions
 
 Immediately after OSS-002 acceptance:
 

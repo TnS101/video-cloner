@@ -1,0 +1,88 @@
+{
+  "schema": "video_cloner.oss002b_text_localization_benchmark_decision",
+  "schema_version": 1,
+  "reel": "DZatr0EJt4B",
+  "decision": "NO_ADOPTION_EXPECTED_TEXT_ASSOCIATION_FAILED",
+  "sample": {
+    "ordinals": [2, 4, 30, 38, 44, 54, 75, 80, 85, 97, 100, 110],
+    "size": 12,
+    "unique_anchor_frames": 36,
+    "source": "input/DZatr0EJt4B.mp4",
+    "authority": "data/DZatr0EJt4B/analysis/DZatr0EJt4B_caption_motion_rollout_manifest.json"
+  },
+  "providers": {
+    "paddleocr": {
+      "repo": "PaddlePaddle/PaddleOCR",
+      "pin": "95dc316a8490a350c1d1fcf3bc80bf83d4e52450",
+      "release": "3.3.2",
+      "license": "Apache-2.0",
+      "role": "PP-OCRv5 server text detection plus English mobile recognition; no temporal tracking",
+      "candidate_boxes_present": 35,
+      "anchor_frames": 36,
+      "correct_caption_selections": 0,
+      "downstream_tracker_success": 0,
+      "false_localizations_accepted": 0,
+      "runtime_seconds": 133.086,
+      "weighted_score": 33.7,
+      "score_breakdown": {
+        "candidate_box_presence": 9.7,
+        "correct_expected_caption": 0.0,
+        "downstream_motion_recovery": 0.0,
+        "false_positive_control": 15.0,
+        "integration_speed": 5.0,
+        "runtime_dependency_cost": 4.0
+      },
+      "raw_evidence_path": ".agent/reports/oss002b_paddleocr_benchmark_raw.json",
+      "raw_evidence_sha256": "601557722cbdf3ead7f39230c90470cf2a92589153bff77f5583bf5960b33252"
+    },
+    "easyocr": {
+      "repo": "JaidedAI/EasyOCR",
+      "pin": "c4f3cd7225efd4f85451bd8b4a7646ae9a092420",
+      "release": "1.7.2",
+      "license": "Apache-2.0",
+      "role": "CRAFT text detection plus English recognition; no temporal tracking",
+      "candidate_boxes_present": 33,
+      "anchor_frames": 36,
+      "correct_caption_selections": 0,
+      "downstream_tracker_success": 0,
+      "false_localizations_accepted": 0,
+      "runtime_seconds": 193.003,
+      "weighted_score": 38.2,
+      "score_breakdown": {
+        "candidate_box_presence": 9.2,
+        "correct_expected_caption": 0.0,
+        "downstream_motion_recovery": 0.0,
+        "false_positive_control": 15.0,
+        "integration_speed": 8.0,
+        "runtime_dependency_cost": 6.0
+      },
+      "raw_evidence_path": ".agent/reports/oss002b_easyocr_benchmark_raw.json",
+      "raw_evidence_sha256": "2db17313acfcdf6df148c28a9b00bd66b846b13fc23bffbf1779c6f8de3574b0"
+    }
+  },
+  "score_weights": {
+    "localization_accuracy": 40,
+    "downstream_motion_recovery": 25,
+    "false_positive_control": 15,
+    "integration_speed": 10,
+    "runtime_dependency_cost": 10
+  },
+  "score_note": "Raw box presence earned at most 10/40 localization points; correct expected-caption selection earned 0/30 for both. Both received 15/15 false-positive control because the matcher rejected every mismatch.",
+  "representative_mismatches": [
+    {"ordinal": 30, "expected": "with", "easyocr": "to", "paddleocr": "Everwthing"},
+    {"ordinal": 44, "expected": "scene", "easyocr": "biggest", "paddleocr": "THESE"},
+    {"ordinal": 75, "expected": "today,", "easyocr": "Our", "paddleocr": "and push"},
+    {"ordinal": 97, "expected": "your", "easyocr": "where", "paddleocr": "where"},
+    {"ordinal": 100, "expected": "you", "easyocr": "it's", "paddleocr": "it's"},
+    {"ordinal": 110, "expected": "what", "easyocr": "becoming", "paddleocr": "agcreatives"}
+  ],
+  "root_cause": "Both OCR routes localize real baked text, but the V2 caption token authority does not name that baked text at the same frames. OCR quality cannot resolve this cross-authority association mismatch.",
+  "acceptance": {
+    "strong_majority_recovered": false,
+    "material_improvement": false,
+    "winner": null,
+    "fallback_integrated": false,
+    "full_32_pass_run": false,
+    "resolve_batch_published": false
+  }
+}

@@ -203,3 +203,12 @@ Only decisions that materially constrain future work belong here.
 - Human result: representative batch is materially closer to source; the motion route is accepted and no second motion benchmark is required.
 - Full authority: 112 ordinals, 56 meaningful-motion, 56 static/no-motion, 32 explicit localization failures; final reconciliation removes all 15 rejected Step 3C production items.
 - Separate gap: queue `OSS-002B` caption lifecycle/persistence after full motion review; do not solve it inside transform rollout.
+
+## D021 — Reject OCR fallback for current caption authority; association remains missing
+- Date: 2026-10-10
+- Status: ACCEPTED BENCHMARK STOP / NO DEPENDENCY ADOPTED
+- Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002b_text_localization_benchmark.json`; 12 real Reel #3 failures, 36 anchor frames.
+- Audit: PaddleOCR 3.3.2 uses PP-OCR detection/recognition and EasyOCR 1.7.2 uses CRAFT detection plus recognition. Neither provides temporal tracking; both are Apache-2.0.
+- Result: PaddleOCR found candidate text on 35/36 anchors and EasyOCR on 33/36, but both achieved 0/12 correct expected-caption selections and 0/12 downstream tracker seeds. Fail-closed matching accepted zero false localizations.
+- Root cause: the V2 expected caption token and the baked reference text visible at the same frame generally differ. This is a cross-authority association gap, not evidence that the accepted OpenCV tracker or Resolve carrier failed.
+- Decision: adopt neither OCR dependency, keep the accepted primary path unchanged, do not run all 32 failures, and do not publish a Resolve command. A human decision is required before any tiny BUILD of the missing association mechanism. Lifecycle/persistence is renamed `OSS-002C` and remains unstarted.
