@@ -18,19 +18,19 @@
   },
   "primary_immediate": {
     "layer": "caption_animation_detection_representation_application",
-    "decision": "ADAPT_NOW_OSS_OVERDRIVE",
+    "decision": "COMBINE_TEMPLATE_TRACKING_CHANNEL_RECIPE_OSS001_CARRIER",
     "first_candidate": {
       "repo": "heygen-com/hyperframes",
       "pin": "46f6cb356785bed79e1ce7b79d7e7accc697786a",
       "license": "Apache-2.0",
-      "role": "audit/reuse animation runtime, seekable GSAP, caption identity and synthetic/reference mechanisms; verify detection capability rather than assume it"
+      "role": "reuse independent seekable property/keyframe representation; audited source does not derive animation from reference video"
     },
     "supporting_candidates": [
       {
         "repo": "kurbaitaev/ghost-editor",
         "pin": "9f197e4e65691d190ba63efa6c061d9c43f02cf6",
         "license": "MIT",
-        "role": "audit reusable style/motion extraction and recipe mechanisms"
+        "role": "LLM-assisted edit study plus GSAP recipe rendering; not deterministic reference-video transform extraction"
       },
       {
         "repo": "video-style-kit / EditDNA patterns",
@@ -42,6 +42,29 @@
       "pin": "94c7a885d53f13be78522ce96561a9e9e21d64c5",
       "license": "MIT",
       "status": "PASS_INTEGRATED_FROZEN_CARRIER"
+    },
+    "benchmark": {
+      "evidence": "data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002_caption_motion_benchmark.json",
+      "route_a": {
+        "name": "opencv_lk_affine",
+        "score": 57.4,
+        "successful_cases": 2,
+        "case_count": 5
+      },
+      "route_b": {
+        "name": "opencv_multiscale_template",
+        "score": 89.8,
+        "successful_cases": 5,
+        "case_count": 5
+      },
+      "winner": "opencv_multiscale_template",
+      "representative_targets": [
+        "sub_009",
+        "sub_012",
+        "sub_015",
+        "sub_026"
+      ],
+      "status": "PRODUCTION_COMMAND_READY_FOR_HUMAN_REVIEW"
     },
     "done_when": [
       "materially higher animation coverage than frozen 16-caption plan",
@@ -60,7 +83,7 @@
     {
       "id": "OSS-002",
       "name": "Caption animation OSS overdrive",
-      "status": "ACTIVE"
+      "status": "REPRESENTATIVE_HUMAN_REVIEW"
     },
     {
       "id": "OSS-003",

@@ -192,3 +192,11 @@ Only decisions that materially constrain future work belong here.
   - greenfield detector work is allowed only if both fail a named product requirement.
 - Next: once OSS-002 passes batch human review, move immediately to OSS-003 transitions.
 - Stable architecture direction: future animation exemplar adapters may accept reference clips, CSS/JS/GSAP, code, GIF/frame sequences, short partial-animation samples, and Resolve templates/timelines, normalized into a common animation recipe before editor-specific application.
+
+## D020 — Combine OpenCV transform extraction with independent animation channels
+- Date: 2026-10-10
+- Status: SELECTED / REPRESENTATIVE HUMAN REVIEW
+- Evidence: HyperFrames implements seekable animation representation/rendering but not reference-video detection; ghost-editor delegates motion analysis to Gemini. On five real Reel #3 cases, sparse LK affine scored `57.4/100` with 2/5 coverage and multi-scale edge-template tracking scored `89.8/100` with 5/5 coverage.
+- Decision: **COMBINE** OpenCV multi-scale edge-template tracking for reference-derived position/scale curves, a HyperFrames-inspired independent-channel recipe, and the frozen OSS-001 nested Text+ carrier.
+- Boundary: keep caption timing/text authority unchanged; do not use the frozen Step 3C classification as motion authority.
+- Next proof: one four-caption representative production batch covering translation, scale, and simultaneous translation+scale while preserving accepted `sub_008`.

@@ -46,21 +46,24 @@ Proven:
 
 Keep frozen as the application primitive.
 
-### OSS-002 — Caption animation detection/representation/application — ACTIVE / OSS OVERDRIVE
+### OSS-002 — Caption animation detection/representation/application — REPRESENTATIVE HUMAN REVIEW
 
 Objective:
 - replace the frozen custom detector with proven OSS adaptation that materially improves coverage and compound-motion fidelity.
 
-Primary first adaptation target:
+Audited representation source:
 - `heygen-com/hyperframes@46f6cb356785bed79e1ce7b79d7e7accc697786a`
 - Apache-2.
-- Audit concrete reusable animation/runtime/GSAP/caption-identity/synthetic-reference mechanisms.
-- Do **not** assume it is a complete reference-video detector; verify exact capability.
+- Actual capability: seekable GSAP animation catalog/render adapters and independent property/keyframe representation; no reference-video detector.
 
-Supporting candidate pool:
-- `kurbaitaev/ghost-editor@9f197e4e65691d190ba63efa6c061d9c43f02cf6` — MIT.
-- video-style-kit / EditDNA patterns already captured in research.
-- Remotion only behind explicit license approval.
+Supporting audited source:
+- `kurbaitaev/ghost-editor@9f197e4e65691d190ba63efa6c061d9c43f02cf6` — MIT; Gemini-generated edit study plus GSAP recipe renderer, not deterministic transform extraction.
+
+Selected composition:
+- OpenCV multi-scale edge-template tracking: `89.8/100`, 5/5 real Reel #3 benchmark cases.
+- OpenCV sparse LK affine comparison: `57.4/100`, 2/5 cases.
+- Decision: **COMBINE** template extraction + HyperFrames-style independent channels + OSS-001 carrier.
+- Four missed captions (`sub_009`, `sub_012`, `sub_015`, `sub_026`) are ready for representative production review.
 
 Execution:
 - map winning OSS representation through OSS-001 Resolve carrier.

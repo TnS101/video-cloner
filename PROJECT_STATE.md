@@ -3,7 +3,7 @@
 - LAST UPDATED: 2026-10-10
 - ACTIVE STAGE: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
 - ACTIVE UNIT: `OSS-002_CAPTION_ANIMATION_OSS_OVERDRIVE`
-- STATUS: `ACTIVE`
+- STATUS: `HUMAN_REVIEW`
 
 ## Human Directives
 
@@ -70,16 +70,14 @@ Find the fastest proven OSS route that materially improves:
 
 Do not spend another loop improving the rejected heuristic detector.
 
-## Current Move — OSS-002 Overdrive
+## Current Move — OSS-002 Representative Human Review
 
-Use the existing vetted OSS research as the starting pool, with a bounded capability audit:
-
-1. **HyperFrames** — active first adaptation target for animation/runtime/seekable GSAP/caption identity patterns and synthetic/reference rendering.
-2. **ghost-editor** / **video-style-kit / EditDNA patterns** — inspect only concrete reusable caption/style/motion extraction or recipe mechanisms.
-3. Combine the strongest compatible mechanisms with the already-proven OSS-001 Resolve carrier.
-4. Benchmark against the **same Reel #3 frames/timestamps and human visual evidence**, not synthetic unit tests alone.
-
-Important: do not assume any candidate is a complete visual detector merely because it is a strong animation framework. Verify the exact capability, then choose `REUSE / ADAPT / COMBINE / REPLACE`.
+- Source audit proved HyperFrames supplies a seekable independent-channel animation representation/runtime, not reference-video motion detection.
+- Source audit proved ghost-editor uses Gemini-authored edit analysis plus GSAP recipes, not deterministic transform extraction.
+- Bounded Reel #3 benchmark: OpenCV sparse LK affine `57.4/100` (2/5 cases); OpenCV multi-scale edge-template tracking `89.8/100` (5/5 cases).
+- Decision: **COMBINE** OpenCV template-derived position/scale curves + HyperFrames-inspired independent seekable channels + frozen OSS-001 Resolve carrier.
+- Normalized recipes exist for `sub_009`, `sub_012`, `sub_015`, and `sub_026`; all were missed by the frozen Step 3C plan and include simultaneous position + scale.
+- One bounded production command is ready for execution and visual review. It preserves accepted `sub_008`, the existing 16 nested items, the 112-caption authority, and saves only after complete technical verification.
 
 ### OSS-002 done when
 

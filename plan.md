@@ -23,7 +23,7 @@ The next visible milestone is:
 - Root limitation: systematic misses plus representation mismatch; source animations frequently combine motion and size change.
 - Decision: preserve custom detector artifacts, but do not tune/re-canary them.
 
-## Step 1 — OSS Capability Spike — ACTIVE
+## Step 1 — OSS Capability Spike — DONE
 
 Use existing vetted research before any new broad research.
 
@@ -44,7 +44,9 @@ For each serious candidate, inspect actual code paths and answer only:
 
 Do not equate popularity with capability.
 
-## Step 2 — Same-Evidence Benchmark
+Result: HyperFrames is representation/render infrastructure; ghost-editor is LLM-assisted analysis plus recipe rendering. Neither directly derives deterministic reference-video transform curves.
+
+## Step 2 — Same-Evidence Benchmark — DONE
 
 Benchmark no more than the two strongest compatible routes/compositions on Reel #3.
 
@@ -69,7 +71,9 @@ Select `REUSE / ADAPT / COMBINE / REPLACE`.
 
 Stop research when more information is unlikely to change the winner.
 
-## Step 3 — Resolve Adaptation
+Result: OpenCV LK affine `57.4/100` (2/5 cases) versus multi-scale edge-template tracking `89.8/100` (5/5). Decision: **COMBINE** the template extractor, independent normalized channels, and OSS-001 carrier.
+
+## Step 3 — Resolve Adaptation — READY
 
 Keep the OSS-001 carrier frozen.
 
@@ -84,9 +88,11 @@ Rules:
 - preserve original captions reversibly until batch verification;
 - application must support independent transform channels required by the source.
 
-## Step 4 — Batch Human Review
+Implemented and focused-tested for position, scale, simultaneous position+scale, bounded placement, exact rollback, and accepted `sub_008` preservation. One four-caption production command is pending; Codex does not execute it.
 
-Apply the OSS-backed caption animation layer across Reel #3 and review as one batch.
+## Step 4 — Batch Human Review — NEXT
+
+Execute and review the four-caption representative OSS-backed batch before any full Reel rollout.
 
 Review:
 
