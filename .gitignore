@@ -1,4 +1,4 @@
-# Python caches and test artifacts
+# Python caches and existing test artifacts
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -19,9 +19,8 @@ env/
 .agent/*
 !.agent/README.md
 
-# Project-operations local artifacts / fallback handoffs
-.project_ops/artifacts/
-.project_ops/reports/
+# Deprecated project-process machinery / local handoffs
+.project_ops/
 .handoffs/
 
 # Secrets and local configuration
