@@ -1,8 +1,8 @@
-# plan.md — S007 OSS-003 Transition Speedrun
+# plan.md — S007 OSS-004 Core Motion/VFX Speedrun
 
 - STATUS: ACTIVE
 - DATE: 2026-10-11
-- ACTIVE UNIT: OSS-003
+- ACTIVE UNIT: OSS-004
 - PRODUCT MODE: SPEEDRUN
 - PRIORITY: visible production fidelity, not detector-framework perfection
 
@@ -134,15 +134,23 @@ Review:
 - Run `20261011T091036387Z_d111541339de4973b185c41e30bebedb` completed and persisted the final six replacements while preserving the existing 63.
 - Human decision: OSS-002 is MVP accepted, production-ready, and frozen. Defer lifecycle/persistence and all caption polishing.
 
-## Step 8 — OSS-003 Transitions — FINAL NATIVE ROLLOUT READY
+## Step 8 — OSS-003 Transitions — MVP ACCEPTED / FROZEN
 
-- Existing authority: six candidates. Human review accepted the automated native 11-frame Blur Dissolve proof at frame `80`.
+- Human review and independent DRT inspection accepted exactly three native 11-frame Blur Dissolves at boundaries `80`, `286`, and `376` in `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1`.
 - Reject the clip-level Fusion approximation: it produced no native transition object. Preserve that result as a warning and do not tune it again.
 - Reuse pinned Resolve MCP DRT insertion plus the Resolve-authored Blur Dissolve donor to create exactly three native transitions at `80`, `286`, and `376`, each duration `11`, in final derivative `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1`.
 - Preserve production, V1 cuts, V2/V3 captions, and A1 by compact count/hash verification. Experimental `VC_OSS003_` Fusion effects remain non-blocking debt; no delete/bypass loop is authorized.
 - Classify slides `211` / `629` and whip `461` as motion/VFX deferred to OSS-004.
-- Pending run: `20261011T134449524Z_99e08d1948d849c0ab9c1f4e0344c41f`.
-- Next gate: one final human review. On PASS, freeze OSS-003 and immediately start OSS-004.
+- OSS-003 is production-ready and frozen. Do not reopen transition research, donor work, Fusion transition simulation, or blur tuning.
+
+## Step 9 — OSS-004 Core Motion / VFX — ACTIVE
+
+- Baseline: accepted OSS-003 derivative UID `75c9bc1b-ef1b-4463-9d7f-0ccb4b41e2b1`.
+- Use existing canonical evidence only. Mandatory representative targets are `211`, `461`, and `629`; add at most two strong shot-level scale/compound-motion examples.
+- Normalize source-backed position/scale/blur channels separately from Resolve graph details. Apply through minimal clip-local Fusion graphs and keyframe only inside live local comp ranges.
+- Preserve cuts, A1, V2/V3 captions, three native Blur Dissolves, media timing, and timeline duration. Speed/retiming remains deferred to OSS-005.
+- Five review targets: shot 1 pull-out; boundary 211 incoming slide; shot 4 push-in/right-down reframe; boundary 461 paired whip; boundary 629 incoming slide. The paired whip owns two clip-local comps, so six owned comps are expected.
+- Published derivative command `20261011T144031710Z_fb34ba5ed4974dadaaf2dd39c296aa62` for `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS004_MOTION_VFX_V1`; stop for human batch review.
 
 Then proceed to OSS-004 motion/VFX and OSS-005 speed ramps.
 

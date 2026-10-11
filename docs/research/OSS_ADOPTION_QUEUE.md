@@ -3,7 +3,7 @@
 - UPDATED: 2026-10-11
 - MODE: SPEEDRUN / PROVEN-CODE-FIRST
 - RULE: `REUSE > ADAPT > COMBINE > BUILD`
-- ACTIVE: `OSS-003` (FINAL NATIVE ROLLOUT / HUMAN REVIEW)
+- ACTIVE: `OSS-004` (CORE MOTION/VFX REPRESENTATIVE BATCH)
 
 ## Production Override — 2026-10-10
 
@@ -102,7 +102,7 @@ Decision at this layer: raw expected-token equality is invalid. Preserve the fai
 - Run `20261011T091036387Z_d111541339de4973b185c41e30bebedb` completed the six-caption delta. Human review accepts the combined V2/V3 result for MVP; no more caption work is on the current path.
 - Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_benchmark.json` and `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_recovery.json`.
 
-### OSS-003 — Transitions — FINAL NATIVE ROLLOUT READY
+### OSS-003 — Transitions — MVP ACCEPTED / PRODUCTION-READY / FROZEN
 
 Authority: six existing Reel #3 candidates. The automated native Blur Dissolve proof at frame `80` passed live readback and human playback review.
 
@@ -112,11 +112,15 @@ Decision: reuse pinned Resolve MCP `placeTransition` (MIT) plus the Resolve-auth
 
 Slides `211` / `629` and whip `461` are motion/VFX deferred to OSS-004. Experimental Fusion effects are non-blocking cleanup debt.
 
-Pending final rollout: `20261011T134449524Z_99e08d1948d849c0ab9c1f4e0344c41f`.
+Final derivative `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1` contains exactly three human-accepted native Blur Dissolves at `80`, `286`, and `376`. No further OSS-003 work is authorized.
 
 ### OSS-004 — Core motion / VFX
 
-Use proven mechanisms from HyperFrames / Resolve primitives and established CV components only where source evidence requires them.
+**ACTIVE.** Build on the accepted OSS-003 derivative. Mandatory representative targets are slide-like clip motion at `211`, paired whip motion at `461`, and slide-like clip motion at `629`, plus at most two source-backed shot-level transform examples.
+
+Reuse HyperFrames independent seekable channel concepts, existing OpenCV-derived motion evidence, and pinned Resolve MCP Fusion graph/application/readback. Use minimum `MediaIn -> Transform -> [Blur] -> MediaOut` graphs. Do not mutate retiming.
+
+Representative batch: shot 1 pull-out, incoming slides at `211` / `629`, shot 4 push-in plus right/down reframe, and paired whip at `461`. Three speed-ramp flags are deferred to OSS-005. Pending run: `20261011T144031710Z_fb34ba5ed4974dadaaf2dd39c296aa62`.
 
 Potential CV primitives already researched:
 - OpenCV;
@@ -158,8 +162,8 @@ Candidates:
 ## Visual Critical Path
 
 `OSS-002 captions` (MVP ACCEPTED / FROZEN)
--> `OSS-003 transitions` (final native three-cut rollout pending human review)
--> `OSS-004 motion/VFX`
+-> `OSS-003 transitions` (MVP ACCEPTED / FROZEN)
+-> `OSS-004 motion/VFX` (ACTIVE)
 -> `OSS-005 speed ramps`
 -> integrated visual review.
 

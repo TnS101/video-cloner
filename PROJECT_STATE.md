@@ -2,7 +2,7 @@
 
 - LAST UPDATED: 2026-10-11
 - ACTIVE STAGE: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
-- ACTIVE UNIT: `OSS-003_FINAL_TRANSITION_ROLLOUT`
+- ACTIVE UNIT: `OSS-004_CORE_MOTION_VFX`
 - STATUS: `LIVE_COMMAND_PENDING_HUMAN_REVIEW`
 
 ## Human Directives
@@ -93,14 +93,22 @@ Do not spend another loop improving the rejected heuristic detector.
 - OSS-002 is **MVP ACCEPTED / PRODUCTION-READY / FROZEN**. Lifecycle/persistence, detector tuning, association tuning, OCR research, and caption-motion polishing are deferred.
 - Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_benchmark.json` and `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_recovery.json`.
 
-## Current Result — OSS-003 Final Native Transition Rollout
+## Accepted Transition State — OSS-003 Frozen
 
 - Existing canonical evidence contains six stylized candidates. Three blur transitions at frames `80`, `286`, and `376` are executable 11-frame source-backed handoffs.
 - Whip `461` and slide candidates `211` / `629` are clip motion/VFX deferred to OSS-004; no new transition-family research is authorized here.
 - **Warning:** the clip-level Fusion representation is rejected for OSS-003. Post-run DRT `5568d13189143e82b8f48cc3cc288ae3b7d9b1ce97a9ecbe044732ccce6ce59e` contains zero `Sm2TiTransition` elements; the sparkle icons are clip effects, not transition items. Do not repair or tune that route again.
 - Live run `20261011T130946582Z_0d071b6f8542403d8a51b0ac8d669580` plus human review proves pinned Resolve MCP DRT insertion with a Resolve-authored native `Blur Dissolve` donor on Resolve `21.0.4.5`.
-- The final derivative `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1` will contain exactly three native 11-frame Blur Dissolves at `80`, `286`, and `376`; production remains untouched. Experimental `VC_OSS003_` Fusion effects are non-blocking cleanup debt and are not transition authority.
-- Final rollout run `20261011T134449524Z_99e08d1948d849c0ab9c1f4e0344c41f` is pending human execution/review. Do not mark OSS-003 frozen until the final derivative passes that review.
+- Final derivative `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1`, UID `75c9bc1b-ef1b-4463-9d7f-0ccb4b41e2b1`, contains exactly three native 11-frame Blur Dissolves at `75..85`, `281..291`, and `371..381`; production remains untouched.
+- Human review and independent post-run DRT inspection accepted all three. OSS-003 is **MVP ACCEPTED / PRODUCTION-READY / FROZEN**. Experimental `VC_OSS003_` Fusion effects remain non-blocking historical debt and are not transition authority.
+
+## Active Result — OSS-004 Core Motion / VFX
+
+- Build on the accepted OSS-003 derivative, never the older production timeline.
+- Mandatory representative targets: slide-like clip motion at `211`, whip-like paired clip motion at `461`, and slide-like clip motion at `629`.
+- Reuse existing canonical motion/transition evidence, HyperFrames-style independent seekable channels, and pinned Resolve MCP Fusion application/readback. No broad analysis, new detector, transition work, or retiming mutation.
+- Source inventory: eight shot-level motion events plus three boundary motion/VFX events. Speed-ramp flags on shots `1`, `2`, and `4` are deferred to OSS-005.
+- Representative command `20261011T144031710Z_fb34ba5ed4974dadaaf2dd39c296aa62` is pending for derivative `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS004_MOTION_VFX_V1`.
 
 ### OSS-002 done when
 
@@ -121,8 +129,8 @@ Do not spend another loop improving the rejected heuristic detector.
 ## Critical Path
 
 `OSS-002 captions` (MVP ACCEPTED / PRODUCTION-READY / FROZEN)
--> `OSS-003 transitions` (final native three-cut rollout pending human review)
--> `OSS-004 core motion/VFX`
+-> `OSS-003 transitions` (MVP ACCEPTED / PRODUCTION-READY / FROZEN)
+-> `OSS-004 core motion/VFX` (ACTIVE)
 -> `OSS-005 speed ramps`
 -> integrated Reel #3 review
 -> generalization test.

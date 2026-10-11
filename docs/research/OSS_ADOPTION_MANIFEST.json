@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-10-11",
   "policy": "REUSE > ADAPT > COMBINE > BUILD",
-  "active_unit": "OSS-003",
+  "active_unit": "OSS-004",
   "production_override": {
     "status": "HUMAN_VISUAL_REVIEW_REJECTED_CUSTOM_DETECTOR",
     "decision": "FREEZE_CUSTOM_CAPTION_ANIMATION_DETECTOR",
@@ -171,7 +171,24 @@
     "pending_command": ".agent/commands/pending/OSS003_FINAL_TRANSITION_ROLLOUT_V1_20261011T134449524Z_99e08d1948d849c0ab9c1f4e0344c41f.json",
     "final_derivative": "VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1",
     "fusion_cleanup_debt": "DEFERRED_NONBLOCKING",
-    "status": "FINAL_NATIVE_ROLLOUT_READY_HUMAN_REVIEW"
+    "accepted_final_timeline": "VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1",
+    "accepted_final_uid": "75c9bc1b-ef1b-4463-9d7f-0ccb4b41e2b1",
+    "native_transition_geometry": [[75, 11, 80], [281, 11, 286], [371, 11, 376]],
+    "status": "MVP_ACCEPTED_PRODUCTION_READY_FROZEN"
+  },
+  "motion_vfx_batch": {
+    "status": "REPRESENTATIVE_BATCH_READY_HUMAN_REVIEW",
+    "baseline_timeline": "VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1",
+    "baseline_uid": "75c9bc1b-ef1b-4463-9d7f-0ccb4b41e2b1",
+    "derivative_timeline": "VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS004_MOTION_VFX_V1",
+    "source_inventory": {"shot_motion_events": 8, "boundary_motion_vfx_events": 3, "total_evidence_events": 11},
+    "representative_targets": ["shot_001_pull_out", "boundary_211_slide_in", "shot_004_push_in_pan", "boundary_461_whip_pair", "boundary_629_slide_in"],
+    "owned_comp_count": 6,
+    "deferred_to_oss005": ["shot_001_speed", "shot_002_speed", "shot_004_speed"],
+    "run_id": "20261011T144031710Z_fb34ba5ed4974dadaaf2dd39c296aa62",
+    "pending_command": ".agent/commands/pending/OSS004_MOTION_VFX_REPRESENTATIVE_BATCH_V1_20261011T144031710Z_fb34ba5ed4974dadaaf2dd39c296aa62.json",
+    "mechanism": "existing canonical evidence -> HyperFrames-style independent channels -> Resolve clip-local Fusion",
+    "retiming_mutation": false
   },
   "sequential_units": [
     {
@@ -199,7 +216,7 @@
     {
       "id": "OSS-003",
       "name": "Transitions",
-      "status": "FINAL_NATIVE_ROLLOUT_READY_HUMAN_REVIEW",
+      "status": "MVP_ACCEPTED_PRODUCTION_READY_FROZEN",
       "mechanism": "pinned Resolve MCP DRT insertion + Resolve-authored Blur Dissolve donor -> imported final derivative",
       "representative_boundaries": [80, 286, 376],
       "deferred_to_oss004": [211, 461, 629],
@@ -208,7 +225,10 @@
     {
       "id": "OSS-004",
       "name": "Core motion/VFX",
-      "status": "QUEUED"
+      "status": "ACTIVE_REPRESENTATIVE_BATCH",
+      "baseline_timeline": "VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1",
+      "mandatory_targets": [211, 461, 629],
+      "mechanism": "existing source evidence -> HyperFrames-style independent channels -> Resolve clip-local Fusion"
     },
     {
       "id": "OSS-005",
