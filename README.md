@@ -18,6 +18,14 @@ Current work:
 
 The future Auto Editing project is a separate application layer that can consume Video Cloner's analysis/recipes and combine them with rough-cut/caption/editing systems.
 
+## Project continuity
+
+`PROJECT_TRACKER.xlsx` is the single project-management artifact kept in the repository. It stores the high-level roadmap, OSS/mechanism choices, progress and important project memory.
+
+It is human-owned context, **not an autonomous agent task queue**. After each completed step, the user decides the next step and supplies the detailed request.
+
+See `AGENTS.md` for the product-only execution rules.
+
 ## Installation
 
 ```powershell
@@ -41,6 +49,4 @@ Use `video-cloner run-offline` when Resolve publication is not wanted.
 
 ## Development rule
 
-See `AGENTS.md`.
-
-The default is direct product implementation. Do not create architecture/process/validation/test infrastructure unless the user explicitly requests it or the feature literally cannot work without it.
+Direct product implementation only. Do not create architecture/process/validation/test infrastructure unless the user explicitly requests it or the requested feature literally cannot work without it.
