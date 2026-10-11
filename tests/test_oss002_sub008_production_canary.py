@@ -13,10 +13,12 @@ from resolve_workspace.modules import oss002_sub008_production_canary as canary
 from resolve_workspace.modules import oss002_16_caption_batch_rollout as batch
 from resolve_workspace.modules import oss002_oss_animation_representative_batch as oss_adapter
 from resolve_workspace.modules import oss002_full_caption_motion_rollout as full_rollout
+from resolve_workspace.modules import oss002c_recovered_caption_batch as recovered_batch
 from scripts.davinci import prepare_oss002_sub008_production_canary as prepare
 from scripts.davinci import prepare_oss002_16_caption_batch_rollout as prepare_batch
 from scripts.davinci import prepare_oss002_oss_animation_representative_batch as prepare_oss_batch
 from scripts.davinci import prepare_oss002_full_caption_motion_rollout as prepare_full_rollout
+from scripts.davinci import prepare_oss002c_recovered_caption_batch as prepare_recovered_batch
 from scripts.analysis import build_oss002_full_caption_motion_rollout as full_builder
 from video_cloner.animation_recipe import validate_recipe
 from video_cloner.caption_motion_oss import ROUTE_TEMPLATE, _template_transforms
@@ -643,3 +645,53 @@ def test_full_rollout_publisher_is_single_bounded_command(tmp_path):
     assert payload["task"] == full_rollout.TASK_ID
     assert payload["payload"]["expected_existing_nested_count"] == 20
     assert payload["payload"]["save_after_verification"] is True
+
+
+def _recovered_command():
+    recovery, recipes, fcpxml = (ROOT / prepare_recovered_batch.RECOVERY, ROOT / prepare_recovered_batch.RECIPES, ROOT / prepare_recovered_batch.FCPXML)
+    return {"task": recovered_batch.TASK_ID, "mode": recovered_batch.MODE, "run_id": "recovered_abcdef123456", "payload": {
+        "repository_root": str(ROOT), "expected_project": recovered_batch.rep.EXPECTED_PROJECT,
+        "target_timeline": recovered_batch.rep.EXPECTED_TIMELINE, "target_timeline_uid": recovered_batch.rep.EXPECTED_TIMELINE_UID,
+        "expected_caption_count": 112, "expected_video_track_count": 3, "expected_existing_nested_count": 56,
+        "target_ordinals": list(recovered_batch.TARGET_ORDINALS),
+        "recovery_path": prepare_recovered_batch.RECOVERY, "recovery_sha256": sha(recovery),
+        "recipe_path": prepare_recovered_batch.RECIPES, "recipe_sha256": sha(recipes),
+        "fcpxml_path": prepare_recovered_batch.FCPXML, "fcpxml_sha256": sha(fcpxml), "save_after_verification": True,
+    }}
+
+
+def test_recovered_batch_preserves_56_and_saves_once():
+    project = _full_project()
+    full_result = full_rollout.run(Resolve(project), {"run_id": "fullrun_abcdef123456", "command": _full_command()})
+    assert full_result["ok"] is True
+    before = set(recovered_batch.rep._stable_nested(project.target, project.target.base))
+    saves_before = [event[0] for event in project.events].count("save")
+    result = recovered_batch.run(Resolve(project), {"run_id": "recovered_abcdef123456", "command": _recovered_command()})
+    assert result["ok"] is True, result
+    after = set(recovered_batch.rep._stable_nested(project.target, project.target.base))
+    assert before.issubset(after) and len(after) == 63
+    assert all(project.target.tracks[2][ordinal - 1].enabled is False for ordinal in recovered_batch.TARGET_ORDINALS)
+    assert [event[0] for event in project.events].count("save") == saves_before + 1
+
+
+def test_recovered_batch_rollback_restores_56():
+    project = _full_project()
+    assert full_rollout.run(Resolve(project), {"run_id": "fullrun_abcdef123456", "command": _full_command()})["ok"] is True
+    before = recovered_batch.rep._stable_nested(project.target, project.target.base)
+    project.pool.append_fail_at = project.pool.append_count + 3
+    result = recovered_batch.run(Resolve(project), {"run_id": "recovered_abcdef123456", "command": _recovered_command()})
+    assert result["ok"] is False and result["rollback"]["ok"] is True
+    assert recovered_batch.rep._stable_nested(project.target, project.target.base) == before
+
+
+def test_recovered_batch_publisher_is_single_bounded_command(tmp_path):
+    (tmp_path / "AGENTS.md").write_text("test", encoding="utf-8")
+    for relative in (prepare_recovered_batch.FCPXML, prepare_recovered_batch.RECIPES, prepare_recovered_batch.RECOVERY):
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / relative, destination)
+    receipt = prepare_recovered_batch.publish(tmp_path)
+    payload = json.loads((tmp_path / receipt["command_path"]).read_text(encoding="utf-8"))
+    assert payload["task"] == recovered_batch.TASK_ID
+    assert payload["payload"]["target_ordinals"] == list(recovered_batch.TARGET_ORDINALS)
+    assert payload["payload"]["expected_existing_nested_count"] == 56

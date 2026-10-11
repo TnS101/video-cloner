@@ -81,7 +81,7 @@ def build(provider: str, video: Path, manifest_path: Path, style_path: Path, ord
     for caption in captions:
         prior = _prior(events, caption, fps)
         evidence = {
-            str(frame): rank_candidates(str(caption["text"]), detections.get(frame) or [], size, prior)[:3]
+            str(frame): rank_candidates(str(caption["text"]), detections.get(frame) or [], size, prior)
             for frame in anchor_frames(caption)
         }
         try:

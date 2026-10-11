@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-10",
+  "generated_at": "2026-10-11",
   "policy": "REUSE > ADAPT > COMBINE > BUILD",
-  "active_unit": "OSS-002B",
+  "active_unit": "OSS-002C",
   "production_override": {
     "status": "HUMAN_VISUAL_REVIEW_REJECTED_CUSTOM_DETECTOR",
     "decision": "FREEZE_CUSTOM_CAPTION_ANIMATION_DETECTOR",
@@ -106,6 +106,26 @@
       "fallback_integrated": false,
       "resolve_batch_published": false
     },
+    "cross_authority_association": {
+      "benchmark": "data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_benchmark.json",
+      "recovery": "data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_recovery.json",
+      "winner": "paddleocr",
+      "paddleocr_correct": 11,
+      "easyocr_correct": 11,
+      "accepted_false_associations": 0,
+      "ambiguous_in_gate": 1,
+      "full_32_recovered": 26,
+      "full_32_ambiguous": 5,
+      "full_32_rejected_false": 1,
+      "new_meaningful_motion": 13,
+      "recovered_static": 13,
+      "lifecycle_compositions": 18,
+      "existing_56_recipes_modified": false,
+      "representative_targets": [5, 37, 54, 75, 80, 101, 107],
+      "representative_run_id": "20261011T075523823Z_9505c20c898e475abcd84880e4420ffb",
+      "pending_command": ".agent/commands/pending/OSS002C_RECOVERED_CAPTION_BATCH_V1_20261011T075523823Z_9505c20c898e475abcd84880e4420ffb.json",
+      "status": "PASS_BATCH_PENDING_HUMAN_REVIEW"
+    },
     "done_when": [
       "materially higher animation coverage than frozen 16-caption plan",
       "compound translation+scale representation where source requires it",
@@ -128,14 +148,14 @@
     {
       "id": "OSS-002B",
       "name": "Caption localization coverage recovery",
-      "status": "STOPPED_NO_OSS_WINNER",
-      "constraint": "Human decision required before building the missing cross-authority association mechanism."
+      "status": "CLOSED_RAW_EXACT_TOKEN_ROUTE",
+      "constraint": "Preserve as historical fail-closed evidence; association is owned by OSS-002C."
     },
     {
       "id": "OSS-002C",
-      "name": "Caption lifecycle/persistence",
-      "status": "QUEUED_AFTER_ASSOCIATION_DECISION",
-      "constraint": "Maximum two serious OSS routes; integrate quickly or record word-by-word limitation."
+      "name": "Cross-authority caption association and lifecycle evidence",
+      "status": "PASS_BATCH_PENDING_HUMAN_REVIEW",
+      "constraint": "Do not execute lifecycle persistence until the seven-caption association batch is visually accepted."
     },
     {
       "id": "OSS-003",

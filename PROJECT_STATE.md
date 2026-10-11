@@ -1,9 +1,9 @@
 # PROJECT_STATE.md — Video Cloner Volatile Truth
 
-- LAST UPDATED: 2026-10-10
+- LAST UPDATED: 2026-10-11
 - ACTIVE STAGE: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
-- ACTIVE UNIT: `OSS-002B_LOCALIZATION_COVERAGE_RECOVERY`
-- STATUS: `BOUNDED_BENCHMARK_STOPPED / NO_OSS_WINNER`
+- ACTIVE UNIT: `OSS-002C_CROSS_AUTHORITY_CAPTION_ASSOCIATION`
+- STATUS: `BENCHMARK_PASS / REPRESENTATIVE_BATCH_PENDING_HUMAN_REVIEW`
 
 ## Human Directives
 
@@ -81,19 +81,20 @@ Do not spend another loop improving the rejected heuristic detector.
 - Live run `20261010T105509634Z_5d7d0cc58b344d24a62f0fee7795f9e0` persisted 56 authoritative nested replacements on V3, 56 original/static captions, no rejected Step 3C replacement, and passed `SaveProject` verification.
 - Human review accepted the detected motion as substantially closer to the reference; localization coverage remains the dominant gap.
 
-## Current Result — OSS-002B Localization Coverage Recovery
+## Current Result — OSS-002C Cross-Authority Association
 
-- PaddleOCR `3.3.2` and EasyOCR `1.7.2` were source-audited under Apache-2.0 and benchmarked on the same 12 real Reel #3 failures / 36 anchor frames.
-- They found candidate text on 35/36 and 33/36 anchors respectively, but each selected the expected V2 caption text correctly on `0/12` cases and therefore recovered `0/12` tracker seeds.
-- The failure is an authority-association mismatch: visible baked text at those frames differs from the expected V2 caption token. Examples include `with -> to share/Everything`, `scene -> biggest/THESE`, and `you -> it's`.
-- Both routes failed closed with zero accepted false localizations. No fallback was integrated, no 32-caption pass was run, and no Resolve command was published.
-- Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002b_text_localization_benchmark.json`.
+- One bounded BUILD now associates nearby V2 tokens with OCR phrase/region evidence using text, timing, spatial continuity, style geometry, and temporal persistence; it does not change OCR or motion extraction.
+- Same 12-case gate: PaddleOCR and EasyOCR each produced `11/12` correct associations, `0` accepted false associations, `1` fail-closed ambiguity, and `11` successful seeds into the accepted OpenCV template tracker.
+- PaddleOCR is selected because the tie produced slightly higher downstream tracker confidence and lower recorded runtime.
+- Full 32-failure pass: `26` accepted recoveries, `5` ambiguities, `1` visually rejected non-caption logo, `13` new meaningful-motion captions, `13` recovered-static captions, and `18` conservative lifecycle composition proposals.
+- The accepted 56-recipe authority is unchanged by exact SHA-256. Run `20261011T075523823Z_9505c20c898e475abcd84880e4420ffb` is pending, not executed, for ordinals `5, 37, 54, 75, 80, 101, 107`.
+- Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_benchmark.json` and `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_recovery.json`.
 
-## Queued Gap — OSS-002C Caption Lifecycle / Persistence
+## Human Review Gate — OSS-002C Representative Batch
 
-- Status: `QUEUED`; not started.
-- Source captions often retain earlier words and build multi-word/stacked compositions while the current generated authority remains word-by-word.
-- The next human decision is whether the now-proven missing association mechanism justifies a tiny BUILD task; do not silently continue OCR or start lifecycle/persistence.
+- Status: `PENDING LIVE EXECUTION / HUMAN REVIEW`.
+- Execute only the prepared seven-caption batch. Confirm the associated objects and recovered motion visually before applying any lifecycle/persistence proposal in Resolve.
+- Lifecycle evidence is data-only in this stage; caption durations/grouping and the production timeline remain unchanged until review.
 
 ### OSS-002 done when
 
@@ -114,9 +115,9 @@ Do not spend another loop improving the rejected heuristic detector.
 ## Critical Path
 
 `OSS-002 full accepted-motion rollout` (PASS / persisted)
--> `OSS-002B` text-localization fallback benchmark (STOPPED / no winner)
--> human decision on the missing association mechanism
--> `OSS-002C` bounded lifecycle/persistence spike
+-> `OSS-002B` raw exact-token benchmark (historical fail-closed evidence)
+-> `OSS-002C` cross-authority association (PASS / batch pending)
+-> minimal lifecycle/persistence application after human review
 -> `OSS-003 transitions`
 -> `OSS-004 core motion/VFX`
 -> `OSS-005 speed ramps`

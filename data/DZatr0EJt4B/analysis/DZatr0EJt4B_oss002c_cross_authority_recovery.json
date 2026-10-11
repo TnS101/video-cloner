@@ -1,0 +1,1750 @@
+{
+  "captions": [
+    {
+      "association_confidence": 0.9075,
+      "detected_phrase": "pgcreatives Since was",
+      "ordinal": 2,
+      "position_delta": 0.008854,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.003646,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.5807
+    },
+    {
+      "association_confidence": 0.9441,
+      "detected_phrase": "Since was",
+      "ordinal": 4,
+      "position_delta": 0.002083,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.6411
+    },
+    {
+      "association_confidence": 0.8805,
+      "detected_phrase": "Iwas",
+      "ordinal": 5,
+      "position_delta": 0.019792,
+      "scale_delta": 0.0,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.014063,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.4753
+    },
+    {
+      "association_confidence": 0.7302,
+      "detected_phrase": "to share Everything",
+      "ordinal": 30,
+      "position_delta": 0.008333,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.008333,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.6533
+    },
+    {
+      "association_confidence": 0.7792,
+      "detected_phrase": "working Most Beverly",
+      "ordinal": 35,
+      "position_delta": 0.0,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.6097
+    },
+    {
+      "association_confidence": 0.8178,
+      "detected_phrase": "working Most Bevery",
+      "ordinal": 37,
+      "position_delta": 0.07763,
+      "scale_delta": 0.075,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.045938,
+      "tail_scale_noise": 0.025,
+      "tracker_confidence": 0.4098
+    },
+    {
+      "ordinal": 38,
+      "reason": "ValueError: association_confidence:38:0.5745",
+      "status": "ambiguous"
+    },
+    {
+      "ordinal": 39,
+      "reason": "ValueError: association_confidence:39:0.4844",
+      "status": "ambiguous"
+    },
+    {
+      "association_confidence": 0.7406,
+      "detected_phrase": "biggest",
+      "ordinal": 44,
+      "position_delta": 0.0,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.5344
+    },
+    {
+      "detected_phrase": "pgcreatives",
+      "ordinal": 49,
+      "reason": "visual review identified a persistent non-caption logo",
+      "status": "rejected_false_association"
+    },
+    {
+      "association_confidence": 0.7369,
+      "detected_phrase": "pgcreatives we're Buildieam",
+      "ordinal": 53,
+      "position_delta": 0.019792,
+      "scale_delta": 0.0,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.019792,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.584
+    },
+    {
+      "association_confidence": 0.7978,
+      "detected_phrase": "Satisfied",
+      "ordinal": 54,
+      "position_delta": 0.025,
+      "scale_delta": 0.0,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.010417,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.5144
+    },
+    {
+      "association_confidence": 0.7557,
+      "detected_phrase": "and push our",
+      "ordinal": 75,
+      "position_delta": 0.023187,
+      "scale_delta": 0.0,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.015998,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.4676
+    },
+    {
+      "association_confidence": 0.7191,
+      "detected_phrase": "even",
+      "ordinal": 78,
+      "position_delta": 0.011093,
+      "scale_delta": 0.0,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.011093,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.7953
+    },
+    {
+      "association_confidence": 0.7005,
+      "detected_phrase": "further. a",
+      "ordinal": 79,
+      "position_delta": 0.010557,
+      "scale_delta": 0.0,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.010557,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.6371
+    },
+    {
+      "association_confidence": 0.7574,
+      "detected_phrase": "further.",
+      "ordinal": 80,
+      "position_delta": 0.012138,
+      "scale_delta": 0.025,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.010224,
+      "tail_scale_noise": 0.025,
+      "tracker_confidence": 0.4836
+    },
+    {
+      "association_confidence": 0.7709,
+      "detected_phrase": "the",
+      "ordinal": 83,
+      "position_delta": 0.000926,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.000926,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.6932
+    },
+    {
+      "ordinal": 85,
+      "reason": "ValueError: association_confidence:85:0.5754",
+      "status": "ambiguous"
+    },
+    {
+      "association_confidence": 0.751,
+      "detected_phrase": "Ch",
+      "ordinal": 87,
+      "position_delta": 0.032806,
+      "scale_delta": 0.025,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.013005,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.5253
+    },
+    {
+      "association_confidence": 0.7391,
+      "detected_phrase": "Ch",
+      "ordinal": 88,
+      "position_delta": 0.010867,
+      "scale_delta": 0.025,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.00539,
+      "tail_scale_noise": 0.025,
+      "tracker_confidence": 0.5385
+    },
+    {
+      "ordinal": 89,
+      "reason": "ValueError: association_confidence:89:0.4907",
+      "status": "ambiguous"
+    },
+    {
+      "association_confidence": 0.761,
+      "detected_phrase": "isn't where industry the",
+      "ordinal": 97,
+      "position_delta": 0.0,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.7938
+    },
+    {
+      "association_confidence": 0.7196,
+      "detected_phrase": "it's",
+      "ordinal": 100,
+      "position_delta": 0.0,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 1.0
+    },
+    {
+      "association_confidence": 0.7722,
+      "detected_phrase": "where",
+      "ordinal": 101,
+      "position_delta": 0.017379,
+      "scale_delta": 0.15,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.016339,
+      "tail_scale_noise": 0.15,
+      "tracker_confidence": 0.4307
+    },
+    {
+      "association_confidence": 0.788,
+      "detected_phrase": "where",
+      "ordinal": 102,
+      "position_delta": 0.007222,
+      "scale_delta": 0.025,
+      "status": "recovered_static",
+      "tail_position_noise": 0.007222,
+      "tail_scale_noise": 0.025,
+      "tracker_confidence": 0.4857
+    },
+    {
+      "association_confidence": 0.7885,
+      "detected_phrase": "it's",
+      "ordinal": 103,
+      "position_delta": 0.0,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.9982
+    },
+    {
+      "association_confidence": 0.7558,
+      "detected_phrase": "going.",
+      "ordinal": 105,
+      "position_delta": 0.0,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.9658
+    },
+    {
+      "association_confidence": 0.7784,
+      "detected_phrase": "going.",
+      "ordinal": 107,
+      "position_delta": 0.141667,
+      "scale_delta": 0.0,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.6909
+    },
+    {
+      "association_confidence": 0.7587,
+      "detected_phrase": "committed",
+      "ordinal": 108,
+      "position_delta": 0.105556,
+      "scale_delta": 0.0,
+      "status": "recovered_meaningful_motion",
+      "tail_position_noise": 0.105556,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.4429
+    },
+    {
+      "association_confidence": 0.7342,
+      "detected_phrase": "becoming",
+      "ordinal": 109,
+      "position_delta": 0.0,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.9338
+    },
+    {
+      "association_confidence": 0.7281,
+      "detected_phrase": "becoming",
+      "ordinal": 110,
+      "position_delta": 0.0,
+      "scale_delta": 0.0,
+      "status": "recovered_static",
+      "tail_position_noise": 0.0,
+      "tail_scale_noise": 0.0,
+      "tracker_confidence": 0.9217
+    },
+    {
+      "ordinal": 112,
+      "reason": "ValueError: association_confidence:112:0.5389",
+      "status": "ambiguous"
+    }
+  ],
+  "counts": {
+    "lifecycle_compositions": 18,
+    "new_meaningful_motion": 13,
+    "recovered": 26,
+    "recovered_static": 13,
+    "rejected_false_associations": 1,
+    "remaining_ambiguous": 5
+  },
+  "existing_56_recipe_authority": {
+    "modified": false,
+    "path": "data/DZatr0EJt4B/analysis/DZatr0EJt4B_caption_animation_recipes_oss002_full.json",
+    "sha256": "c53adec18fa07b5f65a218da65029f22f962c621bfd834f069f93f5dec69a3e5"
+  },
+  "lifecycle": [
+    {
+      "association_confidence": 0.9075,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_001",
+      "layout_regions": [
+        [
+          [
+            376.0,
+            765.0,
+            468.0,
+            804.0
+          ],
+          [
+            435.0,
+            846.0,
+            596.0,
+            910.0
+          ],
+          [
+            444.0,
+            916.0,
+            658.0,
+            991.0
+          ]
+        ],
+        [
+          [
+            376.0,
+            777.0,
+            467.0,
+            818.0
+          ],
+          [
+            436.0,
+            843.0,
+            597.0,
+            904.0
+          ],
+          [
+            444.0,
+            908.0,
+            658.0,
+            979.0
+          ]
+        ],
+        [
+          [
+            376.0,
+            790.0,
+            466.0,
+            831.0
+          ],
+          [
+            436.0,
+            838.0,
+            597.0,
+            899.0
+          ],
+          [
+            444.0,
+            901.0,
+            658.0,
+            972.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "token_visibility": {
+        "1": {
+          "appears": 5,
+          "disappears": 7,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 7
+        },
+        "2": {
+          "appears": 5,
+          "disappears": 7,
+          "joins_previous_composition": true,
+          "next_word_joins": true,
+          "remains_visible_until": 7
+        },
+        "3": {
+          "appears": 5,
+          "disappears": 7,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 7
+        }
+      },
+      "visible_end": 7,
+      "visible_start": 5
+    },
+    {
+      "association_confidence": 0.9441,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_002",
+      "layout_regions": [
+        [
+          [
+            436.0,
+            827.0,
+            597.0,
+            888.0
+          ],
+          [
+            444.0,
+            883.0,
+            659.0,
+            955.0
+          ]
+        ],
+        [
+          [
+            435.0,
+            822.0,
+            598.0,
+            885.0
+          ],
+          [
+            443.0,
+            877.0,
+            660.0,
+            949.0
+          ]
+        ],
+        [
+          [
+            434.0,
+            822.0,
+            597.0,
+            885.0
+          ],
+          [
+            441.0,
+            874.0,
+            660.0,
+            949.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "token_visibility": {
+        "1": {
+          "appears": 11,
+          "disappears": 20,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 20
+        },
+        "2": {
+          "appears": 11,
+          "disappears": 20,
+          "joins_previous_composition": true,
+          "next_word_joins": true,
+          "remains_visible_until": 20
+        },
+        "3": {
+          "appears": 11,
+          "disappears": 20,
+          "joins_previous_composition": true,
+          "next_word_joins": true,
+          "remains_visible_until": 20
+        },
+        "4": {
+          "appears": 11,
+          "disappears": 20,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 20
+        }
+      },
+      "visible_end": 20,
+      "visible_start": 11
+    },
+    {
+      "association_confidence": 0.8805,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_003",
+      "layout_regions": [
+        [
+          [
+            435.0,
+            820.0,
+            598.0,
+            883.0
+          ],
+          [
+            441.0,
+            873.0,
+            658.0,
+            947.0
+          ]
+        ],
+        [
+          [
+            401.0,
+            809.0,
+            602.0,
+            883.0
+          ],
+          [
+            439.0,
+            860.0,
+            659.0,
+            938.0
+          ]
+        ],
+        [
+          [
+            376.0,
+            773.0,
+            678.0,
+            930.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        2,
+        3,
+        5
+      ],
+      "token_visibility": {
+        "2": {
+          "appears": 27,
+          "disappears": 31,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 31
+        },
+        "3": {
+          "appears": 27,
+          "disappears": 31,
+          "joins_previous_composition": true,
+          "next_word_joins": true,
+          "remains_visible_until": 31
+        },
+        "5": {
+          "appears": 27,
+          "disappears": 31,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 31
+        }
+      },
+      "visible_end": 31,
+      "visible_start": 27
+    },
+    {
+      "association_confidence": 0.7302,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_004",
+      "layout_regions": [
+        [
+          [
+            269.0,
+            799.0,
+            540.0,
+            873.0
+          ],
+          [
+            157.0,
+            815.0,
+            808.0,
+            955.0
+          ]
+        ],
+        [
+          [
+            276.0,
+            794.0,
+            550.0,
+            876.0
+          ],
+          [
+            172.0,
+            816.0,
+            825.0,
+            951.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        30
+      ],
+      "token_visibility": {
+        "30": {
+          "appears": 154,
+          "disappears": 155,
+          "joins_previous_composition": false,
+          "next_word_joins": false,
+          "remains_visible_until": 155
+        }
+      },
+      "visible_end": 155,
+      "visible_start": 154
+    },
+    {
+      "association_confidence": 0.7985,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_005",
+      "layout_regions": [
+        [
+          [
+            403.0,
+            903.0,
+            675.0,
+            978.0
+          ],
+          [
+            633.0,
+            1002.0,
+            657.0,
+            1014.0
+          ],
+          [
+            271.0,
+            1034.0,
+            333.0,
+            1071.0
+          ]
+        ],
+        [
+          [
+            402.0,
+            898.0,
+            675.0,
+            977.0
+          ],
+          [
+            289.0,
+            1018.0,
+            370.0,
+            1058.0
+          ],
+          [
+            313.0,
+            1072.0,
+            471.0,
+            1134.0
+          ]
+        ],
+        [
+          [
+            402.0,
+            898.0,
+            675.0,
+            977.0
+          ],
+          [
+            341.0,
+            1015.0,
+            431.0,
+            1058.0
+          ],
+          [
+            380.0,
+            1066.0,
+            538.0,
+            1117.0
+          ]
+        ],
+        [
+          [
+            471.0,
+            902.0,
+            609.0,
+            969.0
+          ],
+          [
+            370.0,
+            1013.0,
+            464.0,
+            1057.0
+          ],
+          [
+            406.0,
+            1062.0,
+            578.0,
+            1116.0
+          ]
+        ],
+        [
+          [
+            477.0,
+            902.0,
+            597.0,
+            969.0
+          ],
+          [
+            416.0,
+            1014.0,
+            515.0,
+            1056.0
+          ],
+          [
+            457.0,
+            1058.0,
+            625.0,
+            1109.0
+          ],
+          [
+            514.0,
+            1125.0,
+            597.0,
+            1162.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        35,
+        36,
+        37
+      ],
+      "token_visibility": {
+        "35": {
+          "appears": 187,
+          "disappears": 199,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 199
+        },
+        "36": {
+          "appears": 194,
+          "disappears": 199,
+          "joins_previous_composition": true,
+          "next_word_joins": true,
+          "remains_visible_until": 199
+        },
+        "37": {
+          "appears": 194,
+          "disappears": 199,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 199
+        }
+      },
+      "visible_end": 199,
+      "visible_start": 187
+    },
+    {
+      "association_confidence": 0.7406,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_006",
+      "layout_regions": [
+        [
+          [
+            407.0,
+            904.0,
+            676.0,
+            975.0
+          ]
+        ],
+        [
+          [
+            407.0,
+            904.0,
+            674.0,
+            975.0
+          ],
+          [
+            252.0,
+            1041.0,
+            376.0,
+            1093.0
+          ]
+        ],
+        [
+          [
+            408.0,
+            904.0,
+            675.0,
+            975.0
+          ],
+          [
+            275.0,
+            1043.0,
+            404.0,
+            1090.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        44
+      ],
+      "token_visibility": {
+        "44": {
+          "appears": 243,
+          "disappears": 246,
+          "joins_previous_composition": false,
+          "next_word_joins": false,
+          "remains_visible_until": 246
+        }
+      },
+      "visible_end": 246,
+      "visible_start": 243
+    },
+    {
+      "association_confidence": 0.7369,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_007",
+      "layout_regions": [
+        [
+          [
+            540.0,
+            895.0,
+            601.0,
+            920.0
+          ],
+          [
+            439.0,
+            934.0,
+            597.0,
+            992.0
+          ],
+          [
+            311.0,
+            966.0,
+            750.0,
+            1121.0
+          ]
+        ],
+        [
+          [
+            537.0,
+            897.0,
+            598.0,
+            922.0
+          ],
+          [
+            437.0,
+            972.0,
+            602.0,
+            1038.0
+          ],
+          [
+            323.0,
+            1039.0,
+            747.0,
+            1163.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        53
+      ],
+      "token_visibility": {
+        "53": {
+          "appears": 306,
+          "disappears": 308,
+          "joins_previous_composition": false,
+          "next_word_joins": false,
+          "remains_visible_until": 308
+        }
+      },
+      "visible_end": 308,
+      "visible_start": 306
+    },
+    {
+      "association_confidence": 0.7978,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_008",
+      "layout_regions": [
+        [
+          [
+            259.0,
+            419.0,
+            789.0,
+            540.0
+          ]
+        ],
+        [
+          [
+            263.0,
+            456.0,
+            785.0,
+            570.0
+          ]
+        ],
+        [
+          [
+            265.0,
+            476.0,
+            784.0,
+            588.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        53,
+        54
+      ],
+      "token_visibility": {
+        "53": {
+          "appears": 312,
+          "disappears": 314,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 314
+        },
+        "54": {
+          "appears": 312,
+          "disappears": 314,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 314
+        }
+      },
+      "visible_end": 314,
+      "visible_start": 312
+    },
+    {
+      "association_confidence": 0.7557,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_009",
+      "layout_regions": [
+        [
+          [
+            227.0,
+            449.0,
+            562.0,
+            514.0
+          ],
+          [
+            534.0,
+            600.0,
+            684.0,
+            668.0
+          ],
+          [
+            428.0,
+            616.0,
+            531.0,
+            727.0
+          ],
+          [
+            209.0,
+            613.0,
+            377.0,
+            735.0
+          ],
+          [
+            568.0,
+            646.0,
+            679.0,
+            728.0
+          ]
+        ],
+        [
+          [
+            231.0,
+            454.0,
+            569.0,
+            530.0
+          ],
+          [
+            561.0,
+            602.0,
+            691.0,
+            684.0
+          ],
+          [
+            212.0,
+            598.0,
+            434.0,
+            726.0
+          ]
+        ],
+        [
+          [
+            246.0,
+            474.0,
+            584.0,
+            547.0
+          ],
+          [
+            557.0,
+            575.0,
+            716.0,
+            728.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        75
+      ],
+      "token_visibility": {
+        "75": {
+          "appears": 436,
+          "disappears": 439,
+          "joins_previous_composition": false,
+          "next_word_joins": false,
+          "remains_visible_until": 439
+        }
+      },
+      "visible_end": 439,
+      "visible_start": 436
+    },
+    {
+      "association_confidence": 0.7191,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_010",
+      "layout_regions": [
+        [
+          [
+            505.0,
+            1039.0,
+            685.0,
+            1099.0
+          ]
+        ],
+        [
+          [
+            508.0,
+            1017.0,
+            687.0,
+            1078.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        78
+      ],
+      "token_visibility": {
+        "78": {
+          "appears": 453,
+          "disappears": 455,
+          "joins_previous_composition": false,
+          "next_word_joins": false,
+          "remains_visible_until": 455
+        }
+      },
+      "visible_end": 455,
+      "visible_start": 453
+    },
+    {
+      "association_confidence": 0.7289,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_011",
+      "layout_regions": [
+        [
+          [
+            337.0,
+            960.0,
+            789.0,
+            1279.0
+          ]
+        ],
+        [
+          [
+            391.0,
+            945.0,
+            697.0,
+            1033.0
+          ],
+          [
+            443.0,
+            1075.0,
+            622.0,
+            1212.0
+          ]
+        ],
+        [
+          [
+            419.0,
+            910.0,
+            677.0,
+            977.0
+          ]
+        ],
+        [
+          [
+            410.0,
+            907.0,
+            658.0,
+            975.0
+          ]
+        ],
+        [
+          [
+            414.0,
+            911.0,
+            681.0,
+            983.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        79,
+        80
+      ],
+      "token_visibility": {
+        "79": {
+          "appears": 457,
+          "disappears": 458,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 458
+        },
+        "80": {
+          "appears": 462,
+          "disappears": 467,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 467
+        }
+      },
+      "visible_end": 467,
+      "visible_start": 457
+    },
+    {
+      "association_confidence": 0.7709,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_012",
+      "layout_regions": [
+        [
+          [
+            478.0,
+            862.0,
+            602.0,
+            931.0
+          ]
+        ],
+        [
+          [
+            478.0,
+            859.0,
+            605.0,
+            932.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        83,
+        84
+      ],
+      "token_visibility": {
+        "83": {
+          "appears": 479,
+          "disappears": 481,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 481
+        },
+        "84": {
+          "appears": 479,
+          "disappears": 481,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 481
+        }
+      },
+      "visible_end": 481,
+      "visible_start": 479
+    },
+    {
+      "association_confidence": 0.745,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_013",
+      "layout_regions": [
+        [
+          [
+            199.0,
+            729.0,
+            416.0,
+            864.0
+          ]
+        ],
+        [
+          [
+            222.0,
+            730.0,
+            437.0,
+            864.0
+          ]
+        ],
+        [
+          [
+            237.0,
+            730.0,
+            445.0,
+            860.0
+          ]
+        ],
+        [
+          [
+            247.0,
+            728.0,
+            452.0,
+            856.0
+          ]
+        ],
+        [
+          [
+            251.0,
+            718.0,
+            459.0,
+            854.0
+          ]
+        ],
+        [
+          [
+            251.0,
+            708.0,
+            456.0,
+            844.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        87,
+        88
+      ],
+      "token_visibility": {
+        "87": {
+          "appears": 498,
+          "disappears": 500,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 500
+        },
+        "88": {
+          "appears": 501,
+          "disappears": 503,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 503
+        }
+      },
+      "visible_end": 503,
+      "visible_start": 498
+    },
+    {
+      "association_confidence": 0.761,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_014",
+      "layout_regions": [
+        [
+          [
+            584.0,
+            452.0,
+            816.0,
+            521.0
+          ],
+          [
+            241.0,
+            482.0,
+            867.0,
+            656.0
+          ],
+          [
+            616.0,
+            616.0,
+            747.0,
+            693.0
+          ]
+        ],
+        [
+          [
+            344.0,
+            449.0,
+            486.0,
+            522.0
+          ],
+          [
+            586.0,
+            455.0,
+            816.0,
+            521.0
+          ],
+          [
+            270.0,
+            484.0,
+            867.0,
+            657.0
+          ],
+          [
+            617.0,
+            617.0,
+            747.0,
+            691.0
+          ]
+        ],
+        [
+          [
+            345.0,
+            451.0,
+            484.0,
+            520.0
+          ],
+          [
+            589.0,
+            459.0,
+            814.0,
+            519.0
+          ],
+          [
+            245.0,
+            493.0,
+            863.0,
+            647.0
+          ],
+          [
+            617.0,
+            617.0,
+            747.0,
+            692.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        97
+      ],
+      "token_visibility": {
+        "97": {
+          "appears": 533,
+          "disappears": 536,
+          "joins_previous_composition": false,
+          "next_word_joins": false,
+          "remains_visible_until": 536
+        }
+      },
+      "visible_end": 536,
+      "visible_start": 533
+    },
+    {
+      "association_confidence": 0.754,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_015",
+      "layout_regions": [
+        [
+          [
+            491.0,
+            901.0,
+            587.0,
+            970.0
+          ]
+        ],
+        [
+          [
+            490.0,
+            898.0,
+            587.0,
+            972.0
+          ]
+        ],
+        [
+          [
+            490.0,
+            899.0,
+            587.0,
+            972.0
+          ]
+        ],
+        [
+          [
+            490.0,
+            898.0,
+            587.0,
+            972.0
+          ]
+        ],
+        [
+          [
+            491.0,
+            900.0,
+            587.0,
+            970.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        100,
+        103
+      ],
+      "token_visibility": {
+        "100": {
+          "appears": 555,
+          "disappears": 557,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 557
+        },
+        "103": {
+          "appears": 564,
+          "disappears": 566,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 566
+        }
+      },
+      "visible_end": 566,
+      "visible_start": 555
+    },
+    {
+      "association_confidence": 0.7801,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_016",
+      "layout_regions": [
+        [
+          [
+            491.0,
+            900.0,
+            587.0,
+            970.0
+          ]
+        ],
+        [
+          [
+            490.0,
+            899.0,
+            587.0,
+            972.0
+          ]
+        ],
+        [
+          [
+            427.0,
+            905.0,
+            649.0,
+            968.0
+          ]
+        ],
+        [
+          [
+            428.0,
+            909.0,
+            648.0,
+            968.0
+          ]
+        ],
+        [
+          [
+            429.0,
+            909.0,
+            649.0,
+            968.0
+          ]
+        ],
+        [
+          [
+            491.0,
+            901.0,
+            587.0,
+            970.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        101,
+        102
+      ],
+      "token_visibility": {
+        "101": {
+          "appears": 558,
+          "disappears": 560,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 560
+        },
+        "102": {
+          "appears": 561,
+          "disappears": 563,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 563
+        }
+      },
+      "visible_end": 563,
+      "visible_start": 558
+    },
+    {
+      "association_confidence": 0.7671,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_017",
+      "layout_regions": [
+        [
+          [
+            424.0,
+            901.0,
+            646.0,
+            984.0
+          ]
+        ],
+        [
+          [
+            425.0,
+            902.0,
+            646.0,
+            984.0
+          ]
+        ],
+        [
+          [
+            425.0,
+            901.0,
+            645.0,
+            984.0
+          ]
+        ],
+        [
+          [
+            424.0,
+            896.0,
+            650.0,
+            987.0
+          ]
+        ],
+        [
+          [
+            439.0,
+            898.0,
+            640.0,
+            971.0
+          ]
+        ],
+        [
+          [
+            438.0,
+            898.0,
+            639.0,
+            972.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        105,
+        107
+      ],
+      "token_visibility": {
+        "105": {
+          "appears": 569,
+          "disappears": 571,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 571
+        },
+        "107": {
+          "appears": 576,
+          "disappears": 580,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 580
+        }
+      },
+      "visible_end": 580,
+      "visible_start": 569
+    },
+    {
+      "association_confidence": 0.7403,
+      "association_provenance": [
+        "paddleocr_fallback"
+      ],
+      "composition_id": "lifecycle_018",
+      "layout_regions": [
+        [
+          [
+            442.0,
+            900.0,
+            637.0,
+            969.0
+          ]
+        ],
+        [
+          [
+            439.0,
+            898.0,
+            639.0,
+            971.0
+          ]
+        ],
+        [
+          [
+            355.0,
+            891.0,
+            722.0,
+            975.0
+          ]
+        ],
+        [
+          [
+            364.0,
+            901.0,
+            711.0,
+            977.0
+          ]
+        ],
+        [
+          [
+            364.0,
+            902.0,
+            711.0,
+            978.0
+          ]
+        ],
+        [
+          [
+            364.0,
+            901.0,
+            712.0,
+            979.0
+          ]
+        ],
+        [
+          [
+            364.0,
+            902.0,
+            711.0,
+            978.0
+          ]
+        ],
+        [
+          [
+            365.0,
+            902.0,
+            711.0,
+            977.0
+          ]
+        ],
+        [
+          [
+            364.0,
+            901.0,
+            712.0,
+            978.0
+          ]
+        ]
+      ],
+      "token_ordinals": [
+        108,
+        109,
+        110
+      ],
+      "token_visibility": {
+        "108": {
+          "appears": 581,
+          "disappears": 588,
+          "joins_previous_composition": false,
+          "next_word_joins": true,
+          "remains_visible_until": 588
+        },
+        "109": {
+          "appears": 594,
+          "disappears": 596,
+          "joins_previous_composition": true,
+          "next_word_joins": true,
+          "remains_visible_until": 596
+        },
+        "110": {
+          "appears": 597,
+          "disappears": 599,
+          "joins_previous_composition": true,
+          "next_word_joins": false,
+          "remains_visible_until": 599
+        }
+      },
+      "visible_end": 599,
+      "visible_start": 581
+    }
+  ],
+  "reel": "DZatr0EJt4B",
+  "schema": "video_cloner.oss002c_cross_authority_recovery",
+  "schema_version": 1,
+  "source_failures": 32,
+  "unchanged_motion_thresholds": {
+    "confidence": 0.2792,
+    "confidence_basis": "80_percent_of_weakest_human_accepted_representative",
+    "method": "median_plus_3mad_of_settled_tail_steps",
+    "position": 0.009374,
+    "scale": 0.05
+  },
+  "winner": "paddleocr"
+}

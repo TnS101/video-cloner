@@ -1,0 +1,31 @@
+{
+  "decision": "ADOPT_PADDLEOCR_CROSS_AUTHORITY_ASSOCIATION",
+  "gate": {
+    "maximum_accepted_false": 1,
+    "minimum_correct": 8
+  },
+  "providers": {
+    "easyocr": {
+      "accepted_false_associations": 0,
+      "ambiguous": 1,
+      "correct_associations": 11,
+      "downstream_tracker_success": 11,
+      "mean_association_confidence": 0.7904,
+      "mean_tracker_confidence": 0.639
+    },
+    "paddleocr": {
+      "accepted_false_associations": 0,
+      "ambiguous": 1,
+      "correct_associations": 11,
+      "downstream_tracker_success": 11,
+      "mean_association_confidence": 0.7898,
+      "mean_tracker_confidence": 0.6412
+    }
+  },
+  "reel": "DZatr0EJt4B",
+  "schema": "video_cloner.oss002c_cross_authority_benchmark_decision",
+  "schema_version": 1,
+  "visual_review": "Contact sheets reviewed; every accepted 12-case region is a visible caption composition and ordinal 85 remains fail-closed.",
+  "winner": "paddleocr",
+  "winner_basis": "equal 11/12 correct and 0 accepted false; PaddleOCR was faster and produced slightly higher downstream tracker confidence"
+}

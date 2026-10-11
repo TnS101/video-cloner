@@ -1,9 +1,9 @@
 # OSS_ADOPTION_QUEUE.md — Video Cloner Proven-Code Queue
 
-- UPDATED: 2026-10-10
+- UPDATED: 2026-10-11
 - MODE: SPEEDRUN / PROVEN-CODE-FIRST
 - RULE: `REUSE > ADAPT > COMBINE > BUILD`
-- ACTIVE: `OSS-002B` (STOPPED / NO WINNER)
+- ACTIVE: `OSS-002C` (BENCHMARK PASS / HUMAN REVIEW)
 
 ## Production Override — 2026-10-10
 
@@ -81,7 +81,7 @@ Acceptance:
 Build gate:
 - no greenfield detector work before the strongest two compatible OSS routes/compositions fail the same named requirement.
 
-### OSS-002B — Localization coverage recovery — STOPPED / NO ADOPTION
+### OSS-002B — Raw exact-token localization — CLOSED / HISTORICAL
 
 Audited and benchmarked on 12 real failed captions / 36 anchor frames:
 
@@ -90,11 +90,15 @@ Audited and benchmarked on 12 real failed captions / 36 anchor frames:
 - Both failed closed with zero accepted false localizations.
 - Root cause: OCR detects real baked text, but the expected V2 token at the same timestamp is generally different; this is a cross-authority association gap, not a text-detector-quality gap.
 
-Decision: adopt neither, do not lower thresholds, do not run all 32, and do not publish a Resolve batch. Human must decide whether a tiny missing association mechanism is justified.
+Decision at this layer: raw expected-token equality is invalid. Preserve the fail-closed evidence; OSS-002C supplies the authorized missing association layer without changing either OCR detector.
 
-### OSS-002C — Caption lifecycle / persistence — QUEUED
+### OSS-002C — Cross-authority caption association — HUMAN REVIEW
 
-Source captions may persist across word intervals and form multi-word/stacked compositions. After full motion review, run one bounded OSS-first spike using at most two text-tracking/grouping compositions. Do not fold this gap into motion rollout or return to Reel #2 heuristics.
+- Same 12 cases with phrase-aware association: PaddleOCR `11/12`, EasyOCR `11/12`; both `0` accepted false and `1` ambiguous; all 11 accepted regions seeded the existing tracker.
+- Selected PaddleOCR on lower runtime and slightly higher tracker confidence.
+- Full 32 pass: 26 recovered, 5 ambiguous, 1 rejected non-caption logo, 13 meaningful-motion, 13 static, 18 lifecycle composition proposals.
+- Existing 56 accepted recipes remain unchanged. Seven-caption run `20261011T075523823Z_9505c20c898e475abcd84880e4420ffb` is pending and not executed.
+- Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_benchmark.json` and `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_recovery.json`.
 
 ### OSS-003 — Transitions — NEXT
 
@@ -149,9 +153,8 @@ Candidates:
 ## Visual Critical Path
 
 `OSS-002 caption animations` (PASS)
--> `OSS-002B localization fallback` (STOPPED / no winner)
--> human association-mechanism decision
--> `OSS-002C lifecycle/persistence`
+-> `OSS-002C association batch` (HUMAN REVIEW)
+-> minimal lifecycle/persistence application
 -> `OSS-003 transitions`
 -> `OSS-004 motion/VFX`
 -> `OSS-005 speed ramps`
