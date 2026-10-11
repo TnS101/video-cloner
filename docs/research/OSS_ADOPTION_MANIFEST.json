@@ -123,8 +123,18 @@
       "existing_56_recipes_modified": false,
       "representative_targets": [5, 37, 54, 75, 80, 101, 107],
       "representative_run_id": "20261011T075523823Z_9505c20c898e475abcd84880e4420ffb",
-      "pending_command": ".agent/commands/pending/OSS002C_RECOVERED_CAPTION_BATCH_V1_20261011T075523823Z_9505c20c898e475abcd84880e4420ffb.json",
-      "status": "PASS_BATCH_PENDING_HUMAN_REVIEW"
+      "representative_command": ".agent/commands/completed/OSS002C_RECOVERED_CAPTION_BATCH_V1_20261011T075523823Z_9505c20c898e475abcd84880e4420ffb.json",
+      "representative_status": "PASS_HUMAN_ACCEPTED_APPROXIMATE",
+      "canonical_meaningful_motion": 13,
+      "accepted_live_representatives": 7,
+      "remaining_delta_targets": [53, 78, 79, 87, 88, 108],
+      "remaining_delta_count": 6,
+      "delta_run_id": "20261011T091036387Z_d111541339de4973b185c41e30bebedb",
+      "pending_command": ".agent/commands/pending/OSS002C_FULL_RECOVERED_MOTION_ROLLOUT_V1_20261011T091036387Z_d111541339de4973b185c41e30bebedb.json",
+      "recovered_static_preserved": 13,
+      "unsupported_preserved": 6,
+      "persistence": "DEFERRED_POST_MVP",
+      "status": "FINAL_DELTA_PENDING_HUMAN_REVIEW"
     },
     "done_when": [
       "materially higher animation coverage than frozen 16-caption plan",
@@ -154,8 +164,8 @@
     {
       "id": "OSS-002C",
       "name": "Cross-authority caption association and lifecycle evidence",
-      "status": "PASS_BATCH_PENDING_HUMAN_REVIEW",
-      "constraint": "Do not execute lifecycle persistence until the seven-caption association batch is visually accepted."
+      "status": "FINAL_DELTA_PENDING_HUMAN_REVIEW",
+      "constraint": "Apply only the six missing canonical motion replacements; freeze caption animation after whole-Reel review and defer lifecycle persistence."
     },
     {
       "id": "OSS-003",

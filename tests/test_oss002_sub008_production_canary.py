@@ -14,11 +14,13 @@ from resolve_workspace.modules import oss002_16_caption_batch_rollout as batch
 from resolve_workspace.modules import oss002_oss_animation_representative_batch as oss_adapter
 from resolve_workspace.modules import oss002_full_caption_motion_rollout as full_rollout
 from resolve_workspace.modules import oss002c_recovered_caption_batch as recovered_batch
+from resolve_workspace.modules import oss002c_full_recovered_motion_rollout as recovered_rollout
 from scripts.davinci import prepare_oss002_sub008_production_canary as prepare
 from scripts.davinci import prepare_oss002_16_caption_batch_rollout as prepare_batch
 from scripts.davinci import prepare_oss002_oss_animation_representative_batch as prepare_oss_batch
 from scripts.davinci import prepare_oss002_full_caption_motion_rollout as prepare_full_rollout
 from scripts.davinci import prepare_oss002c_recovered_caption_batch as prepare_recovered_batch
+from scripts.davinci import prepare_oss002c_full_recovered_motion_rollout as prepare_recovered_rollout
 from scripts.analysis import build_oss002_full_caption_motion_rollout as full_builder
 from video_cloner.animation_recipe import validate_recipe
 from video_cloner.caption_motion_oss import ROUTE_TEMPLATE, _template_transforms
@@ -695,3 +697,80 @@ def test_recovered_batch_publisher_is_single_bounded_command(tmp_path):
     assert payload["task"] == recovered_batch.TASK_ID
     assert payload["payload"]["target_ordinals"] == list(recovered_batch.TARGET_ORDINALS)
     assert payload["payload"]["expected_existing_nested_count"] == 56
+
+
+def _recovered_project():
+    project = _full_project()
+    assert full_rollout.run(Resolve(project), {"run_id": "fullrun_abcdef123456", "command": _full_command()})["ok"] is True
+    assert recovered_batch.run(Resolve(project), {"run_id": "recovered_abcdef123456", "command": _recovered_command()})["ok"] is True
+    for ordinal, expected in recovered_rollout.REPRESENTATIVE_SOURCE_NAMES.items():
+        source = next(timeline for timeline in project.timelines if timeline.name.startswith(f"_VC_OSS002C_SUB{ordinal:03d}_"))
+        source.name = expected
+    return project
+
+
+def _recovered_rollout_command():
+    recovery, recipes, fcpxml = (ROOT / prepare_recovered_rollout.RECOVERY, ROOT / prepare_recovered_rollout.RECIPES, ROOT / prepare_recovered_rollout.FCPXML)
+    return {"task": recovered_rollout.TASK_ID, "mode": recovered_rollout.MODE, "run_id": "delta_abcdef123456", "payload": {
+        "repository_root": str(ROOT), "expected_project": recovered_batch.rep.EXPECTED_PROJECT,
+        "target_timeline": recovered_batch.rep.EXPECTED_TIMELINE, "target_timeline_uid": recovered_batch.rep.EXPECTED_TIMELINE_UID,
+        "expected_caption_count": 112, "expected_video_track_count": 3, "expected_existing_nested_count": 63,
+        "target_ordinals": list(recovered_rollout.TARGET_ORDINALS),
+        "canonical_meaningful_count": 13, "recovered_static_count": 13, "unsupported_count": 6,
+        "accepted_oss002c_ordinals": sorted(recovered_rollout.REPRESENTATIVE_SOURCE_NAMES),
+        "recovery_path": prepare_recovered_rollout.RECOVERY, "recovery_sha256": sha(recovery),
+        "recipe_path": prepare_recovered_rollout.RECIPES, "recipe_sha256": sha(recipes),
+        "fcpxml_path": prepare_recovered_rollout.FCPXML, "fcpxml_sha256": sha(fcpxml), "save_after_verification": True,
+    }}
+
+
+def test_recovered_rollout_reconciles_canonical_13_to_exact_six_delta():
+    meaningful, static, unsupported = recovered_batch._classification_sets(ROOT / prepare_recovered_rollout.RECOVERY)
+    accepted = set(recovered_rollout.REPRESENTATIVE_SOURCE_NAMES)
+    assert (len(meaningful), len(static), len(unsupported)) == (13, 13, 6)
+    assert accepted == {5, 37, 54, 75, 80, 101, 107}
+    assert set(recovered_rollout.TARGET_ORDINALS) == {53, 78, 79, 87, 88, 108}
+    assert accepted | set(recovered_rollout.TARGET_ORDINALS) == meaningful
+
+
+def test_recovered_rollout_adds_six_without_duplicates_and_saves_once():
+    project = _recovered_project()
+    before = set(recovered_batch.rep._stable_nested(project.target, project.target.base))
+    meaningful, static, unsupported = recovered_batch._classification_sets(ROOT / prepare_recovered_rollout.RECOVERY)
+    saves_before = [event[0] for event in project.events].count("save")
+    result = recovered_rollout.run(Resolve(project), {"run_id": "delta_abcdef123456", "command": _recovered_rollout_command()})
+    assert result["ok"] is True, result
+    nested = full_rollout._nested_by_name(project.target)
+    ordinals = [recovered_batch._ordinal_from_source(name) for name in nested]
+    assert before.issubset(set(recovered_batch.rep._stable_nested(project.target, project.target.base)))
+    assert len(nested) == 69 and len(ordinals) == len(set(ordinals))
+    assert set(ordinals) == {ordinal for ordinal, row in enumerate(project.target.tracks[2], 1) if row.enabled is False}
+    assert meaningful.issubset(ordinals)
+    assert all(project.target.tracks[2][ordinal - 1].enabled is True for ordinal in static | unsupported)
+    assert [event[0] for event in project.events].count("save") == saves_before + 1
+    assert result["targets"] == list(recovered_rollout.TARGET_ORDINALS) and result["replacements_created"] == 6
+
+
+def test_recovered_rollout_rollback_restores_exact_63_baseline():
+    project = _recovered_project()
+    before = recovered_batch.rep._stable_nested(project.target, project.target.base)
+    project.pool.append_fail_at = project.pool.append_count + 3
+    result = recovered_rollout.run(Resolve(project), {"run_id": "delta_abcdef123456", "command": _recovered_rollout_command()})
+    assert result["ok"] is False and result["rollback"]["ok"] is True
+    assert recovered_batch.rep._stable_nested(project.target, project.target.base) == before
+    assert all(project.target.tracks[2][ordinal - 1].enabled is True for ordinal in recovered_rollout.TARGET_ORDINALS)
+
+
+def test_recovered_rollout_publisher_is_one_bounded_delta(tmp_path):
+    (tmp_path / "AGENTS.md").write_text("test", encoding="utf-8")
+    for relative in (prepare_recovered_rollout.FCPXML, prepare_recovered_rollout.RECIPES, prepare_recovered_rollout.RECOVERY):
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / relative, destination)
+    receipt = prepare_recovered_rollout.publish(tmp_path)
+    payload = json.loads((tmp_path / receipt["command_path"]).read_text(encoding="utf-8"))
+    assert payload["task"] == recovered_rollout.TASK_ID
+    assert payload["module"] == prepare_recovered_rollout.MODULE_RELATIVE
+    assert payload["payload"]["target_ordinals"] == list(recovered_rollout.TARGET_ORDINALS)
+    assert payload["payload"]["expected_existing_nested_count"] == 63
+    assert payload["payload"]["accepted_oss002c_ordinals"] == [5, 37, 54, 75, 80, 101, 107]

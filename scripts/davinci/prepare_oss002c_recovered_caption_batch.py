@@ -34,7 +34,7 @@ def _write(path: Path, value: object) -> None:
     os.replace(temporary, path)
 
 
-def publish(root: Path = ROOT) -> dict[str, str]:
+def publish_delta(batch_module: object, module_relative: str, root: Path = ROOT) -> dict[str, str]:
     root = root.resolve()
     queue = root / ".agent" / "commands"
     for state in ("pending", "running", "completed", "failed"):
@@ -43,34 +43,47 @@ def publish(root: Path = ROOT) -> dict[str, str]:
     if active:
         raise ValueError(f"active_command:{active[0].name}")
     recovery, recipes, fcpxml = root / RECOVERY, root / RECIPES, root / FCPXML
-    batch._authorities(recovery, recipes)
+    authority = getattr(batch_module, "delta", batch_module)
+    authority._authorities(recovery, recipes, batch_module.TARGET_ORDINALS)
     now = datetime.now(timezone.utc)
     run_id = f"{now:%Y%m%dT%H%M%S}{now.microsecond // 1000:03d}Z_{uuid4().hex}"
-    report = root / ".agent" / "reports" / batch.TASK_ID / run_id
+    report = root / ".agent" / "reports" / batch_module.TASK_ID / run_id
     relative_report = report.relative_to(root).as_posix()
+    rep = authority.rep
+    accepted_source_names = getattr(batch_module, "REPRESENTATIVE_SOURCE_NAMES", {})
+    payload = {
+        "repository_root": str(root), "expected_project": rep.EXPECTED_PROJECT,
+        "target_timeline": rep.EXPECTED_TIMELINE, "target_timeline_uid": rep.EXPECTED_TIMELINE_UID,
+        "expected_caption_count": 112, "expected_video_track_count": 3,
+        "expected_existing_nested_count": batch_module.EXPECTED_EXISTING_NESTED, "target_ordinals": list(batch_module.TARGET_ORDINALS),
+        "recovery_path": RECOVERY, "recovery_sha256": _sha256(recovery),
+        "recipe_path": RECIPES, "recipe_sha256": _sha256(recipes),
+        "fcpxml_path": FCPXML, "fcpxml_sha256": _sha256(fcpxml), "save_after_verification": True,
+    }
+    if accepted_source_names:
+        payload.update({
+            "canonical_meaningful_count": 13, "recovered_static_count": 13, "unsupported_count": 6,
+            "accepted_oss002c_ordinals": sorted(accepted_source_names),
+        })
     command = {
         "schema_version": 1,
-        "task": batch.TASK_ID,
+        "task": batch_module.TASK_ID,
         "run_id": run_id,
-        "module": "resolve_workspace/modules/oss002c_recovered_caption_batch.py",
-        "mode": batch.MODE,
+        "module": module_relative,
+        "mode": batch_module.MODE,
         "status_path": f"{relative_report}/status.json",
         "log_path": f"{relative_report}/run.log",
         "report_path": f"{relative_report}/report.json",
-        "payload": {
-            "repository_root": str(root), "expected_project": batch.rep.EXPECTED_PROJECT,
-            "target_timeline": batch.rep.EXPECTED_TIMELINE, "target_timeline_uid": batch.rep.EXPECTED_TIMELINE_UID,
-            "expected_caption_count": 112, "expected_video_track_count": 3,
-            "expected_existing_nested_count": batch.EXPECTED_EXISTING_NESTED, "target_ordinals": list(batch.TARGET_ORDINALS),
-            "recovery_path": RECOVERY, "recovery_sha256": _sha256(recovery),
-            "recipe_path": RECIPES, "recipe_sha256": _sha256(recipes),
-            "fcpxml_path": FCPXML, "fcpxml_sha256": _sha256(fcpxml), "save_after_verification": True,
-        },
+        "payload": payload,
     }
-    pending = queue / "pending" / f"{batch.TASK_ID}_{run_id}.json"
+    pending = queue / "pending" / f"{batch_module.TASK_ID}_{run_id}.json"
     _write(report / "command.json", command)
     _write(pending, command)
-    return {"task_id": batch.TASK_ID, "run_id": run_id, "command_path": pending.relative_to(root).as_posix()}
+    return {"task_id": batch_module.TASK_ID, "run_id": run_id, "command_path": pending.relative_to(root).as_posix()}
+
+
+def publish(root: Path = ROOT) -> dict[str, str]:
+    return publish_delta(batch, "resolve_workspace/modules/oss002c_recovered_caption_batch.py", root)
 
 
 if __name__ == "__main__":

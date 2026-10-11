@@ -2,8 +2,8 @@
 
 - LAST UPDATED: 2026-10-11
 - ACTIVE STAGE: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
-- ACTIVE UNIT: `OSS-002C_CROSS_AUTHORITY_CAPTION_ASSOCIATION`
-- STATUS: `BENCHMARK_PASS / REPRESENTATIVE_BATCH_PENDING_HUMAN_REVIEW`
+- ACTIVE UNIT: `OSS-002C_FULL_RECOVERED_MOTION_ROLLOUT`
+- STATUS: `FINAL_DELTA_PENDING_HUMAN_REVIEW`
 
 ## Human Directives
 
@@ -81,20 +81,23 @@ Do not spend another loop improving the rejected heuristic detector.
 - Live run `20261010T105509634Z_5d7d0cc58b344d24a62f0fee7795f9e0` persisted 56 authoritative nested replacements on V3, 56 original/static captions, no rejected Step 3C replacement, and passed `SaveProject` verification.
 - Human review accepted the detected motion as substantially closer to the reference; localization coverage remains the dominant gap.
 
-## Current Result — OSS-002C Cross-Authority Association
+## Current Result — OSS-002C Final Recovered-Motion Delta
 
 - One bounded BUILD now associates nearby V2 tokens with OCR phrase/region evidence using text, timing, spatial continuity, style geometry, and temporal persistence; it does not change OCR or motion extraction.
 - Same 12-case gate: PaddleOCR and EasyOCR each produced `11/12` correct associations, `0` accepted false associations, `1` fail-closed ambiguity, and `11` successful seeds into the accepted OpenCV template tracker.
 - PaddleOCR is selected because the tie produced slightly higher downstream tracker confidence and lower recorded runtime.
 - Full 32-failure pass: `26` accepted recoveries, `5` ambiguities, `1` visually rejected non-caption logo, `13` new meaningful-motion captions, `13` recovered-static captions, and `18` conservative lifecycle composition proposals.
-- The accepted 56-recipe authority is unchanged by exact SHA-256. Run `20261011T075523823Z_9505c20c898e475abcd84880e4420ffb` is pending, not executed, for ordinals `5, 37, 54, 75, 80, 101, 107`.
+- The accepted 56-recipe authority is unchanged by exact SHA-256. Run `20261011T075523823Z_9505c20c898e475abcd84880e4420ffb` completed and persisted seven replacements for ordinals `5, 37, 54, 75, 80, 101, 107`; the human accepted them as approximate but useful motion.
+- Canonical reconciliation is exact: 13 meaningful-motion captions = seven accepted live representatives + six missing targets (`53, 78, 79, 87, 88, 108`). The 13 recovered-static and six unsupported captions remain original/static.
+- One bounded six-caption delta is pending as run `20261011T091036387Z_d111541339de4973b185c41e30bebedb`. It preserves all 63 existing authoritative replacements, creates no duplicate ordinal, and saves exactly once only after full verification.
+- Lifecycle/persistence work is deferred to post-MVP polish. After the whole-Reel review, caption animation freezes as MVP accepted/approximate unless the review finds catastrophic usability failure.
 - Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_benchmark.json` and `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_recovery.json`.
 
-## Human Review Gate — OSS-002C Representative Batch
+## Human Review Gate — OSS-002C Final Delta
 
-- Status: `PENDING LIVE EXECUTION / HUMAN REVIEW`.
-- Execute only the prepared seven-caption batch. Confirm the associated objects and recovered motion visually before applying any lifecycle/persistence proposal in Resolve.
-- Lifecycle evidence is data-only in this stage; caption durations/grouping and the production timeline remain unchanged until review.
+- Status: `FINAL SIX-CAPTION DELTA PENDING LIVE EXECUTION / WHOLE-REEL REVIEW`.
+- Execute only the prepared delta for ordinals `53, 78, 79, 87, 88, 108`; do not recreate the seven accepted representatives or any prior replacement.
+- Lifecycle evidence remains data-only. No caption persistence, detector tuning, or further caption research is authorized for the MVP.
 
 ### OSS-002 done when
 
@@ -116,8 +119,9 @@ Do not spend another loop improving the rejected heuristic detector.
 
 `OSS-002 full accepted-motion rollout` (PASS / persisted)
 -> `OSS-002B` raw exact-token benchmark (historical fail-closed evidence)
--> `OSS-002C` cross-authority association (PASS / batch pending)
--> minimal lifecycle/persistence application after human review
+-> `OSS-002C` association + seven-caption representative batch (PASS / human accepted approximate)
+-> final six-caption recovered-motion delta (HUMAN REVIEW)
+-> freeze caption animation for MVP; defer lifecycle/persistence
 -> `OSS-003 transitions`
 -> `OSS-004 core motion/VFX`
 -> `OSS-005 speed ramps`

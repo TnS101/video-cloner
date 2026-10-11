@@ -124,13 +124,15 @@ Review:
 - Decision: adopt neither; keep the primary localization and accepted tracker unchanged; do not run all 32 or publish a Resolve batch.
 - Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002b_text_localization_benchmark.json`.
 
-## Step 7 — OSS-002C Cross-Authority Association — HUMAN REVIEW
+## Step 7 — OSS-002C Final Recovered-Motion Delta — HUMAN REVIEW
 
 - Tiny BUILD authorized and complete: bounded token/phrase lattice plus timing, spatial, style, and persistence scoring over existing PaddleOCR/EasyOCR detections.
 - Same 12-case gate passed for both backends at 11 correct / 0 accepted false / 1 ambiguous; PaddleOCR selected on tracker-confidence/runtime tie-break.
 - Full 32 pass recovered 26 associations: 13 meaningful motion under unchanged thresholds, 13 static, 5 ambiguous, 1 visually rejected logo, and 18 lifecycle composition proposals.
-- Existing 56 recipes and live Resolve state remain frozen. Seven-caption run `20261011T075523823Z_9505c20c898e475abcd84880e4420ffb` (`5, 37, 54, 75, 80, 101, 107`) is pending but not executed.
-- Next: human validation, then apply only the minimal proven lifecycle/persistence behavior before OSS-003.
+- Seven-caption run `20261011T075523823Z_9505c20c898e475abcd84880e4420ffb` completed and persisted ordinals `5, 37, 54, 75, 80, 101, 107`; human review accepts the result as approximate but useful.
+- Canonical meaningful-motion reconciliation: 13 total = seven accepted live representatives + six missing ordinals `53, 78, 79, 87, 88, 108`. Recovered-static 13 and unsupported six remain original/static.
+- Run `20261011T091036387Z_d111541339de4973b185c41e30bebedb` is pending for one bounded six-caption delta while preserving the existing 63 replacements, original media/cuts/audio, and exact one-replacement-per-ordinal ownership. Save exactly once after full verification.
+- After one whole-Reel review, freeze OSS-002 caption animation as MVP accepted/approximate unless catastrophic. Defer lifecycle/persistence and caption polishing to post-MVP, then activate OSS-003.
 
 ## Step 8 — OSS-003 Transitions
 
