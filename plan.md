@@ -1,14 +1,14 @@
-# plan.md — S007 OSS Caption-Animation Overdrive
+# plan.md — S007 OSS-003 Transition Speedrun
 
 - STATUS: ACTIVE
 - DATE: 2026-10-11
-- ACTIVE UNIT: OSS-002C
+- ACTIVE UNIT: OSS-003
 - PRODUCT MODE: SPEEDRUN
 - PRIORITY: visible production fidelity, not detector-framework perfection
 
 ## Outcome
 
-Replace the frozen custom caption-animation detection route with the strongest proven OSS mechanisms we can reuse/adapt quickly, while keeping the already-proven editable Resolve carrier.
+Turn the existing Reel #3 transition evidence into editor-independent recipes and prove a small editable Resolve batch without reopening cuts or captions.
 
 The next visible milestone is:
 
@@ -124,24 +124,25 @@ Review:
 - Decision: adopt neither; keep the primary localization and accepted tracker unchanged; do not run all 32 or publish a Resolve batch.
 - Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002b_text_localization_benchmark.json`.
 
-## Step 7 — OSS-002C Final Recovered-Motion Delta — HUMAN REVIEW
+## Step 7 — OSS-002C Final Recovered-Motion Delta — DONE / FROZEN
 
 - Tiny BUILD authorized and complete: bounded token/phrase lattice plus timing, spatial, style, and persistence scoring over existing PaddleOCR/EasyOCR detections.
 - Same 12-case gate passed for both backends at 11 correct / 0 accepted false / 1 ambiguous; PaddleOCR selected on tracker-confidence/runtime tie-break.
 - Full 32 pass recovered 26 associations: 13 meaningful motion under unchanged thresholds, 13 static, 5 ambiguous, 1 visually rejected logo, and 18 lifecycle composition proposals.
 - Seven-caption run `20261011T075523823Z_9505c20c898e475abcd84880e4420ffb` completed and persisted ordinals `5, 37, 54, 75, 80, 101, 107`; human review accepts the result as approximate but useful.
 - Canonical meaningful-motion reconciliation: 13 total = seven accepted live representatives + six missing ordinals `53, 78, 79, 87, 88, 108`. Recovered-static 13 and unsupported six remain original/static.
-- Run `20261011T091036387Z_d111541339de4973b185c41e30bebedb` is pending for one bounded six-caption delta while preserving the existing 63 replacements, original media/cuts/audio, and exact one-replacement-per-ordinal ownership. Save exactly once after full verification.
-- After one whole-Reel review, freeze OSS-002 caption animation as MVP accepted/approximate unless catastrophic. Defer lifecycle/persistence and caption polishing to post-MVP, then activate OSS-003.
+- Run `20261011T091036387Z_d111541339de4973b185c41e30bebedb` completed and persisted the final six replacements while preserving the existing 63.
+- Human decision: OSS-002 is MVP accepted, production-ready, and frozen. Defer lifecycle/persistence and all caption polishing.
 
-## Step 8 — OSS-003 Transitions
+## Step 8 — OSS-003 Transitions — FINAL NATIVE ROLLOUT READY
 
-Immediately after OSS-002 acceptance:
-
-- reuse/adapt the strongest proven transition mechanism from the existing research queue;
-- prioritize source-visible transitions;
-- batch review;
-- no unrelated refactors.
+- Existing authority: six candidates. Human review accepted the automated native 11-frame Blur Dissolve proof at frame `80`.
+- Reject the clip-level Fusion approximation: it produced no native transition object. Preserve that result as a warning and do not tune it again.
+- Reuse pinned Resolve MCP DRT insertion plus the Resolve-authored Blur Dissolve donor to create exactly three native transitions at `80`, `286`, and `376`, each duration `11`, in final derivative `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1`.
+- Preserve production, V1 cuts, V2/V3 captions, and A1 by compact count/hash verification. Experimental `VC_OSS003_` Fusion effects remain non-blocking debt; no delete/bypass loop is authorized.
+- Classify slides `211` / `629` and whip `461` as motion/VFX deferred to OSS-004.
+- Pending run: `20261011T134449524Z_99e08d1948d849c0ab9c1f4e0344c41f`.
+- Next gate: one final human review. On PASS, freeze OSS-003 and immediately start OSS-004.
 
 Then proceed to OSS-004 motion/VFX and OSS-005 speed ramps.
 

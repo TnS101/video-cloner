@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-10-11",
   "policy": "REUSE > ADAPT > COMBINE > BUILD",
-  "active_unit": "OSS-002C",
+  "active_unit": "OSS-003",
   "production_override": {
     "status": "HUMAN_VISUAL_REVIEW_REJECTED_CUSTOM_DETECTOR",
     "decision": "FREEZE_CUSTOM_CAPTION_ANIMATION_DETECTOR",
@@ -130,11 +130,11 @@
       "remaining_delta_targets": [53, 78, 79, 87, 88, 108],
       "remaining_delta_count": 6,
       "delta_run_id": "20261011T091036387Z_d111541339de4973b185c41e30bebedb",
-      "pending_command": ".agent/commands/pending/OSS002C_FULL_RECOVERED_MOTION_ROLLOUT_V1_20261011T091036387Z_d111541339de4973b185c41e30bebedb.json",
+      "completed_command": ".agent/commands/completed/OSS002C_FULL_RECOVERED_MOTION_ROLLOUT_V1_20261011T091036387Z_d111541339de4973b185c41e30bebedb.json",
       "recovered_static_preserved": 13,
       "unsupported_preserved": 6,
       "persistence": "DEFERRED_POST_MVP",
-      "status": "FINAL_DELTA_PENDING_HUMAN_REVIEW"
+      "status": "MVP_ACCEPTED_PRODUCTION_READY_FROZEN"
     },
     "done_when": [
       "materially higher animation coverage than frozen 16-caption plan",
@@ -143,6 +143,35 @@
       "batch human visual review accepted"
     ],
     "build_gate": "Test at most the two strongest compatible OSS routes/compositions on the same evidence before greenfield detector work."
+  },
+  "transition_batch": {
+    "source_authority": "data/DZatr0EJt4B/analysis/DZatr0EJt4B_transitions_mvp_resolve.json",
+    "candidate_count": 6,
+    "normalized_schema": "video_cloner.transition_recipe_set.v1",
+    "selected_route": "REUSE_RESOLVE_MCP_DRT_NATIVE_BLUR_DONOR_FINAL_ROLLOUT",
+    "hyperframes": {
+      "pin": "46f6cb356785bed79e1ce7b79d7e7accc697786a",
+      "license": "Apache-2.0",
+      "role": "transition representation and timing pattern; not reference detection"
+    },
+    "resolve_mcp": {
+      "pin": "94c7a885d53f13be78522ce96561a9e9e21d64c5",
+      "license": "MIT",
+      "role": "placeTransition offline DRT authoring of a native Sm2TiTransition"
+    },
+    "representative_boundaries": [80, 286, 376],
+    "duration_frames": 11,
+    "owned_fusion_comp_count": 0,
+    "deferred_to_oss004": [211, 461, 629],
+    "analysis_only": [],
+    "rejected_route_warning": "Clip-level Fusion effects created no Sm2TiTransition and must not be repaired or tuned as OSS-003 transitions.",
+    "accepted_proof_run_id": "20261011T130946582Z_0d071b6f8542403d8a51b0ac8d669580",
+    "donor_template_sha256": "2b57d7e86794046bb72b32d0e76ac0ddc791c661a0ee88af6d6352ace3bdc326",
+    "run_id": "20261011T134449524Z_99e08d1948d849c0ab9c1f4e0344c41f",
+    "pending_command": ".agent/commands/pending/OSS003_FINAL_TRANSITION_ROLLOUT_V1_20261011T134449524Z_99e08d1948d849c0ab9c1f4e0344c41f.json",
+    "final_derivative": "VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1",
+    "fusion_cleanup_debt": "DEFERRED_NONBLOCKING",
+    "status": "FINAL_NATIVE_ROLLOUT_READY_HUMAN_REVIEW"
   },
   "sequential_units": [
     {
@@ -153,7 +182,7 @@
     {
       "id": "OSS-002",
       "name": "Caption animation OSS overdrive",
-      "status": "PASS_INTEGRATED"
+      "status": "MVP_ACCEPTED_PRODUCTION_READY_FROZEN"
     },
     {
       "id": "OSS-002B",
@@ -164,13 +193,17 @@
     {
       "id": "OSS-002C",
       "name": "Cross-authority caption association and lifecycle evidence",
-      "status": "FINAL_DELTA_PENDING_HUMAN_REVIEW",
-      "constraint": "Apply only the six missing canonical motion replacements; freeze caption animation after whole-Reel review and defer lifecycle persistence."
+      "status": "PASS_FROZEN",
+      "constraint": "Preserve as accepted MVP evidence; defer lifecycle persistence and all caption tuning."
     },
     {
       "id": "OSS-003",
       "name": "Transitions",
-      "status": "NEXT"
+      "status": "FINAL_NATIVE_ROLLOUT_READY_HUMAN_REVIEW",
+      "mechanism": "pinned Resolve MCP DRT insertion + Resolve-authored Blur Dissolve donor -> imported final derivative",
+      "representative_boundaries": [80, 286, 376],
+      "deferred_to_oss004": [211, 461, 629],
+      "analysis_only": []
     },
     {
       "id": "OSS-004",

@@ -2,8 +2,8 @@
 
 - LAST UPDATED: 2026-10-11
 - ACTIVE STAGE: `S007_OSS_FIRST_PROVEN_CODE_INTEGRATION`
-- ACTIVE UNIT: `OSS-002C_FULL_RECOVERED_MOTION_ROLLOUT`
-- STATUS: `FINAL_DELTA_PENDING_HUMAN_REVIEW`
+- ACTIVE UNIT: `OSS-003_FINAL_TRANSITION_ROLLOUT`
+- STATUS: `LIVE_COMMAND_PENDING_HUMAN_REVIEW`
 
 ## Human Directives
 
@@ -81,7 +81,7 @@ Do not spend another loop improving the rejected heuristic detector.
 - Live run `20261010T105509634Z_5d7d0cc58b344d24a62f0fee7795f9e0` persisted 56 authoritative nested replacements on V3, 56 original/static captions, no rejected Step 3C replacement, and passed `SaveProject` verification.
 - Human review accepted the detected motion as substantially closer to the reference; localization coverage remains the dominant gap.
 
-## Current Result — OSS-002C Final Recovered-Motion Delta
+## Accepted Caption State — OSS-002 / OSS-002C Frozen
 
 - One bounded BUILD now associates nearby V2 tokens with OCR phrase/region evidence using text, timing, spatial continuity, style geometry, and temporal persistence; it does not change OCR or motion extraction.
 - Same 12-case gate: PaddleOCR and EasyOCR each produced `11/12` correct associations, `0` accepted false associations, `1` fail-closed ambiguity, and `11` successful seeds into the accepted OpenCV template tracker.
@@ -89,15 +89,18 @@ Do not spend another loop improving the rejected heuristic detector.
 - Full 32-failure pass: `26` accepted recoveries, `5` ambiguities, `1` visually rejected non-caption logo, `13` new meaningful-motion captions, `13` recovered-static captions, and `18` conservative lifecycle composition proposals.
 - The accepted 56-recipe authority is unchanged by exact SHA-256. Run `20261011T075523823Z_9505c20c898e475abcd84880e4420ffb` completed and persisted seven replacements for ordinals `5, 37, 54, 75, 80, 101, 107`; the human accepted them as approximate but useful motion.
 - Canonical reconciliation is exact: 13 meaningful-motion captions = seven accepted live representatives + six missing targets (`53, 78, 79, 87, 88, 108`). The 13 recovered-static and six unsupported captions remain original/static.
-- One bounded six-caption delta is pending as run `20261011T091036387Z_d111541339de4973b185c41e30bebedb`. It preserves all 63 existing authoritative replacements, creates no duplicate ordinal, and saves exactly once only after full verification.
-- Lifecycle/persistence work is deferred to post-MVP polish. After the whole-Reel review, caption animation freezes as MVP accepted/approximate unless the review finds catastrophic usability failure.
+- Run `20261011T091036387Z_d111541339de4973b185c41e30bebedb` completed and persisted the final six replacements. The resulting 69 editable V3 replacements plus 43 visible V2 static fallbacks are human-accepted for the MVP.
+- OSS-002 is **MVP ACCEPTED / PRODUCTION-READY / FROZEN**. Lifecycle/persistence, detector tuning, association tuning, OCR research, and caption-motion polishing are deferred.
 - Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_benchmark.json` and `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_recovery.json`.
 
-## Human Review Gate — OSS-002C Final Delta
+## Current Result — OSS-003 Final Native Transition Rollout
 
-- Status: `FINAL SIX-CAPTION DELTA PENDING LIVE EXECUTION / WHOLE-REEL REVIEW`.
-- Execute only the prepared delta for ordinals `53, 78, 79, 87, 88, 108`; do not recreate the seven accepted representatives or any prior replacement.
-- Lifecycle evidence remains data-only. No caption persistence, detector tuning, or further caption research is authorized for the MVP.
+- Existing canonical evidence contains six stylized candidates. Three blur transitions at frames `80`, `286`, and `376` are executable 11-frame source-backed handoffs.
+- Whip `461` and slide candidates `211` / `629` are clip motion/VFX deferred to OSS-004; no new transition-family research is authorized here.
+- **Warning:** the clip-level Fusion representation is rejected for OSS-003. Post-run DRT `5568d13189143e82b8f48cc3cc288ae3b7d9b1ce97a9ecbe044732ccce6ce59e` contains zero `Sm2TiTransition` elements; the sparkle icons are clip effects, not transition items. Do not repair or tune that route again.
+- Live run `20261011T130946582Z_0d071b6f8542403d8a51b0ac8d669580` plus human review proves pinned Resolve MCP DRT insertion with a Resolve-authored native `Blur Dissolve` donor on Resolve `21.0.4.5`.
+- The final derivative `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1` will contain exactly three native 11-frame Blur Dissolves at `80`, `286`, and `376`; production remains untouched. Experimental `VC_OSS003_` Fusion effects are non-blocking cleanup debt and are not transition authority.
+- Final rollout run `20261011T134449524Z_99e08d1948d849c0ab9c1f4e0344c41f` is pending human execution/review. Do not mark OSS-003 frozen until the final derivative passes that review.
 
 ### OSS-002 done when
 
@@ -117,12 +120,8 @@ Do not spend another loop improving the rejected heuristic detector.
 
 ## Critical Path
 
-`OSS-002 full accepted-motion rollout` (PASS / persisted)
--> `OSS-002B` raw exact-token benchmark (historical fail-closed evidence)
--> `OSS-002C` association + seven-caption representative batch (PASS / human accepted approximate)
--> final six-caption recovered-motion delta (HUMAN REVIEW)
--> freeze caption animation for MVP; defer lifecycle/persistence
--> `OSS-003 transitions`
+`OSS-002 captions` (MVP ACCEPTED / PRODUCTION-READY / FROZEN)
+-> `OSS-003 transitions` (final native three-cut rollout pending human review)
 -> `OSS-004 core motion/VFX`
 -> `OSS-005 speed ramps`
 -> integrated Reel #3 review

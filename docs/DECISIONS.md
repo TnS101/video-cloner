@@ -212,3 +212,29 @@ Only decisions that materially constrain future work belong here.
 - Result: PaddleOCR found candidate text on 35/36 anchors and EasyOCR on 33/36, but both achieved 0/12 correct expected-caption selections and 0/12 downstream tracker seeds. Fail-closed matching accepted zero false localizations.
 - Root cause: the V2 expected caption token and the baked reference text visible at the same frame generally differ. This is a cross-authority association gap, not evidence that the accepted OpenCV tracker or Resolve carrier failed.
 - Decision: adopt neither OCR dependency, keep the accepted primary path unchanged, do not run all 32 failures, and do not publish a Resolve command. A human decision is required before any tiny BUILD of the missing association mechanism. Lifecycle/persistence is renamed `OSS-002C` and remains unstarted.
+
+## D022 — Freeze OSS-002 MVP and adapt OSS-003 blur evidence in place
+
+- Date: 2026-10-11
+- Status: APPROVED / REPRESENTATIVE LIVE PROOF PENDING
+- Decision: accept the combined V2 static fallback plus 69 editable V3 replacements as production-ready for the MVP and freeze all caption work. Keep transition intelligence editor-independent: canonical evidence normalizes to recipes before Resolve application.
+- Mechanism: apply the three source-backed 11-frame blur handoffs at frames `80`, `286`, and `376` as five owned clip-level Fusion Blur comps on existing V1 clips. Direct native transition insertion is unavailable through the pinned Resolve scripting surface; FCPXML import would create another timeline.
+- Boundary: preserve cuts, V2/V3 captions, audio, and Reel timing. Defer whip frame `461` to OSS-004; keep zero-duration slide candidates `211` and `629` analysis-only.
+
+## D023 — Reject clip-Fusion transitions and prove the native DRT primitive
+
+- Date: 2026-10-11
+- Status: CLIP ROUTE REJECTED / NATIVE PROOF READY
+- Warning: post-run DRT `5568d13189143e82b8f48cc3cc288ae3b7d9b1ce97a9ecbe044732ccce6ce59e` contains zero `Sm2TiTransition` elements. Existing `VC_OSS003_` comps are clip effects and are not a Resolve transition representation; do not repair or tune that route again.
+- Decision: reuse `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5` `placeTransition` (MIT) against an exported DRT derivative. Prove one native 11-frame `Cross Dissolve` at boundary `80` before any blur-fidelity work or rollout.
+- Boundary: production stays untouched. The imported proof must preserve V1/V2/V3/A1, remove only experimental `VC_OSS003_` comps, enumerate one first-class native transition, and pass human visible/selectable/playback review.
+
+## D024 — Adopt the native Blur Dissolve donor and finish OSS-003 on a derivative
+
+- Date: 2026-10-11
+- Status: FINAL ROLLOUT READY / HUMAN REVIEW
+- Evidence: automated run `20261011T130946582Z_0d071b6f8542403d8a51b0ac8d669580` produced a selectable native 11-frame `Blur Dissolve` at boundary `80`; live Resolve readback and human playback review passed on Resolve `21.0.4.5`.
+- Decision: use pinned `samuelgursky/davinci-resolve-mcp@94c7a885d53f13be78522ce96561a9e9e21d64c5` DRT transition insertion with the Resolve-authored Blur Dissolve donor at `80`, `286`, and `376`. Preserve donor-native defaults; do not tune source intensity evidence for MVP.
+- Representation: clip-level Fusion simulation is rejected for true transitions. Slides `211` / `629` and whip `461` are clip motion/VFX deferred to OSS-004.
+- Safety: disposable derivative timelines are the mutation boundary. A successfully imported proof/final derivative is retained even if later verification needs human review; secondary cleanup must never destroy accepted proof. Experimental `VC_OSS003_` effects are non-blocking cleanup debt.
+- Gate: final derivative `VIDEO_CLONER_DZatr0EJt4B_MVP_V1__OSS003_TRANSITIONS_V1` requires one human review before OSS-003 is frozen.

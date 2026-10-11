@@ -9,6 +9,7 @@ from typing import Mapping
 
 
 UNSUPPORTED_EXECUTABLE = {"whip_pan", "slide_transition"}
+OSS003_BLUR_CUTS = (80, 286, 376)
 
 
 class TransitionFilterError(ValueError):
@@ -55,6 +56,50 @@ def filter_mvp_transitions(source: Mapping[str, object]) -> dict[str, object]:
         "policy": "preserve_evidence_but_do_not_emit_unsupported_executable_transitions",
     }
     return result
+
+
+def normalize_oss003_recipes(source: Mapping[str, object]) -> dict[str, object]:
+    """Reduce the accepted Reel #3 evidence to editor-independent OSS-003 recipes."""
+    if source.get("success") is not True or source.get("schema") != "video_cloner_transitions":
+        raise TransitionFilterError("input is not a successful video_cloner_transitions artifact")
+    rows = source.get("transitions")
+    if not isinstance(rows, list):
+        raise TransitionFilterError("input transitions must be a list")
+    by_cut = {int(row.get("cut_frame", -1)): row for row in rows if isinstance(row, Mapping)}
+    recipes = []
+    for cut in OSS003_BLUR_CUTS:
+        row = by_cut.get(cut)
+        if (
+            not row
+            or row.get("transition_type") != "blur_transition"
+            or row.get("editor_actionable") is not True
+            or int(row.get("duration_frames") or 0) <= 0
+        ):
+            raise TransitionFilterError(f"missing executable blur evidence at cut {cut}")
+        recipes.append(
+            {
+                "boundary_frame": cut,
+                "from_shot": int(row["from_shot"]),
+                "to_shot": int(row["to_shot"]),
+                "family": "blur_handoff",
+                "duration_frames": int(row["duration_frames"]),
+                "outgoing_frames": int(row["outgoing_frames"]),
+                "incoming_frames": int(row["incoming_frames"]),
+                "direction": "none",
+                "intensity": float(row["transition_strength"]),
+                "easing": "smooth",
+                "confidence": str(row["confidence"]),
+                "provenance": {"schema": source["schema"], "analysis_version": source.get("analysis_version")},
+            }
+        )
+    return {
+        "schema": "video_cloner.transition_recipe_set.v1",
+        "video_id": "DZatr0EJt4B",
+        "fps": float(source.get("fps") or 0),
+        "recipes": recipes,
+        "deferred_to_oss004": [461],
+        "analysis_only": [cut for cut in (211, 629) if cut in by_cut],
+    }
 
 
 def main() -> int:

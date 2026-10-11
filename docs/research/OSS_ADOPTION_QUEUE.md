@@ -3,7 +3,7 @@
 - UPDATED: 2026-10-11
 - MODE: SPEEDRUN / PROVEN-CODE-FIRST
 - RULE: `REUSE > ADAPT > COMBINE > BUILD`
-- ACTIVE: `OSS-002C` (FINAL SIX-CAPTION DELTA / HUMAN REVIEW)
+- ACTIVE: `OSS-003` (FINAL NATIVE ROLLOUT / HUMAN REVIEW)
 
 ## Production Override — 2026-10-10
 
@@ -46,7 +46,7 @@ Proven:
 
 Keep frozen as the application primitive.
 
-### OSS-002 — Caption animation detection/representation/application — PASS / INTEGRATED
+### OSS-002 — Caption animation detection/representation/application — MVP ACCEPTED / PRODUCTION-READY / FROZEN
 
 Objective:
 - replace the frozen custom detector with proven OSS adaptation that materially improves coverage and compound-motion fidelity.
@@ -92,24 +92,27 @@ Audited and benchmarked on 12 real failed captions / 36 anchor frames:
 
 Decision at this layer: raw expected-token equality is invalid. Preserve the fail-closed evidence; OSS-002C supplies the authorized missing association layer without changing either OCR detector.
 
-### OSS-002C — Cross-authority caption association — FINAL DELTA / HUMAN REVIEW
+### OSS-002C — Cross-authority caption association — PASS / FROZEN
 
 - Same 12 cases with phrase-aware association: PaddleOCR `11/12`, EasyOCR `11/12`; both `0` accepted false and `1` ambiguous; all 11 accepted regions seeded the existing tracker.
 - Selected PaddleOCR on lower runtime and slightly higher tracker confidence.
 - Full 32 pass: 26 recovered, 5 ambiguous, 1 rejected non-caption logo, 13 meaningful-motion, 13 static, 18 lifecycle composition proposals.
 - Existing 56 accepted recipes remain unchanged. Seven-caption run `20261011T075523823Z_9505c20c898e475abcd84880e4420ffb` completed; the human accepted ordinals `5, 37, 54, 75, 80, 101, 107` as approximate but useful motion.
 - Canonical 13 meaningful-motion captions reconcile to those seven live replacements plus exact six-caption delta `53, 78, 79, 87, 88, 108`. The 13 recovered-static and six unsupported captions stay original/static.
-- Run `20261011T091036387Z_d111541339de4973b185c41e30bebedb` is pending as the one bounded delta. Perform one whole-Reel review afterward, freeze caption animation for MVP, and defer lifecycle/persistence and caption polishing to post-MVP.
+- Run `20261011T091036387Z_d111541339de4973b185c41e30bebedb` completed the six-caption delta. Human review accepts the combined V2/V3 result for MVP; no more caption work is on the current path.
 - Evidence: `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_benchmark.json` and `data/DZatr0EJt4B/analysis/DZatr0EJt4B_oss002c_cross_authority_recovery.json`.
 
-### OSS-003 — Transitions — NEXT
+### OSS-003 — Transitions — FINAL NATIVE ROLLOUT READY
 
-Primary:
-- reuse/adapt proven transition mechanisms/patterns from HyperFrames + Resolve-compatible primitives.
+Authority: six existing Reel #3 candidates. The automated native Blur Dissolve proof at frame `80` passed live readback and human playback review.
 
-Goal:
-- apply source-backed transitions visibly and editably.
-- no reopening cuts.
+Warning: the clip-level Fusion approximation is rejected. DRT evidence contains zero native transition elements; do not repair or tune it again.
+
+Decision: reuse pinned Resolve MCP `placeTransition` (MIT) plus the Resolve-authored Blur Dissolve donor to author three native 11-frame transitions at `80`, `286`, and `376` in a disposable final derivative. Production remains untouched; live first-class transition readback and one final human review are mandatory.
+
+Slides `211` / `629` and whip `461` are motion/VFX deferred to OSS-004. Experimental Fusion effects are non-blocking cleanup debt.
+
+Pending final rollout: `20261011T134449524Z_99e08d1948d849c0ab9c1f4e0344c41f`.
 
 ### OSS-004 — Core motion / VFX
 
@@ -154,10 +157,8 @@ Candidates:
 
 ## Visual Critical Path
 
-`OSS-002 caption animations` (PASS)
--> `OSS-002C final six-caption delta` (HUMAN REVIEW)
--> freeze caption animation for MVP; defer lifecycle/persistence
--> `OSS-003 transitions`
+`OSS-002 captions` (MVP ACCEPTED / FROZEN)
+-> `OSS-003 transitions` (final native three-cut rollout pending human review)
 -> `OSS-004 motion/VFX`
 -> `OSS-005 speed ramps`
 -> integrated visual review.
