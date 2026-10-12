@@ -801,81 +801,6 @@ def build_zoom_profile(segment, fps, subtle_scale=1.06, medium_scale=1.12, stron
     }
 
 
-def speed_multiplier_for_intensity(intensity):
-    if intensity == "very_high":
-        return 1.55
-    if intensity == "high":
-        return 1.40
-    if intensity == "medium":
-        return 1.25
-    return 1.15
-
-
-def build_speed_ramp_segments(duration_frames, multiplier, change_type="speed_up_candidate"):
-    duration_frames = max(2, safe_int(duration_frames, 2))
-    last_frame = duration_frames - 1
-
-    ramp_in_end = max(1, int(round(last_frame * 0.25)))
-    hold_end = max(ramp_in_end + 1, int(round(last_frame * 0.75)))
-    hold_end = min(hold_end, last_frame)
-
-    if change_type == "slow_down_candidate":
-        # The editor can interpret this as fast-to-normal.
-        return [
-            {
-                "label": "start_fast",
-                "from_frame": 0,
-                "to_frame": ramp_in_end,
-                "start_speed_multiplier": round(multiplier, 4),
-                "end_speed_multiplier": round(multiplier, 4),
-                "curve": "hold",
-            },
-            {
-                "label": "ramp_down",
-                "from_frame": ramp_in_end,
-                "to_frame": hold_end,
-                "start_speed_multiplier": round(multiplier, 4),
-                "end_speed_multiplier": 1.0,
-                "curve": "ease_in_out",
-            },
-            {
-                "label": "normal_tail",
-                "from_frame": hold_end,
-                "to_frame": last_frame,
-                "start_speed_multiplier": 1.0,
-                "end_speed_multiplier": 1.0,
-                "curve": "hold",
-            },
-        ]
-
-    return [
-        {
-            "label": "ramp_in",
-            "from_frame": 0,
-            "to_frame": ramp_in_end,
-            "start_speed_multiplier": 1.0,
-            "end_speed_multiplier": round(multiplier, 4),
-            "curve": "ease_in_out",
-        },
-        {
-            "label": "hold_fast",
-            "from_frame": ramp_in_end,
-            "to_frame": hold_end,
-            "start_speed_multiplier": round(multiplier, 4),
-            "end_speed_multiplier": round(multiplier, 4),
-            "curve": "hold",
-        },
-        {
-            "label": "ramp_out",
-            "from_frame": hold_end,
-            "to_frame": last_frame,
-            "start_speed_multiplier": round(multiplier, 4),
-            "end_speed_multiplier": 1.0,
-            "curve": "ease_in_out",
-        },
-    ]
-
-
 def validate_speed_ramp_candidate(segment, speed, min_score=0.45):
     change = speed.get("speed_change")
     if change not in {"speed_up_candidate", "slow_down_candidate"}:
@@ -912,22 +837,21 @@ def validate_speed_ramp_candidate(segment, speed, min_score=0.45):
 def build_speed_ramp_profile(segment, speed, fps, min_score=0.45):
     is_ramp, reason = validate_speed_ramp_candidate(segment, speed, min_score=min_score)
 
-    multiplier = speed_multiplier_for_intensity(segment.get("motion_intensity"))
-    duration_frames = safe_int(segment.get("duration_frames"), 1) or 1
-
     profile = {
         "candidate": bool(is_ramp),
-        "operation": "speed_ramp",
-        "style": "smooth",
+        "actionable": False,
+        "authority": "motion_heuristic_only",
         "source": "optical_flow_p75_motion_curve",
         "speed_change": speed.get("speed_change"),
         "confidence": speed.get("speed_change_confidence"),
         "score": safe_float(speed.get("score"), 0.0),
         "filter_reason": reason,
-        "speed_multiplier": round(multiplier, 4),
-        "segments": build_speed_ramp_segments(duration_frames, multiplier, speed.get("speed_change")),
         "speed_curve": speed.get("speed_curve", []),
-        "requires_editor_retime_support": True,
+        "missing_authority": "source-backed time mapping or original pre-retime footage",
+        "reason": (
+            "optical-flow motion change is not a measured playback-speed change; "
+            "source-backed time mapping or original pre-retime footage is missing"
+        ),
     }
 
     if not is_ramp:
@@ -937,6 +861,7 @@ def build_speed_ramp_profile(segment, speed, fps, min_score=0.45):
 
 
 def build_editor_contract(segment, zoom_profile, speed_ramp_profile):
+    speed_ramp_actionable = bool(speed_ramp_profile.get("actionable"))
     return {
         "motion_layer_ready": True,
         "zoom_candidate": bool(zoom_profile.get("candidate")),
@@ -944,17 +869,17 @@ def build_editor_contract(segment, zoom_profile, speed_ramp_profile):
         "recommended_operations": [
             op for op in [
                 "transform_zoom" if zoom_profile.get("candidate") else None,
-                "speed_ramp" if speed_ramp_profile.get("candidate") else None,
+                "speed_ramp" if speed_ramp_actionable else None,
             ] if op
         ],
         "resolve_controller": {
             "animated_zoom_ready": bool(zoom_profile.get("candidate")),
-            "speed_ramp_ready": bool(speed_ramp_profile.get("candidate")),
-            "speed_ramp_note": "Resolve TimelineItem API may not support true speed ramps; use FCPXML/segment reconstruction fallback if native retime is unavailable.",
+            "speed_ramp_ready": speed_ramp_actionable,
+            "speed_ramp_note": "Motion evidence is non-actionable without source-backed retime authority.",
         },
         "generic_compiler": {
             "can_emit_transform_zoom_keyframes": bool(zoom_profile.get("candidate")),
-            "can_emit_speed_ramp_segments": bool(speed_ramp_profile.get("candidate")),
+            "can_emit_speed_ramp_segments": speed_ramp_actionable,
         },
     }
 
@@ -1259,7 +1184,7 @@ def build_summary(segments):
     avg_conf = float(np.mean([conf_rank.get(s.get("confidence"), 1) for s in usable]))
     conf = "high" if avg_conf >= 2.4 else "medium" if avg_conf >= 1.6 else "low"
 
-    real_speed_ramps = [s for s in usable if s.get("speed_ramp_candidate") is True]
+    speed_ramp_candidates = [s for s in usable if s.get("speed_ramp_candidate") is True]
     zoom_candidates = [s for s in usable if s.get("zoom_candidate") is True]
 
     return {
@@ -1267,8 +1192,8 @@ def build_summary(segments):
         "dominant_non_static_motion_type": dominant_non_static,
         "dominant_motion_family": dominant_family,
         "average_motion_intensity": avg_intensity,
-        "has_speed_ramps": len(real_speed_ramps) > 0,
-        "speed_ramp_candidates_count": len(real_speed_ramps),
+        "has_speed_ramps": False,
+        "speed_ramp_candidates_count": len(speed_ramp_candidates),
         "zoom_candidates_count": len(zoom_candidates),
         "camera_movement_confidence": conf,
         "segments_count": len(segments),
@@ -1277,8 +1202,8 @@ def build_summary(segments):
         "editor_contract": {
             "motion_layer_ready": True,
             "transform_zoom_profiles_ready": len(zoom_candidates) > 0,
-            "speed_ramp_profiles_ready": len(real_speed_ramps) > 0,
-            "note": "Animated zoom is controller-ready. Speed ramp profiles are IR-ready but may require FCPXML or segment reconstruction if Resolve API cannot apply true retimes.",
+            "speed_ramp_profiles_ready": False,
+            "note": "Animated zoom is controller-ready. Speed-change candidates are non-actionable motion evidence without source-backed retime authority.",
         },
     }
 
@@ -1370,7 +1295,7 @@ def run(
         "zoom_candidates": zoom_candidates,
         "editor_contract": {
             "provides_motion_based_zoom": True,
-            "provides_speed_ramp_profiles": True,
+            "provides_speed_ramp_profiles": False,
             "provides_frame_accurate_ranges": True,
             "consumer_layers": [
                 "merge_analysis.py",

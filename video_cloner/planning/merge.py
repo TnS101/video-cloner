@@ -1566,74 +1566,24 @@ def compute_cut_rhythm_label(shot_duration, bpm):
 
 
 def compute_speed_ramp_profile(shot, motion, bpm=None, fps=24.0):
-    duration_frames = max(1, as_int(shot.get("duration_frames"), seconds_to_frame(shot.get("duration_seconds"), fps, 1)))
-    duration_seconds = as_float(shot.get("duration_seconds"), duration_frames / fps if fps else 0.0)
-
-    candidate = bool((motion or {}).get("speed_ramp_candidate", False))
-    intensity = str((motion or {}).get("motion_intensity") or "").lower()
-
-    if not candidate:
-        return {
-            "candidate": False,
-            "reason": (motion or {}).get("speed_ramp_filter_reason") or "motion layer did not mark speed_ramp_candidate",
-        }
-
-    if intensity == "very_high":
-        multiplier = 1.45
-        strength = "strong"
-    elif intensity == "high":
-        multiplier = 1.35
-        strength = "strong"
-    elif intensity == "medium":
-        multiplier = 1.25
-        strength = "medium"
-    else:
-        multiplier = 1.12
-        strength = "subtle"
-
-    ramp_in = max(2, int(round(duration_frames * 0.25)))
-    hold = max(1, int(round(duration_frames * 0.5)))
-    ramp_out = max(2, duration_frames - ramp_in - hold)
-
-    # Correct for very short clips.
-    if ramp_in + hold + ramp_out > duration_frames:
-        ramp_in = max(1, int(duration_frames * 0.3))
-        ramp_out = max(1, int(duration_frames * 0.3))
-        hold = max(1, duration_frames - ramp_in - ramp_out)
-
-    segments = [
-        {
-            "label": "ramp_in",
-            "relative_start_frame": 0,
-            "relative_end_frame": ramp_in,
-            "start_speed_multiplier": 1.0,
-            "end_speed_multiplier": round(multiplier, 4),
-        },
-        {
-            "label": "hold_fast",
-            "relative_start_frame": ramp_in,
-            "relative_end_frame": ramp_in + hold,
-            "start_speed_multiplier": round(multiplier, 4),
-            "end_speed_multiplier": round(multiplier, 4),
-        },
-        {
-            "label": "ramp_out",
-            "relative_start_frame": ramp_in + hold,
-            "relative_end_frame": duration_frames,
-            "start_speed_multiplier": round(multiplier, 4),
-            "end_speed_multiplier": 1.0,
-        },
-    ]
-
+    motion = motion or {}
+    source_profile = motion.get("speed_ramp_profile") or {}
+    candidate = bool(motion.get("speed_ramp_candidate", source_profile.get("candidate", False)))
     return {
-        "candidate": True,
-        "style": "smooth",
-        "strength": strength,
-        "speed_multiplier": round(multiplier, 4),
-        "duration_frames": duration_frames,
-        "duration_seconds": roundf(duration_seconds, 4, None),
-        "segments": segments,
-        "sync_to_beat_recommended": bool(bpm),
+        "candidate": candidate,
+        "actionable": False,
+        "authority": "motion_heuristic_only",
+        "source": source_profile.get("source", "optical_flow_p75_motion_curve"),
+        "speed_change": source_profile.get("speed_change", motion.get("speed_change")),
+        "confidence": source_profile.get("confidence", motion.get("speed_change_confidence")),
+        "score": source_profile.get("score", motion.get("speed_change_score", 0.0)),
+        "filter_reason": source_profile.get("filter_reason", motion.get("speed_ramp_filter_reason")),
+        "speed_curve": source_profile.get("speed_curve", []),
+        "missing_authority": "source-backed time mapping or original pre-retime footage",
+        "reason": (
+            "optical-flow motion change is not a measured playback-speed change; "
+            "source-backed time mapping or original pre-retime footage is missing"
+        ),
     }
 
 
@@ -2098,7 +2048,9 @@ def build_analysis(transitions_data, beatmap_data, shots_data, motion_data, tran
                 "timeline_end_frame": timeline_end_frame,
                 "timeline_duration_frames": duration_frames,
                 "zoom_ready": bool(edit_signals.get("zoom_candidate")),
-                "speed_ramp_ready": bool(edit_signals.get("speed_ramp_candidate")),
+                "speed_ramp_ready": bool(
+                    (edit_signals.get("speed_ramp_profile") or {}).get("actionable")
+                ),
                 "transition_ready": bool(transition_to_next and transition_to_next.get("editor_actionable")),
                 "subtitles_ready": bool(shot_subtitle_candidates),
                 "foreground_mask_requested": bool(
@@ -2477,7 +2429,7 @@ def build_analysis(transitions_data, beatmap_data, shots_data, motion_data, tran
             ],
             "notes": [
                 "Use transition_to_next only when is_editor_candidate/editor_actionable is true.",
-                "Use speed_ramp_profile.segments instead of inventing speed timing.",
+                "Treat speed_ramp_profile as non-actionable motion evidence unless it has source-backed retime authority.",
                 "Use motion_based_zoom.keyframes instead of inventing zoom timing.",
                 "Use beat_timing.preferred_cut_time/frame for beat-aware cut decisions.",
                 "Use subtitle_candidates and caption_style_resolved for subtitle generation.",
