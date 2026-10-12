@@ -75,6 +75,8 @@ If ~10 minutes pass without executable or user-visible progress, stop that appro
 
 Prefer a disposable timeline/project derivative when mutation could damage accepted work. Do not build a rollback/snapshot framework around it.
 
+Do not control a GUI/desktop as the product mechanism. Build deterministic scripts/commands that detect/apply the behavior; the human runs or reviews them. Use GUI/computer control only when the human explicitly requests a one-off exploratory action.
+
 Never destroy unknown user work.
 
 ## Scope discipline

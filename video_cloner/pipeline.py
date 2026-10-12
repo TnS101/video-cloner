@@ -57,6 +57,7 @@ def profile(run: RunContext, *, samples_per_shot: int = 5) -> dict[str, str]:
     paths = {
         "camera": analysis / f"{reel}_camera_style_profile.json",
         "caption_grammar": analysis / f"{reel}_caption_style_grammar.json",
+        "font_candidates": analysis / f"{reel}_font_candidates.json",
         "style_profile": analysis / f"{reel}_style_profile_mvp.json",
         "transitions": analysis / f"{reel}_transitions_mvp_resolve.json",
     }

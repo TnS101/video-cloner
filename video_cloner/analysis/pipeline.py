@@ -33,6 +33,7 @@ ANALYZERS = (
     AnalyzerSpec("transcript", "video_cloner/analysis/transcription.py", "python_audio", ("wav",), "transcript"),
     AnalyzerSpec("rhythm", "video_cloner/analysis/rhythm.py", "python_audio", ("wav",), "beatmap"),
     AnalyzerSpec("caption_style", "video_cloner/analysis/caption_style.py", "python_ocr", ("source_video", "transcript"), "caption_style"),
+    AnalyzerSpec("font_candidates", "scripts/analysis/detect_caption_font_candidates.py", "python_ocr", ("source_video", "caption_style"), "font_candidates"),
     AnalyzerSpec("motion", "video_cloner/analysis/motion.py", "python_default", ("proxy", "shots"), "motion"),
     AnalyzerSpec("transitions", "video_cloner/analysis/transitions.py", "python_default", ("proxy", "shots"), "transitions"),
     AnalyzerSpec("caption_occlusion", "video_cloner/analysis/caption_occlusion.py", "python_ocr", ("proxy", "caption_style", "transcript"), "caption_occlusion"),
@@ -89,6 +90,7 @@ class AnalysisOrchestrator:
             "transcript": root / f"{video_id}_transcript.json",
             "beatmap": root / f"{video_id}_beatmap.json",
             "caption_style": root / f"{video_id}_caption_style.json",
+            "font_candidates": root / f"{video_id}_font_candidates.json",
             "motion": root / f"{video_id}_motion.json",
             "transitions": root / f"{video_id}_transitions.json",
             "caption_occlusion": root / f"{video_id}_caption_occlusion.json",
@@ -142,6 +144,8 @@ class AnalysisOrchestrator:
             return [python, script, "--audio", str(a["wav"]), "--output", output, "--output-mode", "compact", "--approximate-downbeats"]
         if spec.name == "caption_style":
             return [python, script, "--video", str(a["source_video"]), "--transcript", str(a["transcript"]), "--output", output, "--frames", str(self.context.frame_sampling_dir), "--mode", "viral_transcript_aware", "--every-seconds", "0.25", "--max-frames", "160", "--min-confidence", "0.35", "--transcript-match-threshold", "0.30", "--regular-caption-score-threshold", "0.46", "--visual-spoken-score-threshold", "0.56", "--visual-spoken-min-confidence", "0.55", "--visual-hook-score-threshold", "0.64", "--save-debug", "true", "--debug-mode", "subtitle_only", "--output-mode", "full", "--emit-caption-style-events", "true", "--clear-frames", "true", "--ocr-lang", "en", "--use-angle-cls", "false", "--ocr-device", "gpu", "--ocr-gpu-id", "0", "--opencv-threads", "4", "--enable-caption-animation-detection", "true", "--animation-samples-per-cue", "5", "--animation-sample-window-sec", "0.22", "--animation-min-samples", "3", "--animation-max-samples", "7"]
+        if spec.name == "font_candidates":
+            return [python, script, "--video", str(a["source_video"]), "--caption-style", str(a["caption_style"]), "--output", output, "--debug-dir", str(self.context.analysis_dir / "debug_caption_font")]
         if spec.name == "motion":
             return [python, script, "--video", str(a["proxy"]), "--shots", str(a["shots"]), "--output", output, "--output-mode", "compact", "--samples-per-shot", "7", "--pair-delta", "0.18", "--min-shot-duration", "0.35", "--use-caption-mask", "true", "--speed-ramp-min-score", "0.45"]
         if spec.name == "transitions":
