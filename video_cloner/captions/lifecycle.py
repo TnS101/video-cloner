@@ -852,9 +852,9 @@ def generate_lifecycle(
     return result
 
 
-def generate_from_files(
-    generic_path: str | Path,
-    caption_style_path: str | Path,
+def _generate_from_data(
+    generic: Mapping[str, object],
+    style: Mapping[str, object],
     source_video: str | Path,
     output_path: str | Path,
     *,
@@ -862,8 +862,6 @@ def generate_from_files(
     accepted_motion_path: str | Path | None = None,
     display_text_authority_path: str | Path | None = None,
 ) -> dict:
-    generic = json.loads(Path(generic_path).read_text(encoding="utf-8-sig"))
-    style = json.loads(Path(caption_style_path).read_text(encoding="utf-8-sig"))
     motion_path = Path(accepted_motion_path) if accepted_motion_path else (
         Path(__file__).parents[2] / "config" / f"{generic.get('video_id')}.accepted_caption_motion.json"
     )
@@ -888,9 +886,80 @@ def generate_from_files(
     return result
 
 
+def generate_from_files(
+    generic_path: str | Path,
+    caption_style_path: str | Path,
+    source_video: str | Path,
+    output_path: str | Path,
+    **kwargs: object,
+) -> dict:
+    return _generate_from_data(
+        json.loads(Path(generic_path).read_text(encoding="utf-8-sig")),
+        json.loads(Path(caption_style_path).read_text(encoding="utf-8-sig")),
+        source_video,
+        output_path,
+        **kwargs,
+    )
+
+
+def generate_from_transcript_files(
+    transcript_path: str | Path,
+    caption_style_path: str | Path,
+    source_video: str | Path,
+    output_path: str | Path,
+    *,
+    video_id: str,
+    timeline_fps: float = 24.0,
+    **kwargs: object,
+) -> dict:
+    transcript = json.loads(Path(transcript_path).read_text(encoding="utf-8-sig"))
+    clips = transcript.get("subtitle_clips") if isinstance(transcript, Mapping) else None
+    if not isinstance(transcript, Mapping) or transcript.get("success") is not True or not isinstance(clips, list) or not clips or timeline_fps <= 0:
+        raise LifecycleGenerationError("caption-ready transcript clips and positive timeline fps are required")
+    # shortcut: source time equals timeline time while source-backed retiming remains unavailable.
+    subtitle_clips = []
+    for index, row in enumerate(clips, start=1):
+        if not isinstance(row, Mapping) or not row.get("text") or row.get("start") is None or row.get("end") is None:
+            continue
+        start_frame = max(0, int(round(float(row["start"]) * timeline_fps)))
+        end_frame = max(start_frame + 3, int(round(float(row["end"]) * timeline_fps)))
+        subtitle_clips.append({
+            **dict(row),
+            "id": f"sub_{index:03d}",
+            "subtitle_id": f"sub_{index:03d}",
+            "source_start": float(row["start"]),
+            "source_end": float(row["end"]),
+            "start": start_frame / timeline_fps,
+            "end": end_frame / timeline_fps,
+            "timeline_start": start_frame / timeline_fps,
+            "timeline_end": end_frame / timeline_fps,
+            "timeline_start_frame": start_frame,
+            "timeline_end_frame": end_frame,
+            "duration_frames": end_frame - start_frame,
+        })
+    generic = {
+        "success": True,
+        "schema": "generic_edit_commands",
+        "video_id": video_id,
+        "source": {"fps": timeline_fps},
+        "subtitle_clips": subtitle_clips,
+    }
+    return _generate_from_data(
+        generic,
+        json.loads(Path(caption_style_path).read_text(encoding="utf-8-sig")),
+        source_video,
+        output_path,
+        **kwargs,
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate generic dense caption lifecycle authority without Resolve.")
-    parser.add_argument("--generic", required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--generic")
+    source.add_argument("--transcript")
+    parser.add_argument("--video-id")
+    parser.add_argument("--timeline-fps", type=float, default=24.0)
     parser.add_argument("--caption-style", required=True)
     parser.add_argument("--source-video", required=True)
     parser.add_argument("--output", required=True)
@@ -899,12 +968,22 @@ def main() -> int:
     parser.add_argument("--search-padding-seconds", type=float, default=0.75)
     args = parser.parse_args()
     try:
-        result = generate_from_files(
-            args.generic, args.caption_style, args.source_video, args.output,
-            search_padding_seconds=args.search_padding_seconds,
-            accepted_motion_path=args.accepted_motion,
-            display_text_authority_path=args.display_text_authority,
-        )
+        options = {
+            "search_padding_seconds": args.search_padding_seconds,
+            "accepted_motion_path": args.accepted_motion,
+            "display_text_authority_path": args.display_text_authority,
+        }
+        if args.transcript:
+            if not args.video_id:
+                raise LifecycleGenerationError("video ID is required with transcript input")
+            result = generate_from_transcript_files(
+                args.transcript, args.caption_style, args.source_video, args.output,
+                video_id=args.video_id, timeline_fps=args.timeline_fps, **options,
+            )
+        else:
+            result = generate_from_files(
+                args.generic, args.caption_style, args.source_video, args.output, **options,
+            )
     except Exception as error:
         print(json.dumps({"ok": False, "error": f"{type(error).__name__}: {error}"}, sort_keys=True))
         return 1

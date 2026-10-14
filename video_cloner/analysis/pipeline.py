@@ -26,6 +26,7 @@ class AnalyzerSpec:
     interpreter: str
     inputs: tuple[str, ...]
     output: str
+    optional_inputs: tuple[str, ...] = ()
 
 
 ANALYZERS = (
@@ -33,10 +34,13 @@ ANALYZERS = (
     AnalyzerSpec("transcript", "video_cloner/analysis/transcription.py", "python_audio", ("wav",), "transcript"),
     AnalyzerSpec("rhythm", "video_cloner/analysis/rhythm.py", "python_audio", ("wav",), "beatmap"),
     AnalyzerSpec("caption_style", "video_cloner/analysis/caption_style.py", "python_ocr", ("source_video", "transcript"), "caption_style"),
+    AnalyzerSpec("caption_lifecycle", "video_cloner/captions/lifecycle.py", "python_default", ("source_video", "transcript", "caption_style"), "caption_lifecycle"),
     AnalyzerSpec("font_candidates", "scripts/analysis/detect_caption_font_candidates.py", "python_ocr", ("source_video", "caption_style"), "font_candidates"),
+    AnalyzerSpec("caption_compositions", "scripts/analysis/build_caption_composition_pilot.py", "python_default", ("caption_style",), "caption_compositions", ("caption_lifecycle", "caption_animation_recipes")),
     AnalyzerSpec("motion", "video_cloner/analysis/motion.py", "python_default", ("proxy", "shots"), "motion"),
     AnalyzerSpec("transitions", "video_cloner/analysis/transitions.py", "python_default", ("proxy", "shots"), "transitions"),
     AnalyzerSpec("caption_occlusion", "video_cloner/analysis/caption_occlusion.py", "python_ocr", ("proxy", "caption_style", "transcript"), "caption_occlusion"),
+    AnalyzerSpec("editing_dna", "video_cloner/analysis/editing_dna.py", "python_default", ("source_video", "shots", "transcript", "beatmap", "caption_style", "caption_lifecycle", "font_candidates", "caption_compositions", "motion", "transitions", "caption_occlusion"), "editing_dna"),
 )
 ANALYZER_BY_NAME = {spec.name: spec for spec in ANALYZERS}
 PRODUCER = {spec.output: spec.name for spec in ANALYZERS}
@@ -91,9 +95,13 @@ class AnalysisOrchestrator:
             "beatmap": root / f"{video_id}_beatmap.json",
             "caption_style": root / f"{video_id}_caption_style.json",
             "font_candidates": root / f"{video_id}_font_candidates.json",
+            "caption_lifecycle": root / f"{video_id}_caption_lifecycle_authority.json",
+            "caption_animation_recipes": root / f"{video_id}_caption_animation_recipes_oss002_full.json",
+            "caption_compositions": root / f"{video_id}_caption_compositions.json",
             "motion": root / f"{video_id}_motion.json",
             "transitions": root / f"{video_id}_transitions.json",
             "caption_occlusion": root / f"{video_id}_caption_occlusion.json",
+            "editing_dna": root / f"{video_id}_editing_dna.json",
         }
         self.report_path = root / f"{video_id}_analysis_run.json"
 
@@ -109,6 +117,7 @@ class AnalysisOrchestrator:
                     "script": spec.script,
                     "interpreter": spec.interpreter,
                     "inputs": list(spec.inputs),
+                    "optional_inputs": list(spec.optional_inputs),
                     "output": spec.output,
                 }
                 for spec in ANALYZERS
@@ -144,14 +153,25 @@ class AnalysisOrchestrator:
             return [python, script, "--audio", str(a["wav"]), "--output", output, "--output-mode", "compact", "--approximate-downbeats"]
         if spec.name == "caption_style":
             return [python, script, "--video", str(a["source_video"]), "--transcript", str(a["transcript"]), "--output", output, "--frames", str(self.context.frame_sampling_dir), "--mode", "viral_transcript_aware", "--every-seconds", "0.25", "--max-frames", "160", "--min-confidence", "0.35", "--transcript-match-threshold", "0.30", "--regular-caption-score-threshold", "0.46", "--visual-spoken-score-threshold", "0.56", "--visual-spoken-min-confidence", "0.55", "--visual-hook-score-threshold", "0.64", "--save-debug", "true", "--debug-mode", "subtitle_only", "--output-mode", "full", "--emit-caption-style-events", "true", "--clear-frames", "true", "--ocr-lang", "en", "--use-angle-cls", "false", "--ocr-device", "gpu", "--ocr-gpu-id", "0", "--opencv-threads", "4", "--enable-caption-animation-detection", "true", "--animation-samples-per-cue", "5", "--animation-sample-window-sec", "0.22", "--animation-min-samples", "3", "--animation-max-samples", "7"]
+        if spec.name == "caption_lifecycle":
+            return [python, "-m", "video_cloner.captions.lifecycle", "--transcript", str(a["transcript"]), "--caption-style", str(a["caption_style"]), "--source-video", str(a["source_video"]), "--video-id", self.context.video_id, "--timeline-fps", "24", "--output", output]
         if spec.name == "font_candidates":
             return [python, script, "--video", str(a["source_video"]), "--caption-style", str(a["caption_style"]), "--output", output, "--debug-dir", str(self.context.analysis_dir / "debug_caption_font")]
+        if spec.name == "caption_compositions":
+            command = [python, script, "--style", str(a["caption_style"]), "--timeline-fps", "24", "--video-id", self.context.video_id, "--output", output]
+            if _nonempty(a["caption_lifecycle"]):
+                command.extend(("--lifecycle", str(a["caption_lifecycle"])))
+            if _nonempty(a["caption_animation_recipes"]):
+                command.extend(("--recipes", str(a["caption_animation_recipes"])))
+            return command
         if spec.name == "motion":
             return [python, script, "--video", str(a["proxy"]), "--shots", str(a["shots"]), "--output", output, "--output-mode", "compact", "--samples-per-shot", "7", "--pair-delta", "0.18", "--min-shot-duration", "0.35", "--use-caption-mask", "true", "--speed-ramp-min-score", "0.45"]
         if spec.name == "transitions":
             return [python, script, "--video", str(a["proxy"]), "--shots", str(a["shots"]), "--output", output, "--window-frames", "3", "--min-confidence", "medium", "--max-runtime-sec", "45", "--max-boundaries", "300", "--output-mode", "compact"]
         if spec.name == "caption_occlusion":
             return [python, script, "--video", str(a["proxy"]), "--caption-style", str(a["caption_style"]), "--transcript", str(a["transcript"]), "--output", output, "--debug-dir", str(self.context.analysis_dir / "debug_caption_occlusion"), "--write-mask-assets", "true", "--mask-output-dir", str(self.context.analysis_dir / "foreground_masks"), "--clear-mask-assets", "true", "--clear-mask-assets-per-event", "true", "--mask-assets-only-needed", "true", "--mask-stop-on-first-failure", "true", "--mask-progress-every", "25", "--backend", "paddle_humanseg", "--segmentation-device", "gpu", "--paddle-gpu-id", "0", "--paddle-hub-module", "humanseg_lite", "--paddle-seg-threshold", "0.50", "--require-paddle-gpu", "true", "--enable-grabcut-fallback", "false", "--samples-per-event", "3", "--sample-window-sec", "0.18", "--include-inferred-transcript-cues", "true", "--include-word-inferred-cues", "false", "--max-inferred-events", "20", "--max-total-samples", "360", "--time-budget-sec", "0", "--occlusion-threshold", "0.42", "--mask-overlap-threshold", "0.18", "--segmentation-max-side", "960", "--write-debug-frames", "true", "--debug-max-frames", "0", "--clear-debug", "true", "--write-classification-audit", "true", "--classification-audit-dir", str(self.context.analysis_dir / "caption_occlusion_audit"), "--clear-classification-audit", "true", "--progress-every", "10", "--encoding", "utf-8"]
+        if spec.name == "editing_dna":
+            return [python, script, "--video-id", self.context.video_id, "--source-video", str(a["source_video"]), "--shots", str(a["shots"]), "--transcript", str(a["transcript"]), "--rhythm", str(a["beatmap"]), "--caption-style", str(a["caption_style"]), "--caption-lifecycle", str(a["caption_lifecycle"]), "--font-candidates", str(a["font_candidates"]), "--caption-compositions", str(a["caption_compositions"]), "--motion", str(a["motion"]), "--transitions", str(a["transitions"]), "--caption-occlusion", str(a["caption_occlusion"]), "--output", output]
         raise ValueError(f"unsupported analyzer: {spec.name}")
 
     def _load_previous(self) -> dict[str, object]:
@@ -171,7 +191,7 @@ class AnalysisOrchestrator:
 
     def _input_identity(self, spec: AnalyzerSpec) -> tuple[list[dict[str, object]], str, str, str]:
         inputs = []
-        for key in spec.inputs:
+        for key in (*spec.inputs, *(key for key in spec.optional_inputs if _nonempty(self.artifacts[key]))):
             path = self.artifacts[key]
             inputs.append({"artifact": key, "path": str(path), "bytes": path.stat().st_size, "sha256": _sha256(path)})
         script = self._script_path(spec)

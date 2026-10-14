@@ -152,7 +152,24 @@ def infer_pair_relationships(
 
     dx = [((bbox[0] + bbox[2]) - (abox[0] + abox[2])) / 2.0 for abox, bbox, _ in bounds]
     dy = [((bbox[1] + bbox[3]) - (abox[1] + abox[3])) / 2.0 for abox, bbox, _ in bounds]
-    horizontal = abs(float(median(dx))) >= abs(float(median(dy)))
+    x_gaps = [max(0.0, max(abox[0], bbox[0]) - min(abox[2], bbox[2])) for abox, bbox, _ in bounds]
+    y_gaps = [max(0.0, max(abox[1], bbox[1]) - min(abox[3], bbox[3])) for abox, bbox, _ in bounds]
+    x_overlap = [
+        max(0.0, min(abox[2], bbox[2]) - max(abox[0], bbox[0]))
+        / max(1.0, min(abox[2] - abox[0], bbox[2] - bbox[0]))
+        for abox, bbox, _ in bounds
+    ]
+    y_overlap = [
+        max(0.0, min(abox[3], bbox[3]) - max(abox[1], bbox[1]))
+        / max(1.0, min(abox[3] - abox[1], bbox[3] - bbox[1]))
+        for abox, bbox, _ in bounds
+    ]
+    axis_gap = float(median(x_gaps)) - float(median(y_gaps))
+    axis_overlap = float(median(y_overlap)) - float(median(x_overlap))
+    horizontal = axis_overlap > 0 or (
+        axis_overlap == 0
+        and (axis_gap > 0 or (axis_gap == 0 and abs(float(median(dx))) >= abs(float(median(dy)))))
+    )
     if horizontal:
         a_before_b = median(dx) >= 0
         gaps = [(bbox[0] - abox[2]) if a_before_b else (abox[0] - bbox[2]) for abox, bbox, _ in bounds]
@@ -280,17 +297,7 @@ def build_composition_graph(
         relations = infer_pair_relationships(left, right, observations, physical_word=physical)
         if not relations:
             continue
-        boxes = [(glyph_bounds(row["a_bbox"]), glyph_bounds(row["b_bbox"])) for row in observations]
-        near = False
-        if boxes:
-            distances = []
-            for a_box, b_box in boxes:
-                x_gap = max(0.0, max(a_box[0], b_box[0]) - min(a_box[2], b_box[2]))
-                y_gap = max(0.0, max(a_box[1], b_box[1]) - min(a_box[3], b_box[3]))
-                height = ((a_box[3] - a_box[1]) + (b_box[3] - b_box[1])) / 2.0
-                distances.append((x_gap**2 + y_gap**2) ** 0.5 / max(1.0, height))
-            near = median(distances) <= 1.5
-        if physical or (shared and near):
+        if physical or shared:
             union(left, right)
             pair_relationships.extend(relations)
 
