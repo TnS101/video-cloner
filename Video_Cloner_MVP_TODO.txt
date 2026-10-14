@@ -1,0 +1,57 @@
+VIDEO CLONER -> SMART TEMPLATE -> AUTO EDIT
+MVP TODO | Oct 2026
+
+WIN CONDITION
+Reference Reel URL -> Editing DNA -> Save Smart Template -> Upload Footage -> Auto rough-cut + B-roll -> Apply Template -> Editable .drt -> Human review/export.
+Local-first. Deterministic scripts + OSS. Resolve first; more editors later.
+
+[VIDEO CLONER — INTELLIGENCE]
+[x] DONE     Cuts/scene detection + audio beatmap + transcript/word timing.
+[x] DONE     Caption OCR, identity, style/layout, font candidates.
+[x] FROZEN   OSS-002 caption animation recipes + static fallback (accepted MVP).
+[x] ACCEPT   Caption stacking/lifecycle; 108 compositions / 151 identities on Reel #3.
+[x] FROZEN   OSS-003 transitions (blur/whip etc.) and OSS-004 motion/VFX source evidence.
+[x] FROZEN   OSS-005 speed ramps: motion candidates only; no fake retiming authority.
+[x] ACCEPT   Editing DNA JSON v1 + canonical API; Reel #3 integrated review.
+[~] PARTIAL 10 analyzers in one run; accepted animation recipes/lifecycle may depend on pre-existing artifacts.
+[ ] NEXT    Audit fresh-reel dependency chain: auto-produce vs optional accepted artifacts; fix only real missing wiring.
+[ ] NEXT    One UNSEEN Reel -> run same API -> verify DNA, captions, transitions, uncertainty; no hardcoded Reel #3 assumptions.
+[ ] GATE    Freeze Video Cloner after unseen-reel human review. No 1:1 perfection requirement.
+
+[MVP-2STEP — REQUIRED EXECUTION / RESOLVE APPLICATION GATE]
+[ ] NEXT    STEP 1 / ONE API CALL: CLI `run` today (single Web UI action later) takes Reel URL -> ingest/analyze -> Editing DNA -> prepare full application package -> publish exactly ONE Resolve task. No manual per-stage command or environment setup.
+[ ] NEXT    STEP 2 / ONE RESOLVE CLICK: Workspace > Scripts > VC_Run_Agent_Task consumes the single queued task -> creates a safe editable derivative -> internally applies ALL currently supported and evidence-authorized layers using existing proven adapters. Report applied / unresolved / unsupported per layer.
+[ ] GATE    Validate one complete application pass on DYwset0R5kP with no baseline mutation, duplicate application or false 1:1 fidelity claim. Preserve uncertainty; do not invent fonts, effects, transitions, or speed ramps (OSS-005 is FROZEN). Existing Reel #3-only scripts are mechanisms to adapt, NOT separate user actions.
+[ ] RULE    UX is always exactly TWO user actions: one Video Cloner API/Web UI action + one in-Resolve bridge invocation. No per-layer .bat/.py calls, no new scheduler/service. When adding the auto editor later, reuse this same interface, don't expose the internals.
+
+[LOCAL AUTO-EDIT MVP — AFTER THE GATE]
+[ ] Simple localhost web UI (browser + Python API first; Electron/desktop packaging only if needed).
+[ ] Paste Reel URL -> generate/review DNA -> SAVE or DISCARD Smart Template.
+[ ] Local Smart Template library (SQLite + versioned DNA + source/asset references).
+[ ] Upload 1 long take or multiple scenes; optional plan/script.
+[ ] Auto rough-cut: silence/ums/ahs, pauses, scene selection; REUSE auto-editor where useful.
+[ ] Local B-roll search/match/place by transcript/scene context; external sourcing later.
+[ ] Deterministic application: template + rough-cut + B-roll -> editable Resolve timeline/.drt via the SAME two-step API + Resolve bridge contract (HyperFrames/Remotion only when useful for actual rendering).
+[ ] Preview in Resolve -> manual tweaks -> export. Exactly one bridge action per full application, never per-layer scripts or agent chatter.
+[ ] Test ONE complete clip end-to-end. Then only fix what blocks usable output.
+
+[LIBRARIES / IMPROVEMENTS — CONDITIONAL, NOT CURRENT QUEUE]
+[ ] Caption animation/enter-exit combo library; learn from partial MP4/GIF/CSS/JS examples.
+[ ] VFX/transition/SFX libraries; detect and place SFX on cuts, accents, transitions.
+[ ] Camera tracking/stabilization; occlusion/mask quality only when output needs it.
+[ ] Improve font/style matching when visually important; never fabricate exact fonts.
+[ ] Script-writer + content-format dataset/matrix (full content system, later).
+[ ] Learn from editing tutorials, project files, and partial assets (later).
+[ ] HyperFrames/Remotion for complex assets; Resolve MCP for application; OTIO only for real second-editor need.
+[ ] Reference OSS: auto-editor, PySceneDetect/TransNetV2 (fallback), WhisperX/VideoLingo (only if timing fails), resolve-autocut, easy-edit.
+[ ] Other editors, hosted SaaS, heavy GPU/cloud scaling: DEFERRED until local MVP works.
+[ ] User-facing QA: small preview/approval gate only; no validation framework.
+
+RULES
+Video Cloner = intelligence (editor-neutral JSON).
+Generator = rough-cut/assets/animations from Smart Template.
+Adapter = Resolve first, other editors by demand.
+V2/V3/composition layers complement each other; retain valid edits, static fallback if needed.
+Automate/Reuse > Adapt > Simplify > Manual. No giant framework. Human owns NEXT.
+
+TRACKER NOTE: MVP-2STEP is also recorded as NEXT in PROJECT_TRACKER.xlsx; the human controls implementation order.
