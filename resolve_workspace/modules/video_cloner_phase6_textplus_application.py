@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import xml.etree.ElementTree as ET
@@ -19,6 +20,13 @@ COMBINED_MANIFEST_SCHEMA = "video_cloner.offline_timeline_v1_manifest.v1"
 COMBINED_ARTIFACT_CONTRACT = "accepted_combined_offline_timeline_v1_no_resolve"
 NODE = "textplus_full"
 NODE_CONTRACT = "standalone_textplus_full_timeline_v1"
+
+
+class TargetMismatch(ValueError):
+    def __init__(self, code: str, **details: Any):
+        self.code = code
+        self.details = details
+        super().__init__(f"{code}: {json.dumps(details, ensure_ascii=False, sort_keys=True)}")
 
 
 def _safe(obj: Any, method: str, *args: Any, default: Any = None) -> Any:
@@ -346,6 +354,7 @@ def _load_combined_contract(root: Path, manifest_path: Path, manifest: Mapping[s
         "manifest_path": manifest_path, "artifact_set_sha256": stored_set_hash,
         "textplus_fingerprint": stored_set_hash, "fcpxml": fcpxml, "fcpxml_sha256": _sha256(fcpxml),
         "report": report_path, "report_sha256": _sha256(report_path), "xml": xml,
+        "editing_dna": None, "application_plan": {}, "limitations": {},
     }
 
 
@@ -357,7 +366,8 @@ def load_phase5_contract(root: Path, manifest_path: Path) -> dict[str, Any]:
     stored_set_hash = manifest.get("artifact_set_sha256")
     unsigned = dict(manifest)
     unsigned.pop("artifact_set_sha256", None)
-    if manifest.get("schema") != MANIFEST_SCHEMA or manifest.get("version") != 1 or manifest.get("artifact_set_contract") != "offline_fcpxml_only_no_resolve":
+    artifact_contract = manifest.get("artifact_set_contract")
+    if manifest.get("schema") != MANIFEST_SCHEMA or manifest.get("version") != 1 or artifact_contract not in {"offline_fcpxml_only_no_resolve", "unified_editing_dna_application_v2"}:
         raise ValueError("manifest_contract")
     if not isinstance(stored_set_hash, str) or stored_set_hash != _fingerprint(unsigned):
         raise ValueError("manifest_self_identity")
@@ -368,17 +378,26 @@ def load_phase5_contract(root: Path, manifest_path: Path) -> dict[str, Any]:
     node = nodes[NODE]
     if node.get("contract") != NODE_CONTRACT:
         raise ValueError("textplus_contract")
-    node_identity = {
-        "node": NODE,
-        "inputs": {"generic": inputs.get("generic"), "proxy": inputs.get("proxy"), "caption_style": inputs.get("caption_style"), "audio": inputs.get("audio")},
-        "producer": node.get("producer"),
-    }
+    node_inputs = {"generic": inputs.get("generic"), "proxy": inputs.get("proxy"), "caption_style": inputs.get("caption_style"), "audio": inputs.get("audio")}
+    if inputs.get("editing_dna") is not None:
+        node_inputs["editing_dna"] = inputs.get("editing_dna")
+    node_identity = {"node": NODE, "inputs": node_inputs, "producer": node.get("producer")}
     if node.get("fingerprint") != _fingerprint(node_identity):
         raise ValueError("textplus_fingerprint")
     generic = _identity_file(root, inputs.get("generic"), "generic")
     proxy = _identity_file(root, inputs.get("proxy"), "proxy")
     style = _identity_file(root, inputs.get("caption_style"), "caption_style")
     audio = _identity_file(root, inputs.get("audio"), "audio") if inputs.get("audio") is not None else None
+    editing_dna = _identity_file(root, inputs.get("editing_dna"), "editing_dna") if inputs.get("editing_dna") is not None else None
+    application_plan = manifest.get("application_plan") or {}
+    available_assets = manifest.get("available_assets") or {}
+    limitations = manifest.get("limitations") or {}
+    if artifact_contract == "unified_editing_dna_application_v2":
+        dna = _read_json(editing_dna, "editing_dna") if editing_dna is not None else {}
+        if dna.get("schema") != "video_cloner.editing_dna" or manifest.get("video_id") != dna.get("video_id") or not isinstance(application_plan, Mapping) or not isinstance(available_assets, Mapping):
+            raise ValueError("unified_application_contract")
+        if set(application_plan) != {"cuts_shot_structure_audio", "caption_timing_lifecycle", "caption_font_style_geometry", "caption_animations", "native_transitions", "occlusion_compositing", "motion_vfx", "speed_ramps"}:
+            raise ValueError("unified_application_layers")
     outputs = node.get("outputs")
     if not isinstance(outputs, Mapping):
         raise ValueError("textplus_outputs")
@@ -428,7 +447,362 @@ def load_phase5_contract(root: Path, manifest_path: Path) -> dict[str, Any]:
         "report": report_path,
         "report_sha256": _sha256(report_path),
         "xml": xml,
+        "editing_dna": editing_dna,
+        "application_plan": dict(application_plan),
+        "available_assets": dict(available_assets) if isinstance(available_assets, Mapping) else {},
+        "limitations": dict(limitations) if isinstance(limitations, Mapping) else {},
     }
+
+
+def verified_layer_report(plan: Mapping[str, Any], target_validation: Mapping[str, Any], applied: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    applied = applied or {}
+    runtime_layers = {"caption_animations", "native_transitions", "occlusion_compositing", "motion_vfx"}
+    layers: dict[str, Any] = {}
+    for name, raw in plan.items():
+        row = dict(raw) if isinstance(raw, Mapping) else {"disposition": "unsupported", "reason": "invalid application plan row"}
+        disposition = str(row.pop("disposition", "unsupported"))
+        status = "applied" if disposition == "apply" and (name not in runtime_layers or name in applied) else ("not_applied" if disposition == "apply" else disposition)
+        if status == "applied" and name in applied and row.get("accepted_recipe_count") is not None and applied[name].get("applied_count") != row.get("accepted_recipe_count"):
+            status = "partially_applied"
+        row["status"] = status
+        if status in {"applied", "partially_applied"}:
+            row["resolve_verification"] = {
+                "timeline_identity_and_structure": True,
+                "verified_title_count": target_validation.get("v2_title_count"),
+                "verified_video_clip_count": target_validation.get("v1_clip_count"),
+                "verified_audio_clip_count": target_validation.get("a1_clip_count"),
+            }
+            if name in applied:
+                row["resolve_verification"]["operations"] = applied[name]
+        layers[name] = row
+    return layers
+
+
+def _load_workspace_module(name: str, path: Path) -> Any:
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot_load:{path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def apply_motion_vfx(target: Any, contract: Mapping[str, Any]) -> dict[str, Any]:
+    layer = (contract.get("application_plan") or {}).get("motion_vfx") or {}
+    recipes = layer.get("recipes") if isinstance(layer, Mapping) else None
+    if not isinstance(recipes, list) or not recipes:
+        return {"status": "not_applicable", "applied_count": 0}
+    base = _as_int(_safe(target, "GetStartFrame", default=0)) or 0
+    items = [item for item in (_safe(target, "GetItemListInTrack", "video", 1, default=[]) or []) if _safe(item, "GetMediaPoolItem") is not None]
+    items.sort(key=lambda item: _as_int(_safe(item, "GetStart")) or -1)
+    expected = contract["xml"]["cuts"]
+    actual = [((_as_int(_safe(item, "GetStart")) or 0) - base, _as_int(_safe(item, "GetDuration"))) for item in items]
+    wanted = [(row["timeline_start"], row["duration"]) for row in expected]
+    if actual != wanted:
+        raise ValueError(f"motion_v1_contract:{actual!r}")
+
+    token = str(contract["artifact_set_sha256"])[:12]
+    names = {int(row["shot"]): f"VC_DNA_MOTION_SHOT_{int(row['shot']):03d}_{token}" for row in recipes}
+    present = {
+        shot: name in [str(value) for value in (_safe(items[shot - 1], "GetFusionCompNameList", default=[]) or [])]
+        for shot, name in names.items()
+    }
+    if any(present.values()):
+        if not all(present.values()):
+            raise ValueError(f"motion_partial_application:{present!r}")
+        if any(_safe(items[shot - 1], "LoadFusionCompByName", name) is None for shot, name in names.items()):
+            raise ValueError("motion_owned_comp_readback")
+        return {"status": "reused", "applied_count": len(names), "comp_names": list(names.values())}
+    for shot in names:
+        existing = [str(value) for value in (_safe(items[shot - 1], "GetFusionCompNameList", default=[]) or [])]
+        if existing:
+            raise ValueError(f"motion_unowned_fusion_collision:shot_{shot}:{existing!r}")
+
+    module = _load_workspace_module("vc_unified_motion", Path(__file__).resolve().with_name("oss004_motion_vfx_representative_batch.py"))
+    module.oss003.EXPECTED_V1 = tuple(wanted)
+    created: list[tuple[Any, str]] = []
+    evidence = []
+    try:
+        for source in recipes:
+            shot = int(source["shot"])
+            scale = [[int(frame), float(value)] for frame, value in source["scale"]]
+            recipe = {
+                "id": f"shot_{shot:03d}_transform_zoom", "shot": shot,
+                "window": [scale[0][0], scale[-1][0]], "behavior": "source-backed transform zoom",
+                "position": [], "scale": scale, "blur": [], "confidence": source.get("confidence"),
+                "provenance": ["editing_dna.motion_vfx.editor_contract"],
+            }
+            created.append((items[shot - 1], names[shot]))
+            evidence.append(module._apply_recipe(items[shot - 1], recipe, names[shot], allow_source_handles=True))
+    except Exception:
+        for item, name in reversed(created):
+            _safe(item, "DeleteFusionCompByName", name, default=False)
+        raise
+    return {"status": "applied", "applied_count": len(evidence), "comp_names": list(names.values()), "readback": evidence}
+
+
+def apply_caption_animations(resolve: Any, project: Any, pool: Any, target: Any, contract: Mapping[str, Any]) -> dict[str, Any]:
+    layer = (contract.get("application_plan") or {}).get("caption_animations") or {}
+    recipes = layer.get("recipes") if isinstance(layer, Mapping) else None
+    if not isinstance(recipes, list) or not recipes:
+        return {"status": "not_applicable", "applied_count": 0, "created_timeline_count": 0}
+
+    rep = _load_workspace_module("vc_unified_caption_animation", Path(__file__).resolve().with_name("oss002_oss_animation_representative_batch.py"))
+    recipes = [rep.recipe_contract.validate_recipe(dict(row)) for row in recipes]
+    root = ET.parse(contract["fcpxml"]).getroot()
+    title_nodes = list(root.findall("./library/event/project/sequence/spine/title"))
+    formats = list(root.findall("./resources/format"))
+    if len(title_nodes) != len(contract["xml"]["titles"]) or len(formats) != 1:
+        raise ValueError("caption_animation_fcpxml")
+    rep.batch.EXPECTED_CAPTIONS = len(title_nodes)
+    styles = rep.batch._styles_by_ordinal(contract["fcpxml"])
+    width, height = int(formats[0].get("width") or 0), int(formats[0].get("height") or 0)
+    if width <= 0 or height <= 0:
+        raise ValueError("caption_animation_format")
+    for index, node in enumerate(title_nodes, start=1):
+        transform = node.find("./adjust-transform")
+        values = str(transform.get("position") if transform is not None else "0 0").split()
+        if len(values) != 2:
+            raise ValueError(f"caption_animation_position:{index}")
+        styles[index]["Center"] = [0.5 + float(values[0]) / width, 0.5 - float(values[1]) / height]
+
+    base = _as_int(_safe(target, "GetStartFrame", default=0)) or 0
+    originals = rep.canary.basic_title_rows(target)
+    selected: dict[str, dict[str, Any]] = {}
+    for recipe in recipes:
+        matches = [
+            row for row in originals
+            if row["track"] == int(recipe["lane"]) + 1
+            and row["start"] - base == int(recipe["start_frame"])
+            and row["duration"] == int(recipe["duration"])
+            and row["text_readback"] in (None, recipe["text"])
+        ]
+        if len(matches) != 1:
+            raise ValueError(f"caption_animation_target:{recipe['caption_id']}:{len(matches)}")
+        selected[str(recipe["caption_id"])] = matches[0]
+
+    token = str(contract["artifact_set_sha256"])[:12]
+    names = {caption_id: f"_VC_DNA_ANIM_{caption_id}_{token}" for caption_id in selected}
+    nested = {row["source"]["name"]: row for row in rep.batch._nested_items(target) if row["source"]["name"] in set(names.values())}
+    present = {caption_id: names[caption_id] in nested for caption_id in names}
+    if any(present.values()):
+        if not all(present.values()):
+            raise ValueError(f"caption_animation_partial_application:{present!r}")
+        readback = []
+        for recipe in recipes:
+            caption_id = str(recipe["caption_id"])
+            row = nested[names[caption_id]]
+            if row["start"] - base != recipe["start_frame"] or row["duration"] != recipe["duration"] or selected[caption_id]["enabled"] is not False:
+                raise ValueError(f"caption_animation_reuse_contract:{caption_id}")
+            _, tool = rep.canary.carrier._find_textplus(row["inner"])
+            targets = rep._channel_targets(recipe, styles[int(recipe["title_index"])])
+            if any(not rep.canary.animation.input_targets_are_correct(tool, name, values) for name, values in targets.items()):
+                raise ValueError(f"caption_animation_reuse_readback:{caption_id}")
+            readback.append({"caption_id": caption_id, "channels": sorted(recipe["channels"])})
+        return {"status": "reused", "applied_count": len(readback), "created_timeline_count": 0, "readback": readback}
+
+    occupied: dict[int, list[tuple[int, int]]] = {}
+    first_track = max((row["track"] for row in originals), default=1) + 1
+    allocation: dict[str, int] = {}
+    for recipe in sorted(recipes, key=lambda row: (int(row["start_frame"]), str(row["caption_id"]))):
+        interval = (int(recipe["start_frame"]), int(recipe["start_frame"]) + int(recipe["duration"]))
+        track = first_track
+        while any(interval[0] < end and start < interval[1] for start, end in occupied.setdefault(track, [])):
+            track += 1
+        occupied[track].append(interval)
+        allocation[str(recipe["caption_id"])] = track
+    created_tracks: list[int] = []
+    while int(_safe(target, "GetTrackCount", "video", default=0) or 0) < max(allocation.values()):
+        if _safe(target, "AddTrack", "video", default=False) is not True:
+            raise RuntimeError("caption_animation_track_create")
+        created_tracks.append(int(_safe(target, "GetTrackCount", "video", default=0) or 0))
+
+    created_sources: list[Any] = []
+    placed: list[Any] = []
+    disabled: list[Any] = []
+    evidence = []
+    try:
+        for recipe in recipes:
+            caption_id = str(recipe["caption_id"])
+            source = rep.canary.carrier._call(pool, "CreateEmptyTimeline", names[caption_id])
+            created_sources.append(source)
+            identity = rep.canary._timeline_identity(source)
+            if source is None or identity["name"] != names[caption_id] or not identity["unique_id"] or rep.canary.carrier._call(project, "SetCurrentTimeline", source) is not True:
+                raise RuntimeError(f"caption_animation_source:{caption_id}")
+            rep.canary.carrier._call(source, "InsertFusionTitleIntoTimeline", "Text+")
+            item, tool = rep.canary.carrier._find_textplus(source)
+            style = styles[int(recipe["title_index"])]
+            static = rep.canary._set_static_style(tool, style)
+            comp = rep.canary.carrier._call(item, "GetFusionCompByIndex", 1)
+            applied = rep.apply_recipe_channels(comp, tool, recipe, style)
+            rep.canary.carrier._call(project, "SetCurrentTimeline", target)
+            returned = rep.canary.carrier._call(pool, "AppendToTimeline", [{
+                "mediaPoolItem": rep.canary.carrier._call(source, "GetMediaPoolItem"), "startFrame": 0,
+                "endFrame": int(recipe["duration"]), "trackIndex": allocation[caption_id],
+                "recordFrame": base + int(recipe["start_frame"]),
+            }])
+            if not isinstance(returned, (list, tuple)) or len(returned) != 1 or returned[0] is None:
+                raise RuntimeError(f"caption_animation_append:{caption_id}")
+            placed.append(returned[0])
+            original = selected[caption_id]["item"]
+            if rep.canary.carrier._call(original, "SetClipEnabled", False) is False or rep.canary._clip_enabled(original) is not False:
+                raise RuntimeError(f"caption_animation_original_disable:{caption_id}")
+            disabled.append(original)
+            _, inner_tool = rep.canary.carrier._find_textplus(source)
+            targets = rep._channel_targets(recipe, style)
+            if any(not rep.canary.animation.input_targets_are_correct(inner_tool, name, values) for name, values in targets.items()):
+                raise RuntimeError(f"caption_animation_readback:{caption_id}")
+            evidence.append({"caption_id": caption_id, "channels": sorted(recipe["channels"]), "static": static, "animation": applied})
+    except Exception:
+        rep.canary.carrier._call(project, "SetCurrentTimeline", target)
+        for original in disabled:
+            rep.canary._optional(original, "SetClipEnabled", True, default=False)
+        if placed:
+            rep.canary._optional(target, "DeleteClips", placed, False, default=False)
+        if created_sources:
+            rep.canary._optional(pool, "DeleteTimelines", created_sources, default=False)
+        for track in reversed(created_tracks):
+            rep.canary._optional(target, "DeleteTrack", "video", track, default=False)
+        raise
+    return {"status": "applied", "applied_count": len(evidence), "created_timeline_count": len(created_sources), "readback": evidence}
+
+
+def apply_native_blur_transitions(resolve: Any, project: Any, pool: Any, target: Any, target_name: str, contract: Mapping[str, Any], report_dir: Path) -> tuple[Any, str, dict[str, Any], bool]:
+    layer = (contract.get("application_plan") or {}).get("native_transitions") or {}
+    recipes = layer.get("native_blur_recipes") if isinstance(layer, Mapping) else None
+    if not isinstance(recipes, list) or not recipes:
+        return target, target_name, {"status": "not_applicable", "applied_count": 0}, False
+    expected = sorted((int(row["cut_frame"]), int(row["duration_frames"])) for row in recipes)
+
+    def readback(timeline: Any) -> list[dict[str, Any]]:
+        base = _as_int(_safe(timeline, "GetStartFrame", default=0)) or 0
+        rows = []
+        for item in _safe(timeline, "GetItemListInTrack", "video", 1, default=[]) or []:
+            if _safe(item, "GetMediaPoolItem") is not None:
+                continue
+            start = (_as_int(_safe(item, "GetStart")) or 0) - base
+            duration = _as_int(_safe(item, "GetDuration")) or 0
+            rows.append({"name": str(_safe(item, "GetName", default="") or ""), "start": start, "duration": duration, "cut_frame": start + duration // 2})
+        rows.sort(key=lambda row: row["start"])
+        return rows
+
+    existing = readback(target)
+    if existing:
+        actual = sorted((row["cut_frame"], row["duration"]) for row in existing if row["name"] == "Blur Dissolve")
+        if actual != expected or len(existing) != len(expected):
+            raise ValueError(f"native_blur_collision:{existing!r}")
+        return target, target_name, {"status": "reused", "applied_count": len(existing), "readback": existing}, False
+
+    layer_hash = _fingerprint({"artifact": contract["artifact_set_sha256"], "layer": "native_blur"})
+    derivative_name = _content_addressed_target_name(target_name, layer_hash)
+    matches = [row for row in _timelines(project) if str(_safe(row, "GetName", default="") or "") == derivative_name]
+    if len(matches) > 1:
+        raise ValueError("native_blur_derivative_collision")
+    if matches:
+        derivative = matches[0]
+        _validate_authoritative_import(derivative, _timeline_contract(contract["xml"], derivative_name), True)
+        rows = readback(derivative)
+        if sorted((row["cut_frame"], row["duration"]) for row in rows if row["name"] == "Blur Dissolve") != expected:
+            raise ValueError(f"native_blur_derivative_readback:{rows!r}")
+        return derivative, derivative_name, {"status": "reused", "applied_count": len(rows), "readback": rows}, False
+
+    staging_name = f"_VC_NATIVE_BLUR_STAGE_{layer_hash[:12]}"
+    if any(str(_safe(row, "GetName", default="") or "") == staging_name for row in _timelines(project)):
+        raise ValueError("native_blur_staging_collision")
+    duplicate = _safe(target, "DuplicateTimeline", staging_name)
+    duplicate_uid = _unique_id(duplicate)
+    if duplicate is None or not duplicate_uid:
+        raise ValueError("native_blur_derivative_create")
+    report_dir.mkdir(parents=True, exist_ok=True)
+    unpatched = report_dir / "unified_native_blur_unpatched.drt"
+    # Resolve can choose the DRT filename as its imported timeline name, even
+    # when the internal MpFolder timeline name has been rewritten.
+    patched = report_dir / f"{derivative_name}.drt"
+    export_type = getattr(resolve, "EXPORT_DRT", None)
+    try:
+        if export_type is None or _safe(duplicate, "Export", str(unpatched), export_type, default=False) is not True:
+            raise ValueError("native_blur_export")
+        module = _load_workspace_module("vc_unified_native_blur", Path(__file__).resolve().with_name("oss003_native_blur_drt.py"))
+        donor = Path(__file__).resolve().parents[2] / ".agent/reports/OSS003_NATIVE_BLUR_AUTO_B80_V1/20261011T130946582Z_0d071b6f8542403d8a51b0ac8d669580/blur_dissolve_template.xml"
+        if not donor.is_file() or _sha256(donor) != "2b57d7e86794046bb72b32d0e76ac0ddc791c661a0ee88af6d6352ace3bdc326":
+            raise ValueError("native_blur_donor_missing")
+        selected = module.base.select_top_level(unpatched, staging_name)
+        base = _as_int(_safe(duplicate, "GetStartFrame", default=0)) or 0
+        module.place_blur_transitions(
+            unpatched, patched, timeline_name=staging_name, timeline_uuid=selected["id"],
+            donor_element=donor.read_text(encoding="utf-8-sig"), track=1,
+            boundaries=[(base + cut, duration) for cut, duration in expected],
+            output_timeline_name=derivative_name,
+        )
+        if _safe(project, "SetCurrentTimeline", target, default=False) is not True or _safe(pool, "DeleteTimelines", [duplicate], default=False) is not True:
+            raise ValueError("native_blur_temporary_cleanup")
+        duplicate = None
+        before_import_ids = {_unique_id(row) for row in _timelines(project)}
+        returned = _safe(pool, "ImportTimelineFromFile", str(patched), {"timelineName": derivative_name}, default=None)
+        imported_matches = [row for row in _timelines(project) if str(_safe(row, "GetName", default="") or "") == derivative_name]
+        if len(imported_matches) != 1:
+            actual_name = str(_safe(returned, "GetName", default="") or "") if returned not in (None, False, True) else ""
+            raise ValueError(f"native_blur_import_identity:{len(imported_matches)}:{actual_name}")
+        derivative = imported_matches[0]
+        if not _unique_id(derivative) or _unique_id(derivative) in before_import_ids or (returned not in (None, False, True) and not _same_timeline(returned, derivative)):
+            raise ValueError("native_blur_import_returned_identity")
+        _validate_authoritative_import(derivative, _timeline_contract(contract["xml"], derivative_name), True)
+        rows = readback(derivative)
+        if sorted((row["cut_frame"], row["duration"]) for row in rows if row["name"] == "Blur Dissolve") != expected:
+            raise ValueError(f"native_blur_live_readback:{rows!r}")
+        return derivative, derivative_name, {"status": "applied", "applied_count": len(rows), "readback": rows}, True
+    except Exception:
+        if duplicate is not None and _unique_id(duplicate) == duplicate_uid:
+            _safe(project, "SetCurrentTimeline", target, default=False)
+            _safe(pool, "DeleteTimelines", [duplicate], default=False)
+        raise
+
+
+def apply_flash_transitions(pool: Any, target: Any, contract: Mapping[str, Any]) -> dict[str, Any]:
+    layer = (contract.get("application_plan") or {}).get("native_transitions") or {}
+    rows = layer.get("flash_recipes") if isinstance(layer, Mapping) else None
+    if not isinstance(rows, list) or not rows:
+        return {"status": "not_applicable", "applied_count": 0}
+    flash = _load_workspace_module("vc_unified_flash", Path(__file__).resolve().with_name("advanced_transition_flash_application_v1.py"))
+    base = _as_int(_safe(target, "GetStartFrame", default=0)) or 0
+    specs = [{
+        **row,
+        "name": f"VC_FLASH_{index:03d}_frame_{int(row['cut_frame']):04d}",
+        "start_frame": base + int(row["cut_frame"]) - int(row["outgoing_frames"]),
+        "alpha_keyframes": [[0, 0.0], [int(row["outgoing_frames"]), 0.75], [int(row["duration_frames"]) - 1, 0.0]],
+    } for index, row in enumerate(rows, start=1)]
+    existing = [(track, item) for track, item in flash.all_video_items(target) if flash.item_name(item).startswith("VC_FLASH_")]
+    if existing:
+        tracks = {track for track, _ in existing}
+        if len(tracks) != 1:
+            raise ValueError("flash_owned_track_identity")
+        snapshot = flash.flash_snapshot(target, specs, next(iter(tracks)))
+        if snapshot.get("ok") is not True:
+            raise ValueError(f"flash_owned_readback:{snapshot!r}")
+        return {"status": "reused", "applied_count": len(specs), "snapshot": snapshot}
+
+    track_info = flash.ensure_extra_video_track(target, flash.track_count(target, "video"))
+    if track_info.get("ok") is not True:
+        raise ValueError(f"flash_track:{track_info!r}")
+    target_track = int(track_info["target_track"])
+    carrier = flash.choose_carrier_source(target, max(int(row["duration_frames"]) for row in specs))
+    if carrier.get("ok") is not True:
+        raise ValueError(f"flash_carrier:{carrier!r}")
+    appended = flash.append_flash_carriers(pool, target, carrier, specs, target_track)
+    try:
+        if appended.get("ok") is not True:
+            raise ValueError(f"flash_append:{appended!r}")
+        configured = [flash.configure_flash(item, spec, index) for index, (spec, item) in enumerate(appended["assigned"], start=1)]
+        snapshot = flash.flash_snapshot(target, specs, target_track)
+        if not all(row.get("ok") for row in configured) or snapshot.get("ok") is not True:
+            raise ValueError(f"flash_readback:{snapshot!r}")
+        return {"status": "applied", "applied_count": len(specs), "track_index": target_track, "snapshot": snapshot}
+    except Exception:
+        assigned = [item for _, item in appended.get("assigned", [])]
+        if assigned:
+            _safe(target, "DeleteClips", assigned, False, default=False)
+        _safe(target, "DeleteTrack", "video", target_track, default=False)
+        raise
 
 
 def _as_int(value: Any) -> int | None:
@@ -479,6 +853,8 @@ def _title_text(item: Any) -> str | None:
 
 
 def _item_snapshot(item: Any, track_type: str, track_index: int) -> dict[str, Any]:
+    media_pool_item = _safe(item, "GetMediaPoolItem")
+    nested = _safe(media_pool_item, "GetTimeline") if media_pool_item is not None else None
     return {
         "track_type": track_type,
         "track_index": track_index,
@@ -488,6 +864,7 @@ def _item_snapshot(item: Any, track_type: str, track_index: int) -> dict[str, An
         "duration": _as_int(_safe(item, "GetDuration")),
         "left_offset": _as_int(_safe(item, "GetLeftOffset")),
         "media_path": _media_path(item),
+        "nested_timeline_name": str(_safe(nested, "GetName", default="") or ""),
         "title_text": _title_text(item) if track_type == "video" and track_index > 1 else None,
     }
 
@@ -560,19 +937,29 @@ def _media_pool_inventory(pool: Any) -> list[dict[str, Any]]:
     return rows
 
 
-def _validate_item(actual: Mapping[str, Any], expected: Mapping[str, Any], base: int, media: Path | None, title: bool = False, require_title_text: bool = True) -> None:
+def _validate_item(actual: Mapping[str, Any], expected: Mapping[str, Any], base: int, media: Path | None, title: bool = False, require_title_text: bool = True, expected_title_texts: set[str] | None = None) -> None:
+    identity = {
+        "caption_id": expected.get("caption_id"),
+        "expected_name": expected.get("name"),
+        "lane": expected.get("lane"),
+        "track_index": actual.get("track_index"),
+    }
     if actual.get("start") is None or actual.get("duration") is None:
-        raise ValueError("target_item_readback")
+        raise TargetMismatch("target_item_readback", **identity, actual_start=actual.get("start"), actual_duration=actual.get("duration"))
     if actual["start"] - base != expected["timeline_start"] or actual["duration"] != expected["duration"]:
-        raise ValueError("target_timing")
+        raise TargetMismatch("target_timing", **identity, expected_start=expected["timeline_start"], actual_start=actual["start"] - base, expected_duration=expected["duration"], actual_duration=actual["duration"])
     if actual.get("end") is None or actual["end"] - actual["start"] not in {expected["duration"], expected["duration"] - 1}:
-        raise ValueError("target_end")
+        raise TargetMismatch("target_end", **identity, expected_duration=expected["duration"], actual_start=actual.get("start"), actual_end=actual.get("end"))
     if title:
-        if (require_title_text and actual.get("title_text") != expected["text"]) or actual.get("media_path"):
-            raise ValueError("target_title")
+        actual_text = actual.get("title_text")
+        if actual.get("media_path"):
+            raise TargetMismatch("target_title", **identity, reason="media_backed_title", media_type="media_clip", media_path=actual.get("media_path"), expected_text=expected["text"], actual_text=actual_text)
+        if require_title_text and actual_text != expected["text"]:
+            reason = "resolve_title_readback_unavailable" if actual_text is None else "incorrect_title_to_caption_mapping" if actual_text in (expected_title_texts or set()) else "genuine_content_mismatch"
+            raise TargetMismatch("target_title", **identity, reason=reason, media_type="title_generator", media_path="", expected_text=expected["text"], actual_text=actual_text, actual_name=actual.get("name"), expected_start=expected["timeline_start"], actual_start=actual["start"] - base, expected_duration=expected["duration"], actual_duration=actual["duration"])
     else:
         if actual.get("left_offset") != expected["source_start"] or media is None or not _same_path(actual.get("media_path"), media):
-            raise ValueError("target_media")
+            raise TargetMismatch("target_media", **identity, expected_source_start=expected["source_start"], actual_source_start=actual.get("left_offset"), expected_media=str(media) if media else None, actual_media=actual.get("media_path"))
 
 
 def validate_target(timeline: Any, contract: Mapping[str, Any], require_title_text: bool = True) -> dict[str, Any]:
@@ -583,10 +970,21 @@ def validate_target(timeline: Any, contract: Mapping[str, Any], require_title_te
     if not fps_values or any(abs(float(value) - contract["fps"]) > 1e-6 for value in fps_values):
         raise ValueError("target_timebase")
     base = snapshot["start_frame"]
-    by_track = {(kind, track): sorted([row for row in snapshot["items"] if row["track_type"] == kind and row["track_index"] == track], key=lambda row: row["start"] if row["start"] is not None else -1) for kind in ("video", "audio") for track in range(1, (snapshot[f"{kind}_track_count"] or 0) + 1)}
+    owned_items = [
+        row for row in snapshot["items"]
+        if row["track_type"] == "video" and (
+            str(row.get("name") or "").startswith("VC_FLASH_")
+            or str(row.get("name") or "").startswith("_VC_DNA_ANIM_")
+            or str(row.get("nested_timeline_name") or "").startswith("_VC_DNA_ANIM_")
+            or (row["track_index"] == 1 and row.get("media_path") == "" and row.get("name") == "Blur Dissolve")
+        )
+    ]
+    validation_items = [row for row in snapshot["items"] if row not in owned_items]
+    by_track = {(kind, track): sorted([row for row in validation_items if row["track_type"] == kind and row["track_index"] == track], key=lambda row: row["start"] if row["start"] is not None else -1) for kind in ("video", "audio") for track in range(1, (snapshot[f"{kind}_track_count"] or 0) + 1)}
     cuts = by_track.get(("video", 1), [])
     flash_handoffs = contract.get("flash_handoffs") or []
     overlay_rows = list(contract["titles"]) + list(flash_handoffs)
+    expected_title_texts = {row["text"] for row in overlay_rows}
     overlay_lanes = sorted({row["lane"] for row in overlay_rows})
     title_tracks = {lane + 1 for lane in overlay_lanes}
     titles = [row for track in sorted(title_tracks) for row in by_track.get(("video", track), [])]
@@ -596,7 +994,18 @@ def validate_target(timeline: Any, contract: Mapping[str, Any], require_title_te
         if any(current["start"] is None or previous["start"] is None or previous["duration"] is None or current["start"] < previous["start"] + previous["duration"] for previous, current in zip(rows, rows[1:])):
             raise ValueError("target_same_lane_overlap")
     if len(cuts) != len(contract["cuts"]) or len(titles) != len(overlay_rows) or len(audio_rows) != len(contract["audio_rows"]):
-        raise ValueError("target_track_counts")
+        raise TargetMismatch(
+            "target_track_counts",
+            reason="structure_mismatch_or_older_fcpxml",
+            timeline_name=snapshot["name"],
+            timeline_unique_id=snapshot["unique_id"],
+            expected_video_clips=len(contract["cuts"]),
+            actual_video_clips=len(cuts),
+            expected_titles=len(overlay_rows),
+            actual_titles=len(titles),
+            expected_audio_clips=len(contract["audio_rows"]),
+            actual_audio_clips=len(audio_rows),
+        )
     allowed_tracks = {("video", 1), ("audio", 1)} | {("video", track) for track in title_tracks}
     if any(rows for key, rows in by_track.items() if key not in allowed_tracks):
         raise ValueError("target_extra_tracks")
@@ -610,11 +1019,43 @@ def validate_target(timeline: Any, contract: Mapping[str, Any], require_title_te
         if len(actual_titles) != len(expected_titles):
             raise ValueError("target_title_lanes")
         for actual, expected in zip(actual_titles, expected_titles):
-            _validate_item(actual, expected, base, None, title=True, require_title_text=require_title_text)
+            try:
+                _validate_item(actual, expected, base, None, title=True, require_title_text=require_title_text, expected_title_texts=expected_title_texts)
+            except TargetMismatch as exc:
+                exc.details["timeline_name"] = snapshot["name"]
+                exc.details["timeline_unique_id"] = snapshot["unique_id"]
+                exc.args = (f"{exc.code}: {json.dumps(exc.details, ensure_ascii=False, sort_keys=True)}",)
+                raise
     end = max((row["start"] - base + row["duration"] for row in cuts), default=0)
     if end != contract["duration_frames"]:
         raise ValueError("target_duration")
-    return {"ok": True, "v1_clip_count": len(cuts), "a1_clip_count": len(audio_rows), "v2_title_count": len(contract["titles"]), "v2_title_lanes": contract["title_lanes"], "flash_handoff_count": len(flash_handoffs), "duration_frames": end, "snapshot": snapshot}
+    return {"ok": True, "v1_clip_count": len(cuts), "a1_clip_count": len(audio_rows), "v2_title_count": len(contract["titles"]), "v2_title_lanes": contract["title_lanes"], "flash_handoff_count": len(flash_handoffs), "owned_application_item_count": len(owned_items), "duration_frames": end, "snapshot": snapshot}
+
+
+def _content_addressed_target_name(target_name: str, artifact_set_sha256: str) -> str:
+    return f"{target_name}__VC_{artifact_set_sha256[:12]}"
+
+
+def _timeline_contract(contract: Mapping[str, Any], name: str) -> dict[str, Any]:
+    value = dict(contract)
+    value["timeline_name"] = name
+    return value
+
+
+def _validate_authoritative_import(timeline: Any, contract: Mapping[str, Any], allow_unobservable_text: bool) -> dict[str, Any]:
+    try:
+        result = validate_target(timeline, contract)
+        result["caption_text_authority"] = "DIRECT_RESOLVE_TEXT_READBACK"
+        return result
+    except TargetMismatch as exc:
+        if not allow_unobservable_text or exc.code != "target_title" or exc.details.get("reason") != "resolve_title_readback_unavailable":
+            raise
+    result = validate_target(timeline, contract, require_title_text=False)
+    title_rows = [row for row in result["snapshot"]["items"] if row["track_type"] == "video" and row["track_index"] > 1]
+    if any(row.get("title_text") is not None for row in title_rows):
+        raise TargetMismatch("target_title", reason="partial_title_readback", timeline_name=result["snapshot"]["name"], timeline_unique_id=result["snapshot"]["unique_id"])
+    result["caption_text_authority"] = "CONTENT_ADDRESSED_FCPXML_WITH_STRUCTURAL_READBACK"
+    return result
 
 
 CARRIER_OWNERSHIP = "PREEXISTING_SHARED_NOT_OWNED"
@@ -812,18 +1253,21 @@ def apply_carrier_textplus_v2(
 
 def run(resolve: Any, context: dict[str, Any]) -> dict[str, Any]:
     run_id = str(context.get("run_id") or "")
+    last_verified_step = "command_received"
+    current_layer = "package_validation"
     result: dict[str, Any] = {"ok": False, "task_id": TASK_ID, "run_id": run_id, "mode": MODE, "classification": None, "selected_node": NODE, "import_call_count": 0, "current_timeline_restore_count": 0, "save_project_count": 0, "delete_call_count": 0, "relink_call_count": 0, "metadata_controller_call_count": 0, "failures": []}
     try:
         command = context.get("command") or {}
         payload = command.get("payload") or {}
         if command.get("task") != TASK_ID or command.get("run_id") != run_id or command.get("mode") != MODE:
             raise ValueError("command_identity")
-        if payload.get("selected_node") != NODE or payload.get("import_permitted") is not True or payload.get("replace_existing_timeline") is not False or payload.get("save_project") is not False or payload.get("delete_permitted") is not False or payload.get("relink_permitted") is not False or payload.get("metadata_controller_permitted") is not False:
+        if payload.get("selected_node") != NODE or payload.get("import_permitted") is not True or payload.get("replace_existing_timeline") is not False or payload.get("save_project") is not True or payload.get("delete_permitted") is not False or payload.get("relink_permitted") is not False or payload.get("metadata_controller_permitted") is not False:
             raise ValueError("mutation_authority")
         root = Path(str(payload.get("repository_root") or "")).resolve()
         if not (root / "AGENTS.md").is_file():
             raise ValueError("repository_identity")
         contract = load_phase5_contract(root, Path(str(payload.get("manifest_path") or "")))
+        last_verified_step = "application_package_validated"
         declared = {
             "artifact_set_sha256": contract["artifact_set_sha256"],
             "textplus_fingerprint": contract["textplus_fingerprint"],
@@ -842,6 +1286,7 @@ def run(resolve: Any, context: dict[str, Any]) -> dict[str, Any]:
         project_name = str(_safe(project, "GetName", default="") or "") if project is not None else ""
         if project is None or project_name != expected_project:
             raise ValueError(f"project_identity:{project_name}")
+        last_verified_step = "resolve_project_identity_validated"
         pool = _safe(project, "GetMediaPool")
         if pool is None:
             raise ValueError("media_pool_missing")
@@ -854,22 +1299,125 @@ def run(resolve: Any, context: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("target_duplicate_collision")
         if matches and payload.get("require_target_absent") is True:
             raise ValueError("target_already_exists")
-        non_target_before = [row for row in timelines_before if row["name"] != target_name]
+        current_layer = "cuts_shot_structure_audio"
+        occupied_target_mismatch = None
+        imported = False
+        created_timeline_count = 0
         if matches:
             target = matches[0]
-            target_validation = validate_target(target, contract["xml"])
-            classification = "EXACT_TEXTPLUS_FULL_TIMELINE_REUSED"
+            try:
+                target_validation = _validate_authoritative_import(target, contract["xml"], False)
+                classification = "EXACT_TEXTPLUS_FULL_TIMELINE_REUSED"
+            except Exception as exc:
+                occupied_target_mismatch = {
+                    "classification": "INCOMPATIBLE_EXISTING_TARGET",
+                    "failure": f"{type(exc).__name__}: {exc}",
+                    "details": exc.details if isinstance(exc, TargetMismatch) else None,
+                    "timeline_name": target_name,
+                    "timeline_unique_id": _unique_id(target) or None,
+                }
+                result["occupied_target_mismatch"] = occupied_target_mismatch
+                derivative_name = _content_addressed_target_name(target_name, contract["artifact_set_sha256"])
+                derivative_contract = _timeline_contract(contract["xml"], derivative_name)
+                derivative_matches = [row for row in _timelines(project) if str(_safe(row, "GetName", default="") or "") == derivative_name]
+                if len(derivative_matches) > 1:
+                    raise ValueError("derivative_target_duplicate_collision")
+                if derivative_matches:
+                    target = derivative_matches[0]
+                    if not _unique_id(target):
+                        raise ValueError("derivative_target_unique_id")
+                    target_validation = _validate_authoritative_import(target, derivative_contract, True)
+                    classification = "CONTENT_ADDRESSED_TEXTPLUS_FULL_TIMELINE_REUSED"
+                else:
+                    before_ids = {_unique_id(row) for row in _timelines(project)}
+                    returned = _safe(pool, "ImportTimelineFromFile", str(contract["fcpxml"]), {"timelineName": derivative_name}, default=None)
+                    result["import_call_count"] = 1
+                    derivative_matches = [row for row in _timelines(project) if str(_safe(row, "GetName", default="") or "") == derivative_name]
+                    if len(derivative_matches) != 1:
+                        raise ValueError(f"import_derivative_identity:{len(derivative_matches)}")
+                    target = derivative_matches[0]
+                    if not _unique_id(target) or _unique_id(target) in before_ids or (returned not in (None, False, True) and not _same_timeline(returned, target)):
+                        raise ValueError("import_returned_identity")
+                    target_validation = _validate_authoritative_import(target, derivative_contract, True)
+                    classification = "NEW_CONTENT_ADDRESSED_TEXTPLUS_FULL_TIMELINE_IMPORTED"
+                    imported = True
+                    created_timeline_count += 1
+                target_name = derivative_name
         else:
-            returned = _safe(pool, "ImportTimelineFromFile", str(contract["fcpxml"]), default=None)
+            before_ids = {_unique_id(row) for row in _timelines(project)}
+            returned = _safe(pool, "ImportTimelineFromFile", str(contract["fcpxml"]), {"timelineName": target_name}, default=None)
             result["import_call_count"] = 1
             matches = [row for row in _timelines(project) if str(_safe(row, "GetName", default="") or "") == target_name]
             if len(matches) != 1:
                 raise ValueError(f"import_target_identity:{len(matches)}")
             target = matches[0]
-            if returned not in (None, False, True) and not _same_timeline(returned, target):
+            if not _unique_id(target) or _unique_id(target) in before_ids or (returned not in (None, False, True) and not _same_timeline(returned, target)):
                 raise ValueError("import_returned_identity")
-            target_validation = validate_target(target, contract["xml"])
+            target_validation = _validate_authoritative_import(target, contract["xml"], True)
             classification = "NEW_TEXTPLUS_FULL_TIMELINE_IMPORTED"
+            imported = True
+            created_timeline_count += 1
+
+        layer_evidence: dict[str, Any] = {}
+        plan = contract.get("application_plan") or {}
+        motion_layer = plan.get("motion_vfx") or {}
+        animation_layer = plan.get("caption_animations") or {}
+        needs_derivative = any(isinstance(row, Mapping) and row.get("disposition") == "apply" for row in (motion_layer, animation_layer))
+        if classification == "EXACT_TEXTPLUS_FULL_TIMELINE_REUSED" and needs_derivative:
+            derivative_name = _content_addressed_target_name(target_name, contract["artifact_set_sha256"])
+            derivative_contract = _timeline_contract(contract["xml"], derivative_name)
+            derivative_matches = [row for row in _timelines(project) if str(_safe(row, "GetName", default="") or "") == derivative_name]
+            if len(derivative_matches) > 1:
+                raise ValueError("application_derivative_duplicate_collision")
+            if derivative_matches:
+                target = derivative_matches[0]
+                target_validation = _validate_authoritative_import(target, derivative_contract, True)
+                classification = "CONTENT_ADDRESSED_DNA_TIMELINE_REUSED"
+            else:
+                before_ids = {_unique_id(row) for row in _timelines(project)}
+                target = _safe(target, "DuplicateTimeline", derivative_name)
+                if target is None or not _unique_id(target) or _unique_id(target) in before_ids:
+                    raise ValueError("application_derivative_create")
+                target_validation = _validate_authoritative_import(target, derivative_contract, True)
+                classification = "NEW_CONTENT_ADDRESSED_DNA_TIMELINE_CREATED"
+                imported = True
+                created_timeline_count += 1
+            target_name = derivative_name
+
+        current_layer = "native_transitions"
+        report_dir = root / str(command.get("report_path") or "").replace("/report.json", "")
+        target, target_name, blur_result, blur_created = apply_native_blur_transitions(resolve, project, pool, target, target_name, contract, report_dir)
+        if blur_created:
+            created_timeline_count += 1
+            result["import_call_count"] += 1
+            result["delete_call_count"] += 1  # The run-owned export duplicate only; no pre-existing timeline is deleted.
+        if blur_result.get("applied_count"):
+            layer_evidence["native_transitions"] = blur_result
+        target_validation = _validate_authoritative_import(target, _timeline_contract(contract["xml"], target_name), True)
+
+        current_layer = "caption_animations"
+        animation_result = apply_caption_animations(resolve, project, pool, target, contract)
+        created_timeline_count += int(animation_result.get("created_timeline_count") or 0)
+        if animation_result.get("applied_count"):
+            layer_evidence["caption_animations"] = animation_result
+
+        current_layer = "motion_vfx"
+        motion_result = apply_motion_vfx(target, contract)
+        if motion_result.get("applied_count"):
+            layer_evidence["motion_vfx"] = motion_result
+        current_layer = "native_transitions"
+        flash_result = apply_flash_transitions(pool, target, contract)
+        if flash_result.get("applied_count"):
+            native_evidence = layer_evidence.get("native_transitions") or {"applied_count": 0}
+            layer_evidence["native_transitions"] = {
+                "status": "applied" if native_evidence.get("applied_count", 0) + flash_result.get("applied_count", 0) == ((contract.get("application_plan") or {}).get("native_transitions") or {}).get("accepted_recipe_count") else "partial",
+                "applied_count": native_evidence.get("applied_count", 0) + flash_result.get("applied_count", 0),
+                "native_blur": native_evidence,
+                "flash": flash_result,
+            }
+        target_validation = _validate_authoritative_import(target, _timeline_contract(contract["xml"], target_name), True)
+        last_verified_step = "editable_timeline_structure_and_captions_verified"
+        current_layer = "protected_timeline_verification"
 
         current_after_import = _safe(project, "GetCurrentTimeline")
         if current_before is not None and not _same_timeline(current_after_import, current_before):
@@ -881,10 +1429,15 @@ def run(resolve: Any, context: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("current_timeline_changed")
 
         timelines_after = _timeline_inventory(project)
-        non_target_after = [row for row in timelines_after if row["name"] != target_name]
-        timeline_key = lambda row: (row["name"], row["unique_id"], row["signature"])
-        expected_delta = 1 if classification.startswith("NEW_") else 0
-        if len(timelines_after) - len(timelines_before) != expected_delta or sum(row["name"] == target_name for row in timelines_after) != 1 or Counter(map(timeline_key, non_target_after)) != Counter(map(timeline_key, non_target_before)):
+        target_uid = _unique_id(target)
+        after_by_uid = {row["unique_id"]: row for row in timelines_after}
+        protected_changed = any(
+            row["unique_id"] != target_uid
+            and (row["unique_id"] not in after_by_uid or after_by_uid[row["unique_id"]]["name"] != row["name"] or after_by_uid[row["unique_id"]]["signature"] != row["signature"])
+            for row in timelines_before
+        )
+        expected_delta = created_timeline_count
+        if len(timelines_after) - len(timelines_before) != expected_delta or sum(row["name"] == target_name for row in timelines_after) != 1 or protected_changed:
             raise ValueError("protected_timeline_changed")
         media_after = _media_pool_inventory(pool)
         media_key = lambda row: row["signature"]
@@ -893,11 +1446,21 @@ def run(resolve: Any, context: dict[str, Any]) -> dict[str, Any]:
         if before_counter - after_counter:
             raise ValueError("preexisting_media_changed")
         additions = list((after_counter - before_counter).elements())
+        last_verified_step = "protected_original_timelines_verified_unchanged"
+        current_layer = "project_save"
+        saved = _safe(manager, "SaveProject", default=False)
+        result.update({"save_project_count": 1, "save_project_return": saved})
+        if saved is not True:
+            raise ValueError("save_project")
+        last_verified_step = "project_saved"
+        current_layer = "complete"
         result.update({
             "ok": True,
             "classification": classification,
             "project_name": project_name,
             "target_timeline_name": target_name,
+            "requested_target_timeline_name": str(payload.get("target_timeline_name") or "").strip(),
+            "occupied_target_mismatch": occupied_target_mismatch,
             "manifest_path": str(contract["manifest_path"]),
             **declared,
             "target": target_validation,
@@ -909,7 +1472,17 @@ def run(resolve: Any, context: dict[str, Any]) -> dict[str, Any]:
             "media_pool_before": media_before,
             "media_pool_after": media_after,
             "media_pool_delta": {"added_signatures": additions, "removed_signatures": [], "deletion_ownership_claimed": False},
+            "layers": verified_layer_report(contract.get("application_plan") or {}, target_validation, layer_evidence),
+            "available_assets": contract.get("available_assets") or {},
+            "limitations": contract.get("limitations") or {},
+            "editing_dna_path": str(contract["editing_dna"]) if contract.get("editing_dna") else None,
+            "last_verified_step": last_verified_step,
+            "failed_layer": None,
         })
     except Exception as exc:
         result["failures"] = [f"{type(exc).__name__}: {exc}"]
+        if isinstance(exc, TargetMismatch):
+            result["target_mismatch"] = {"code": exc.code, **exc.details}
+        result["last_verified_step"] = last_verified_step
+        result["failed_layer"] = current_layer
     return result

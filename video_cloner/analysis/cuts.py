@@ -48,7 +48,7 @@ def main():
         scene_manager.add_detector(ContentDetector(threshold=threshold))
         scene_manager.detect_scenes(video)
 
-        scenes = scene_manager.get_scene_list()
+        scenes = scene_manager.get_scene_list(start_in_scene=True)
 
         cuts = [
             frame_to_dict(i + 1, start, end)

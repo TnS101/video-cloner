@@ -404,8 +404,13 @@ def _dense_track(
     sx1, sy1, sx2, sy2 = search_bbox
     frame_indices: list[int] = []
     scores: list[float] = []
+    capture.set(dense.cv2.CAP_PROP_POS_FRAMES, search_start)
     for frame_index in range(search_start, search_end + 1):
-        frame = dense.read_frame(capture, frame_index)
+        if frame_index != search_start and not hasattr(capture, "grab"):
+            capture.set(dense.cv2.CAP_PROP_POS_FRAMES, frame_index)
+        ok, frame = capture.read()
+        if not ok or frame is None:
+            raise LifecycleGenerationError(f"could_not_read_frame:{frame_index}")
         match = dense.multi_scale_match(frame[sy1:sy2, sx1:sx2], template)
         frame_indices.append(frame_index)
         scores.append(float(match["score"]))

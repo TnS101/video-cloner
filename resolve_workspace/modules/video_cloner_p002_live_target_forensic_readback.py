@@ -49,6 +49,8 @@ def _validation(timeline: Any, contract: Mapping[str, Any], require_title_text: 
     try:
         return {"ok": True, "failure": None, "result": base.validate_target(timeline, contract, require_title_text=require_title_text)}
     except Exception as exc:
+        if isinstance(exc, base.TargetMismatch):
+            return {"ok": False, "failure": f"ValueError: {exc.code}", "mismatch": exc.details, "result": None}
         return {"ok": False, "failure": f"{type(exc).__name__}: {exc}", "result": None}
 
 

@@ -7,6 +7,7 @@ mechanism from samuelgursky/davinci-resolve-mcp at
 from __future__ import annotations
 
 import importlib.util
+import html
 import re
 import uuid
 import xml.etree.ElementTree as ET
@@ -105,7 +106,7 @@ def place_blur_transition(source: Path, target: Path, *, timeline_name: str, tim
     return {key: placed[key] for key in ("container_uuid", "entry", "track", "pretty_type", "start", "duration")} | {"end": start + duration_frames, "cut": at_frame}
 
 
-def place_blur_transitions(source: Path, target: Path, *, timeline_name: str, timeline_uuid: str, donor_element: str, track: int, boundaries: list[tuple[int, int]]) -> list[dict[str, Any]]:
+def place_blur_transitions(source: Path, target: Path, *, timeline_name: str, timeline_uuid: str, donor_element: str, track: int, boundaries: list[tuple[int, int]], output_timeline_name: str | None = None) -> list[dict[str, Any]]:
     """Place several donor-native transitions while preserving every other DRT byte."""
     donor_root = ET.fromstring(donor_element)
     if (next(iter(donor_root)).findtext("PrettyType") or "") != "Blur Dissolve":
@@ -141,6 +142,16 @@ def place_blur_transitions(source: Path, target: Path, *, timeline_name: str, ti
     new_vector = vector.replace(tracks[track - 1], new_track, 1)
     patched = original[:vector_match.start()] + f"<VideoTrackVec>{new_vector}</VideoTrackVec>" + original[vector_match.end():]
     contents[entry] = patched.encode("utf-8")
+    if output_timeline_name and output_timeline_name != timeline_name:
+        old_name = f"<Name>{html.escape(timeline_name)}</Name>"
+        new_name = f"<Name>{html.escape(output_timeline_name)}</Name>"
+        folder_entries = [name for name in contents if name.replace("\\", "/").endswith("MpFolder.xml")]
+        if len(folder_entries) != 1:
+            raise ValueError(f"timeline_name_container:{len(folder_entries)}")
+        folder = contents[folder_entries[0]].decode("utf-8-sig")
+        if folder.count(old_name) != 2:
+            raise ValueError(f"timeline_name_identity:{folder.count(old_name)}")
+        contents[folder_entries[0]] = folder.replace(old_name, new_name).encode("utf-8")
     target.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(target, "w") as output:
         for info in infos:
@@ -150,4 +161,6 @@ def place_blur_transitions(source: Path, target: Path, *, timeline_name: str, ti
     expected = sorted((cut - duration // 2, duration) for cut, duration in boundaries)
     if actual != expected:
         raise RuntimeError(f"blur_transition_offline_readback:{actual!r}")
+    if output_timeline_name and base.select_top_level(target, output_timeline_name)["id"] != timeline_uuid:
+        raise RuntimeError("blur_transition_timeline_identity")
     return placed

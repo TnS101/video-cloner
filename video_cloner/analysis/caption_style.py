@@ -323,12 +323,22 @@ def sample_frames(
         preferred_timestamps=preferred_timestamps,
     )
 
+    target_frames = {
+        min(total - 1, max(0, int(round(ts * fps)))): (i, ts)
+        for i, ts in enumerate(timestamps)
+    }
     frames = []
-    for i, ts in enumerate(timestamps):
-        cap.set(cv2.CAP_PROP_POS_MSEC, float(ts) * 1000.0)
-        ok, frame = cap.read()
+    for frame_index in range(max(target_frames, default=-1) + 1):
+        ok = cap.grab()
+        if not ok:
+            break
+        target = target_frames.get(frame_index)
+        if target is None:
+            continue
+        ok, frame = cap.retrieve()
         if not ok or frame is None:
             continue
+        i, ts = target
         frame_path = os.path.join(output_dir, f"frame_{i:03d}_{ts:.2f}s.jpg")
         cv2.imwrite(frame_path, frame)
         frames.append({"index": i, "path": frame_path, "timestamp": round(float(ts), 3)})

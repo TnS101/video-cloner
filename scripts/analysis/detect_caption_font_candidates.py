@@ -10,6 +10,7 @@ import sys
 import time
 import warnings
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -196,9 +197,13 @@ def enumerate_font_files(font_dirs: Sequence[Path], max_files: int) -> Tuple[Lis
         if root.is_file():
             iterator = [root]
         else:
-            iterator = root.rglob("*")
+            iterator = (
+                Path(directory) / name
+                for directory, _, names in os.walk(root)
+                for name in names
+            )
         for path in iterator:
-            if not path.is_file() or path.suffix.lower() not in FONT_EXTENSIONS:
+            if path.suffix.lower() not in FONT_EXTENSIONS:
                 continue
             try:
                 key = str(path.resolve()).lower()
@@ -806,6 +811,66 @@ def candidate_key(row: Dict[str, Any]) -> Tuple[str, str]:
     )
 
 
+def score_profile(task: Tuple[str, List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, int]]) -> Dict[str, Any]:
+    profile, prepared, faces, options = task
+    coarse_prepared = prepared[:max(1, options["coarse_samples"])]
+    coarse = [
+        evaluate_face(
+            face,
+            coarse_prepared,
+            max_render_font_size_px=options["max_render_font_size_px"],
+            max_glyph_side_px=options["max_glyph_side_px"],
+            max_glyph_pixels=options["max_glyph_pixels"],
+        )
+        for face in faces
+    ]
+    coarse.sort(key=lambda row: float(row.get("visual_score") or 0.0), reverse=True)
+    finalists = coarse[:max(options["top_k"], options["coarse_top_k"])]
+    full = []
+    for row in finalists:
+        base_face = {key: row[key] for key in (
+            "path", "index", "family", "face", "full_name", "postscript_name",
+            "weight_class", "italic", "installed_on_windows", "variable_axes", "file_name"
+        )}
+        full.append(
+            evaluate_face(
+                base_face,
+                prepared,
+                max_render_font_size_px=options["max_render_font_size_px"],
+                max_glyph_side_px=options["max_glyph_side_px"],
+                max_glyph_pixels=options["max_glyph_pixels"],
+            )
+        )
+    full.sort(key=lambda row: float(row.get("visual_score") or 0.0), reverse=True)
+    top = full[:max(1, options["top_k"])]
+
+    top_score = float(top[0].get("visual_score") or 0.0) if top else 0.0
+    second_score = float(top[1].get("visual_score") or 0.0) if len(top) > 1 else 0.0
+    margin = top_score - second_score
+    if len(prepared) < 2:
+        status = "insufficient_samples"
+    elif top_score >= 0.56 and margin >= 0.035:
+        status = "strong_visual_candidate"
+    elif top_score >= 0.42:
+        status = "ambiguous_visual_candidates"
+    else:
+        status = "weak_visual_match"
+
+    installed_top = [row for row in top if row.get("installed_on_windows")]
+    return {
+        "style_profile_id": profile,
+        "sample_count": len(prepared),
+        "samples": [row["sample"] for row in prepared],
+        "selection_status": status,
+        "top_score": round(top_score, 6),
+        "top_two_margin": round(margin, 6),
+        "visual_best_candidate": top[0] if top else None,
+        "best_installed_candidate": installed_top[0] if installed_top else None,
+        "requires_font_installation": bool(top and not top[0].get("installed_on_windows")),
+        "candidates": top,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Rank real font files against caption pixels and emit Resolve probe candidates."
@@ -938,64 +1003,20 @@ def main() -> int:
     if not prepared_by_profile:
         raise RuntimeError("All caption sample masks failed")
 
-    profile_results: List[Dict[str, Any]] = []
-    for profile, prepared in prepared_by_profile.items():
-        coarse_prepared = prepared[:max(1, args.coarse_samples)]
-        coarse = [
-            evaluate_face(
-                face,
-                coarse_prepared,
-                max_render_font_size_px=args.max_render_font_size_px,
-                max_glyph_side_px=args.max_glyph_side_px,
-                max_glyph_pixels=args.max_glyph_pixels,
-            )
-            for face in faces
-        ]
-        coarse.sort(key=lambda row: float(row.get("visual_score") or 0.0), reverse=True)
-        finalists = coarse[:max(args.top_k, args.coarse_top_k)]
-        full = []
-        for row in finalists:
-            base_face = {key: row[key] for key in (
-                "path", "index", "family", "face", "full_name", "postscript_name",
-                "weight_class", "italic", "installed_on_windows", "variable_axes", "file_name"
-            )}
-            full.append(
-                evaluate_face(
-                    base_face,
-                    prepared,
-                    max_render_font_size_px=args.max_render_font_size_px,
-                    max_glyph_side_px=args.max_glyph_side_px,
-                    max_glyph_pixels=args.max_glyph_pixels,
-                )
-            )
-        full.sort(key=lambda row: float(row.get("visual_score") or 0.0), reverse=True)
-        top = full[:max(1, args.top_k)]
-
-        top_score = float(top[0].get("visual_score") or 0.0) if top else 0.0
-        second_score = float(top[1].get("visual_score") or 0.0) if len(top) > 1 else 0.0
-        margin = top_score - second_score
-        if len(prepared) < 2:
-            status = "insufficient_samples"
-        elif top_score >= 0.56 and margin >= 0.035:
-            status = "strong_visual_candidate"
-        elif top_score >= 0.42:
-            status = "ambiguous_visual_candidates"
-        else:
-            status = "weak_visual_match"
-
-        installed_top = [row for row in top if row.get("installed_on_windows")]
-        profile_results.append({
-            "style_profile_id": profile,
-            "sample_count": len(prepared),
-            "samples": [row["sample"] for row in prepared],
-            "selection_status": status,
-            "top_score": round(top_score, 6),
-            "top_two_margin": round(margin, 6),
-            "visual_best_candidate": top[0] if top else None,
-            "best_installed_candidate": installed_top[0] if installed_top else None,
-            "requires_font_installation": bool(top and not top[0].get("installed_on_windows")),
-            "candidates": top,
-        })
+    options = {
+        "coarse_samples": args.coarse_samples,
+        "coarse_top_k": args.coarse_top_k,
+        "top_k": args.top_k,
+        "max_render_font_size_px": args.max_render_font_size_px,
+        "max_glyph_side_px": args.max_glyph_side_px,
+        "max_glyph_pixels": args.max_glyph_pixels,
+    }
+    tasks = [
+        (profile, prepared, faces, options)
+        for profile, prepared in prepared_by_profile.items()
+    ]
+    with ProcessPoolExecutor(max_workers=min(5, len(tasks))) as executor:
+        profile_results = list(executor.map(score_profile, tasks))
 
     profiles_lookup = {
         str(row.get("style_id")): row

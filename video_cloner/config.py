@@ -13,6 +13,7 @@ from .contracts import InputSpec, RunContext
 
 
 ENV_PREFIX = "VIDEO_CLONER_"
+LOCAL_CONFIG_NAME = "video_cloner.local.json"
 
 
 def _optional_path(value: object, base: Path) -> Path | None:
@@ -85,8 +86,8 @@ class RuntimeConfig:
             "ollama_model": "llama3.1",
             "cookies_path": None,
         }
-        if config_path:
-            path = Path(config_path).expanduser().resolve()
+        path = Path(config_path).expanduser().resolve() if config_path else root / LOCAL_CONFIG_NAME
+        if path.is_file():
             loaded = json.loads(path.read_text(encoding="utf-8"))
             if not isinstance(loaded, dict):
                 raise ValueError("runtime config must be a JSON object")

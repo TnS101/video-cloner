@@ -110,6 +110,7 @@ def publish(
     audio: str | Path,
     fcpxml: str | Path,
     compiler_report: str | Path,
+    editing_dna: str | Path | None = None,
     project: str | None = None,
     target_timeline: str | None = None,
 ) -> dict[str, Any]:
@@ -121,7 +122,8 @@ def publish(
     if not project_name or not target:
         raise ValueError("Resolve project and target timeline identities are required")
     manifest, contract = build_package(
-        config.project_root, Path(generic), Path(proxy), Path(caption_style), Path(audio), Path(fcpxml), Path(compiler_report), target
+        config.project_root, Path(generic), Path(proxy), Path(caption_style), Path(audio), Path(fcpxml), Path(compiler_report), target,
+        Path(editing_dna) if editing_dna else None,
     )
     return publish_command(config.project_root, manifest, contract, project_name, target, config.state_root)
 
@@ -172,12 +174,17 @@ def run_offline(
         "started_at_utc": started,
         "configuration_identity": run.config.identity(),
         "runtime_identity": run.config.public_runtime(),
-        "source": ArtifactIdentity.from_path(run.source_video_path).as_dict(),
         "stages": stages,
         "status": "running",
     }
     try:
-        stages["ingest"] = {"status": "success", "result": ingest(run.input_spec, run.config, force=force, run_id=run.run_id)}
+        try:
+            ingestion = ingest(run.input_spec, run.config, force=force, run_id=run.run_id)
+        except Exception as error:
+            stages["ingest"] = {"status": "failed", "error": f"{type(error).__name__}: {error}"}
+            raise
+        stages["ingest"] = {"status": "success", "result": ingestion}
+        result["source"] = ArtifactIdentity.from_path(run.source_video_path).as_dict()
         stages["analysis"] = {"status": "success", "result": analyze(run, force=force)}
         stages["transition_policy"] = {"status": "success", "output": filter_transitions(run)}
         stages["planning"] = {"status": "success", "result": plan(run, transitions, force=force)}
@@ -195,6 +202,8 @@ def run_offline(
                 "audio": run.wav_path,
                 "include_transitions": False,
                 "transition_mode": "none",
+                "position_mode": "detected_fcpx",
+                "caption_lifecycle_plan": run.analysis_dir / f"{reel}_caption_lifecycle_authority.json",
             },
         )
         if code:
@@ -235,6 +244,7 @@ def run(
             audio=run_context.wav_path,
             fcpxml=run_context.davinci_dir / f"{reel}_mvp_timeline.fcpxml",
             compiler_report=run_context.davinci_dir / f"{reel}_mvp_timeline_report.json",
+            editing_dna=run_context.analysis_dir / f"{reel}_editing_dna.json",
             project=project,
             target_timeline=target_timeline,
         )
@@ -245,6 +255,8 @@ def run(
         raise
     stages["publish"] = {"status": "success", "receipt": receipt}
     result["publish_command"] = receipt
+    result["resolve_status"] = "ready_for_resolve"
+    result["resolve_action"] = "Workspace -> Scripts -> VC_Run_Agent_Task"
     result["artifacts"] = _artifact_inventory(run_context)
     result["finished_at_utc"] = _utc_now()
     result["manifest_path"] = str(_write_manifest(run_context, result))

@@ -61,6 +61,7 @@ def build_parser() -> argparse.ArgumentParser:
     publisher.add_argument("--config")
     for name in ("generic", "proxy", "caption-style", "audio", "fcpxml", "compiler-report"):
         publisher.add_argument(f"--{name}", required=True)
+    publisher.add_argument("--editing-dna")
     publisher.add_argument("--project")
     publisher.add_argument("--target-timeline")
     return parser
@@ -81,7 +82,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return pipeline.compile(args.generic, args.caption_style, args.output_fcpxml, args.report, options=options)
     config = RuntimeConfig.load(args.project_root, args.config)
     if args.command == "publish":
-        result = pipeline.publish(config, generic=args.generic, proxy=args.proxy, caption_style=args.caption_style, audio=args.audio, fcpxml=args.fcpxml, compiler_report=args.compiler_report, project=args.project, target_timeline=args.target_timeline)
+        result = pipeline.publish(config, generic=args.generic, proxy=args.proxy, caption_style=args.caption_style, audio=args.audio, fcpxml=args.fcpxml, compiler_report=args.compiler_report, editing_dna=args.editing_dna, project=args.project, target_timeline=args.target_timeline)
     else:
         run_context = pipeline.context(_source_value(args), config, getattr(args, "run_id", None))
         if args.command == "run":

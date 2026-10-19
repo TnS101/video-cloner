@@ -178,8 +178,31 @@ class PlanningOrchestrator:
         if not isinstance(value, dict) or value.get("success") is not True or value.get("schema") != "video_cloner_transitions":
             raise RuntimeError("transition authority does not match the accepted transitions schema")
         rows = value.get("transitions")
-        if not isinstance(rows, list) or not rows:
-            raise RuntimeError("transition authority has no transition rows")
+        if not isinstance(rows, list):
+            raise RuntimeError("transition authority rows are malformed")
+        if not rows:
+            summary = value.get("transition_summary")
+            meta = value.get("_meta")
+            counts = [value.get(key) for key in ("shot_count", "boundaries_total", "boundaries_attempted", "transition_count")]
+            if (
+                value.get("schema_version") != "2.0"
+                or not all(isinstance(count, int) and not isinstance(count, bool) and count >= 0 for count in counts)
+                or value.get("shot_count") < 1
+                or value.get("boundaries_total") != max(0, int(value.get("shot_count")) - 1)
+                or value.get("boundaries_attempted") != value.get("boundaries_total")
+                or value.get("transition_count") != 0
+                or value.get("skipped") != []
+                or value.get("quality_flags") != []
+                or not isinstance(summary, dict)
+                or summary.get("boundaries_total") != value.get("boundaries_total")
+                or summary.get("transition_count") != 0
+                or summary.get("skipped_count") != 0
+                or summary.get("ready_for_merge_analysis") is not True
+                or summary.get("ready_for_generic_compiler") is not True
+                or not isinstance(meta, dict)
+                or meta.get("safe_for_merge_analysis") is not True
+            ):
+                raise RuntimeError("empty transition authority is incomplete or inconsistent")
         for row in rows:
             if not isinstance(row, dict):
                 raise RuntimeError("transition authority contains a malformed row")

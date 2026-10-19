@@ -153,13 +153,17 @@ def _transitions(timeline: Any) -> list[tuple[str, int, int, int]]:
     return rows
 
 
-def _comp_range(comp: Any, duration: int) -> tuple[int, int, dict[str, Any]]:
+def _comp_range(comp: Any, duration: int, *, allow_source_handles: bool = False) -> tuple[int, int, dict[str, Any]]:
     attrs = canary._optional(comp, "GetAttrs", default={}) or {}
     required = ("COMPN_GlobalStart", "COMPN_GlobalEnd", "COMPN_RenderStart", "COMPN_RenderEnd")
     if any(attrs.get(key) is None for key in required):
         raise ValueError("comp_range_attrs")
     start = max(int(attrs["COMPN_GlobalStart"]), int(attrs["COMPN_RenderStart"]))
     end = min(int(attrs["COMPN_GlobalEnd"]), int(attrs["COMPN_RenderEnd"]))
+    if allow_source_handles and duration > 0 and end - start + 1 >= duration:
+        # Native transitions can shorten the visible clip without shortening
+        # its Fusion composition. Key only the visible clip frame range.
+        end = start + duration - 1
     if end - start + 1 != duration:
         raise ValueError(f"comp_visible_range:{start}:{end}:{duration}")
     return start, end, {key: attrs[key] for key in required}
@@ -170,7 +174,7 @@ def _source_tool(tool: Any, input_name: str) -> Any:
     return canary._optional(output, "GetTool", default=output) if output is not None else None
 
 
-def _apply_recipe(item: Any, recipe: dict[str, Any], name: str) -> dict[str, Any]:
+def _apply_recipe(item: Any, recipe: dict[str, Any], name: str, *, allow_source_handles: bool = False) -> dict[str, Any]:
     before = [str(value) for value in (canary._optional(item, "GetFusionCompNameList", default=[]) or [])]
     if name in before or any(value.startswith("VC_OSS004_") for value in before):
         raise ValueError(f"oss004_comp_collision:{recipe['id']}:{before!r}")
@@ -182,7 +186,7 @@ def _apply_recipe(item: Any, recipe: dict[str, Any], name: str) -> dict[str, Any
     loaded = canary._optional(item, "LoadFusionCompByName", name, default=None)
     if loaded is None:
         raise RuntimeError(f"fusion_comp_authority:{recipe['id']}:{before!r}")
-    start, end, attrs = _comp_range(loaded, canary._item_duration(item))
+    start, end, attrs = _comp_range(loaded, canary._item_duration(item), allow_source_handles=allow_source_handles)
     channels = absolute_keys(recipe, start, end)
     media_in, media_out = fusion.find_tool(loaded, "MediaIn"), fusion.find_tool(loaded, "MediaOut")
     transform = canary._optional(loaded, "AddTool", "Transform", -32768, -32768, default=None)

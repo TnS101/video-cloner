@@ -1066,8 +1066,6 @@ def apply_caption_lifecycle_plan(
     if any(not cue_id for cue_id in cue_ids) or len(set(cue_ids)) != len(cue_ids):
         raise ValueError("caption_lifecycle_generic_duplicate_or_empty_cue")
     missing = [cue_id for cue_id in cue_ids if cue_id not in by_cue]
-    if missing:
-        raise ValueError("caption_lifecycle_plan_missing_cues:" + ",".join(missing[:10]))
     unexpected = [cue_id for cue_id in by_cue if cue_id not in set(cue_ids)]
     if unexpected:
         raise ValueError("caption_lifecycle_plan_unexpected_cues:" + ",".join(unexpected[:10]))
@@ -1080,10 +1078,43 @@ def apply_caption_lifecycle_plan(
     generic_transcript_window_drift_count = 0
     generic_transcript_window_max_delta_frames = 0
 
-    for cue in cues:
+    cue_index = 0
+    merged_source_cue_count = 0
+    missing_authority_fallback_ids: List[str] = []
+    while cue_index < len(cues):
+        cue = cues[cue_index]
         cue_id = str(cue.get("id") or "")
-        layer = by_cue[cue_id]
         generic_transcript_window = cue_transcript_window_frames(cue, fps)
+        layer = by_cue.get(cue_id)
+        source_cues = [cue]
+        if layer is not None:
+            group_end = cue_index + 1
+            while group_end < len(cues) and str(cues[group_end].get("id") or "") not in by_cue:
+                group_end += 1
+            candidates = cues[cue_index:group_end]
+            candidate_text = " ".join(norm_text(row.get("text")) for row in candidates)
+            if len(candidates) > 1 and normalize_semantic_caption_text(layer.get("text")) == normalize_semantic_caption_text(candidate_text):
+                source_cues = candidates
+                generic_transcript_window = [
+                    cue_transcript_window_frames(source_cues[0], fps)[0],
+                    cue_transcript_window_frames(source_cues[-1], fps)[1],
+                ]
+                merged_source_cue_count += len(source_cues) - 1
+        if layer is None:
+            missing_authority_fallback_ids.append(cue_id)
+        layer = layer or {
+            "cue_id": cue_id,
+            "text": cue.get("text"),
+            "transcript_window": generic_transcript_window,
+            "lifecycle_window": generic_transcript_window,
+            "timing_authority": "transcript_fallback",
+            "lifecycle_status": "authority_row_missing_transcript_fallback",
+            "lifecycle_phases": [],
+            "opacity_envelope": None,
+            "animation_selected_step_3C": False,
+            "animation_type_step_3C": None,
+            "visual_confidence_label": None,
+        }
         layer_transcript = layer.get("transcript_window")
         if (
             not isinstance(layer_transcript, list)
@@ -1114,7 +1145,7 @@ def apply_caption_lifecycle_plan(
         if timing_authority == "transcript_fallback" and lifecycle != transcript_window:
             raise ValueError(f"caption_lifecycle_fallback_window:{cue_id}")
 
-        transcript_text = norm_text(cue.get("text"))
+        transcript_text = " ".join(norm_text(row.get("text")) for row in source_cues)
         display_text = norm_text(layer.get("text")) or transcript_text
         if normalize_semantic_caption_text(display_text) != normalize_semantic_caption_text(transcript_text):
             raise ValueError(f"caption_lifecycle_text_mismatch:{cue_id}:{display_text}:{transcript_text}")
@@ -1140,6 +1171,7 @@ def apply_caption_lifecycle_plan(
             "animation_selected_step_3C": bool(layer.get("animation_selected_step_3C")),
             "animation_type_step_3C": layer.get("animation_type_step_3C"),
             "visual_confidence_label": layer.get("visual_confidence_label"),
+            "semantic_source_cue_ids": [str(row.get("id") or "") for row in source_cues],
         })
         applied.append(updated)
         timing_counts[timing_authority] = timing_counts.get(timing_authority, 0) + 1
@@ -1149,6 +1181,7 @@ def apply_caption_lifecycle_plan(
             animated_count += 1
             if timing_authority.startswith("visual_primary"):
                 animated_visual_count += 1
+        cue_index += len(source_cues)
 
     lane_info = allocate_caption_lanes(applied, base_lane=base_lane)
     summary = plan.get("summary") if isinstance(plan.get("summary"), dict) else {}
@@ -1167,6 +1200,10 @@ def apply_caption_lifecycle_plan(
         "animated_caption_count": animated_count,
         "animated_visual_lifecycle_count": animated_visual_count,
         "mandatory_redetection_count": len(plan.get("mandatory_visual_redetection_queue") or []),
+        "missing_authority_fallback_count": len(missing_authority_fallback_ids),
+        "missing_authority_fallback_cue_ids": missing_authority_fallback_ids,
+        "source_cue_ids_absent_from_plan": missing,
+        "merged_source_cue_count": merged_source_cue_count,
         "source_summary": summary,
         "lane_allocation": lane_info,
         "overlap_preserved": True,

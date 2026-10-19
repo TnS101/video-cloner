@@ -6,6 +6,7 @@ import json
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -44,6 +45,13 @@ ANALYZERS = (
 )
 ANALYZER_BY_NAME = {spec.name: spec for spec in ANALYZERS}
 PRODUCER = {spec.output: spec.name for spec in ANALYZERS}
+ANALYSIS_WAVES = (
+    ("cuts", "transcript"),
+    ("rhythm", "caption_style", "motion", "transitions"),
+    ("caption_lifecycle", "font_candidates", "caption_occlusion"),
+    ("caption_compositions",),
+    ("editing_dna",),
+)
 
 
 Runner = Callable[[Sequence[str]], subprocess.CompletedProcess[str]]
@@ -362,6 +370,44 @@ class AnalysisOrchestrator:
             return False
         return True
 
+    def _run_analyzer(
+        self,
+        spec: AnalyzerSpec,
+        forced: set[str],
+        previous_records: Mapping[str, Mapping[str, object]],
+        state: Mapping[str, str],
+    ) -> dict[str, object]:
+        analyzer_started = time.monotonic()
+        failed_producers = [PRODUCER[key] for key in spec.inputs if key in PRODUCER and state.get(PRODUCER[key]) in {"failed", "blocked"}]
+        missing = [key for key in spec.inputs if not _nonempty(self.artifacts[key])]
+        if failed_producers or missing:
+            details = sorted(set(missing + [f"producer:{name}" for name in failed_producers]))
+            return {"analyzer": spec.name, "status": "blocked", "failure_class": "PREREQUISITE", "error": f"missing or failed prerequisites: {', '.join(details)}", "runtime_sec": round(time.monotonic() - analyzer_started, 6), "output_path": str(self.artifacts[spec.output])}
+
+        script = self._script_path(spec)
+        if not _nonempty(script):
+            return {"analyzer": spec.name, "status": "failed", "failure_class": "PREREQUISITE", "error": f"canonical analyzer script missing: {spec.script}", "runtime_sec": round(time.monotonic() - analyzer_started, 6), "output_path": str(self.artifacts[spec.output])}
+
+        inputs, fingerprint, interpreter_identity_sha256, command_profile_sha256 = self._input_identity(spec)
+        prior = previous_records.get(spec.name, {})
+        if spec.name not in forced and self._can_reuse(spec, prior, fingerprint):
+            value, version = self._validate_output(spec)
+            output = self.artifacts[spec.output]
+            return {"analyzer": spec.name, "analyzer_version": version, "status": "reused", "input_paths": inputs, "input_fingerprint": fingerprint, "script_path": spec.script, "script_sha256": _sha256(script), "interpreter_role": spec.interpreter, "interpreter_identity_sha256": interpreter_identity_sha256, "command_profile_sha256": command_profile_sha256, "output_path": str(output), "output_bytes": output.stat().st_size, "output_sha256": _sha256(output), "output_bundle_fingerprint": self._output_bundle_fingerprint(spec, value), "runtime_sec": round(time.monotonic() - analyzer_started, 6), "failure_class": None, "error": None}
+
+        try:
+            result = self.runner(self._command(spec))
+            if result.returncode != 0:
+                raise RuntimeError(f"analyzer exited with code {result.returncode}")
+            if spec.name == "cuts":
+                self._write_cuts(result.stdout)
+            value, version = self._validate_output(spec)
+            output = self.artifacts[spec.output]
+            return {"analyzer": spec.name, "analyzer_version": version, "status": "generated", "input_paths": inputs, "input_fingerprint": fingerprint, "script_path": spec.script, "script_sha256": _sha256(script), "interpreter_role": spec.interpreter, "interpreter_identity_sha256": interpreter_identity_sha256, "command_profile_sha256": command_profile_sha256, "output_path": str(output), "output_bytes": output.stat().st_size, "output_sha256": _sha256(output), "output_bundle_fingerprint": self._output_bundle_fingerprint(spec, value), "runtime_sec": round(time.monotonic() - analyzer_started, 6), "failure_class": None, "error": None}
+        except Exception as error:
+            failure_class = "EXECUTION" if isinstance(error, RuntimeError) and "exited with code" in str(error) else "OUTPUT_CONTRACT"
+            return {"analyzer": spec.name, "status": "failed", "failure_class": failure_class, "error": str(error), "runtime_sec": round(time.monotonic() - analyzer_started, 6), "output_path": str(self.artifacts[spec.output])}
+
     def run(self, force: bool = False, force_analyzers: Iterable[str] | None = None) -> dict[str, object]:
         requested = set(force_analyzers or ())
         unknown = requested - set(ANALYZER_BY_NAME)
@@ -385,55 +431,29 @@ class AnalysisOrchestrator:
             "resolve_invoked": False,
         }
         state: dict[str, str] = {}
+        record_by_name: dict[str, dict[str, object]] = {}
         records = report["analyzers"]
         assert isinstance(records, list)
 
-        for spec in ANALYZERS:
-            analyzer_started = time.monotonic()
-            failed_producers = [PRODUCER[key] for key in spec.inputs if key in PRODUCER and state.get(PRODUCER[key]) in {"failed", "blocked"}]
-            missing = [key for key in spec.inputs if not _nonempty(self.artifacts[key])]
-            if failed_producers or missing:
-                details = sorted(set(missing + [f"producer:{name}" for name in failed_producers]))
-                record = {"analyzer": spec.name, "status": "blocked", "failure_class": "PREREQUISITE", "error": f"missing or failed prerequisites: {', '.join(details)}", "runtime_sec": round(time.monotonic() - analyzer_started, 6), "output_path": str(self.artifacts[spec.output])}
-                records.append(record); state[spec.name] = "blocked"
-                if report["first_failure"] is None:
-                    report["first_failure"] = {"analyzer": spec.name, "failure_class": record["failure_class"], "error": record["error"]}
-                self._write_report(report)
-                continue
-
-            script = self._script_path(spec)
-            if not _nonempty(script):
-                record = {"analyzer": spec.name, "status": "failed", "failure_class": "PREREQUISITE", "error": f"canonical analyzer script missing: {spec.script}", "runtime_sec": round(time.monotonic() - analyzer_started, 6), "output_path": str(self.artifacts[spec.output])}
-                records.append(record); state[spec.name] = "failed"
-                if report["first_failure"] is None:
-                    report["first_failure"] = {"analyzer": spec.name, "failure_class": record["failure_class"], "error": record["error"]}
-                self._write_report(report)
-                continue
-
-            inputs, fingerprint, interpreter_identity_sha256, command_profile_sha256 = self._input_identity(spec)
-            prior = previous_records.get(spec.name, {})
-            if spec.name not in forced and self._can_reuse(spec, prior, fingerprint):
-                value, version = self._validate_output(spec)
-                output = self.artifacts[spec.output]
-                record = {"analyzer": spec.name, "analyzer_version": version, "status": "reused", "input_paths": inputs, "input_fingerprint": fingerprint, "script_path": spec.script, "script_sha256": _sha256(script), "interpreter_role": spec.interpreter, "interpreter_identity_sha256": interpreter_identity_sha256, "command_profile_sha256": command_profile_sha256, "output_path": str(output), "output_bytes": output.stat().st_size, "output_sha256": _sha256(output), "output_bundle_fingerprint": self._output_bundle_fingerprint(spec, value), "runtime_sec": round(time.monotonic() - analyzer_started, 6), "failure_class": None, "error": None}
-                records.append(record); state[spec.name] = "reused"; self._write_report(report); continue
-
-            try:
-                result = self.runner(self._command(spec))
-                if result.returncode != 0:
-                    raise RuntimeError(f"analyzer exited with code {result.returncode}")
-                if spec.name == "cuts":
-                    self._write_cuts(result.stdout)
-                value, version = self._validate_output(spec)
-                output = self.artifacts[spec.output]
-                record = {"analyzer": spec.name, "analyzer_version": version, "status": "generated", "input_paths": inputs, "input_fingerprint": fingerprint, "script_path": spec.script, "script_sha256": _sha256(script), "interpreter_role": spec.interpreter, "interpreter_identity_sha256": interpreter_identity_sha256, "command_profile_sha256": command_profile_sha256, "output_path": str(output), "output_bytes": output.stat().st_size, "output_sha256": _sha256(output), "output_bundle_fingerprint": self._output_bundle_fingerprint(spec, value), "runtime_sec": round(time.monotonic() - analyzer_started, 6), "failure_class": None, "error": None}
-                records.append(record); state[spec.name] = "generated"
-            except Exception as error:
-                failure_class = "EXECUTION" if isinstance(error, RuntimeError) and "exited with code" in str(error) else "OUTPUT_CONTRACT"
-                record = {"analyzer": spec.name, "status": "failed", "failure_class": failure_class, "error": str(error), "runtime_sec": round(time.monotonic() - analyzer_started, 6), "output_path": str(self.artifacts[spec.output])}
-                records.append(record); state[spec.name] = "failed"
-                if report["first_failure"] is None:
-                    report["first_failure"] = {"analyzer": spec.name, "failure_class": failure_class, "error": str(error)}
+        for wave in ANALYSIS_WAVES:
+            specs = [ANALYZER_BY_NAME[name] for name in wave]
+            if len(specs) == 1:
+                wave_records = [self._run_analyzer(specs[0], forced, previous_records, state)]
+            else:
+                with ThreadPoolExecutor(max_workers=len(specs)) as executor:
+                    wave_records = list(executor.map(
+                        lambda spec: self._run_analyzer(spec, forced, previous_records, state),
+                        specs,
+                    ))
+            for spec, record in zip(specs, wave_records):
+                record_by_name[spec.name] = record
+                state[spec.name] = str(record["status"])
+            records[:] = [record_by_name[spec.name] for spec in ANALYZERS if spec.name in record_by_name]
+            failures = [record for record in records if record.get("status") in {"failed", "blocked"}]
+            report["first_failure"] = (
+                {"analyzer": failures[0]["analyzer"], "failure_class": failures[0]["failure_class"], "error": failures[0]["error"]}
+                if failures else None
+            )
             self._write_report(report)
 
         report["finished_at_utc"] = _utc_now()

@@ -521,7 +521,9 @@ def attach_independent_style_evidence_contract(
     """Make per-identity style ownership explicit; physical fragments only share evidence."""
     for cue in cues:
         identity = str(cue.get("visual_event_identity") or cue.get("id") or "")
-        style = styles[int(cue["index"])]
+        style = styles.get(int(cue["index"]))
+        if style is None:
+            continue
         cue["style_evidence_owner"] = identity
         style["style_evidence_owner"] = identity
         style["style_sharing_authority"] = "independent_by_default"
