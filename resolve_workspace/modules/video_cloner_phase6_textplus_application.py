@@ -564,7 +564,13 @@ def apply_caption_animations(resolve: Any, project: Any, pool: Any, target: Any,
         values = str(transform.get("position") if transform is not None else "0 0").split()
         if len(values) != 2:
             raise ValueError(f"caption_animation_position:{index}")
-        styles[index]["Center"] = [0.5 + float(values[0]) / width, 0.5 - float(values[1]) / height]
+        # FCPXML adjust-transform coordinates are in percent of frame HEIGHT.
+        # Fusion Center is normalized per axis (0,0 bottom-left; 1,1 top-right).
+        # Convert both axes to Fusion units; the FCPXML Y sign is already up.
+        styles[index]["Center"] = [
+            0.5 + float(values[0]) * height / (100.0 * width),
+            0.5 + float(values[1]) / 100.0,
+        ]
 
     base = _as_int(_safe(target, "GetStartFrame", default=0)) or 0
     originals = rep.canary.basic_title_rows(target)

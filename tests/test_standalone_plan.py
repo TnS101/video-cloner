@@ -25,6 +25,29 @@ def transition_payload(*, video_id: str | None = None):
     return payload
 
 
+def empty_transition_payload():
+    return {
+        "success": True,
+        "schema": "video_cloner_transitions",
+        "schema_version": "2.0",
+        "shot_count": 1,
+        "boundaries_total": 0,
+        "boundaries_attempted": 0,
+        "transition_count": 0,
+        "skipped": [],
+        "transitions": [],
+        "quality_flags": [],
+        "transition_summary": {
+            "boundaries_total": 0,
+            "transition_count": 0,
+            "skipped_count": 0,
+            "ready_for_merge_analysis": True,
+            "ready_for_generic_compiler": True,
+        },
+        "_meta": {"safe_for_merge_analysis": True},
+    }
+
+
 def make_context(tmp_path: Path):
     project = tmp_path / "project"
     source = tmp_path / "fixture.mp4"
@@ -123,6 +146,29 @@ def test_successful_end_to_end_run_preserves_authority(tmp_path: Path):
     assert report["authority"]["slide_candidate_frames"] == [492, 587, 618]
     assert report["authority"]["flash_transition_hints"] == 1
     assert orchestrator.artifacts["generic_edit_commands"].stat().st_size > 0
+
+
+def test_successful_empty_transition_authority_emits_no_transition_action(tmp_path: Path):
+    context, authority = make_context(tmp_path)
+    authority.write_text(json.dumps(empty_transition_payload()), encoding="utf-8")
+
+    report = PlanningOrchestrator(context, authority, FakeRunner()).run()
+
+    assert report["summary"] == {"generated": 4, "reused": 0, "failed": 0}
+    assert report["authority"]["flash_transition_hints"] == 0
+    generic = json.loads((context.planning_dir / "fixture_generic_edit_commands.json").read_text(encoding="utf-8"))
+    operations = generic["timeline"][0]["operations"]
+    assert all(operation["operation"] != "transition_hint" for operation in operations)
+
+
+def test_incomplete_empty_transition_authority_is_rejected(tmp_path: Path):
+    context, authority = make_context(tmp_path)
+    payload = empty_transition_payload()
+    payload["shot_count"] = 0
+    authority.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(PlanningRunError, match="incomplete or inconsistent"):
+        PlanningOrchestrator(context, authority, FakeRunner()).run()
 
 
 def test_identical_second_run_reuses_all_stages_without_subprocesses(tmp_path: Path):

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+from difflib import SequenceMatcher
 import hashlib
 import json
 import math
@@ -180,13 +181,88 @@ def _accepted_event_window_track(
             continue
         if match.get("reason") == "accepted" and math.isfinite(start) and math.isfinite(end) and end > start:
             accepted.append(event)
-    if len(accepted) > 1:
-        return None, "ambiguous_source_association"
+    expected = _semantic(cue.get("text"))
+
+    def frame_range(row: Mapping[str, object]) -> tuple[int, int]:
+        start = int(round(float(row["start"]) * timeline_fps))
+        return start, max(start + 1, int(round(float(row["end"]) * timeline_fps)))
+
+    def nearby(a: Mapping[str, object], b: Mapping[str, object]) -> bool:
+        try:
+            aw = frame_range(a)
+            bw = frame_range(b)
+            ax = a["placement"]["anchor"]
+            bx = b["placement"]["anchor"]
+            return (
+                aw[0] <= bw[1] + 3 and bw[0] <= aw[1] + 3
+                and abs(float(ax["x"]) - float(bx["x"])) <= 0.13
+                and abs(float(ax["y"]) - float(bx["y"])) <= 0.11
+            )
+        except (KeyError, TypeError, ValueError):
+            return False
+
     if not accepted:
         return None, None
-    event = accepted[0]
-    first = int(round(float(event["start"]) * timeline_fps))
-    last_exclusive = max(first + 1, int(round(float(event["end"]) * timeline_fps)))
+    if len(accepted) > 1:
+        # A semantic cue may be split into multiple real, adjacent OCR objects.
+        # Require a single spatially and temporally connected group of
+        # repeatedly observed exact words; different visible instances stay
+        # ambiguous, even when their transcript ID happens to match.
+        stable = []
+        for candidate in accepted:
+            observed = candidate.get("observed_texts") or []
+            count = sum(_semantic(text) == expected for text in observed)
+            if (
+                expected
+                and _semantic(candidate.get("text")) == expected
+                and str(candidate.get("visual_event_identity") or "")
+                and count >= 2 and count * 2 >= len(observed)
+            ):
+                stable.append((candidate, count))
+        if not stable:
+            return None, "ambiguous_source_association"
+        event = max(stable, key=lambda pair: (pair[1],
+                    frame_range(pair[0])[1] - frame_range(pair[0])[0]))[0]
+        selected = [event]
+        remaining_stable = [row for row, _count in stable if row is not event]
+        while remaining_stable:
+            attached = next((row for row in remaining_stable
+                             if any(nearby(row, part) for part in selected)), None)
+            if attached is None:
+                return None, "ambiguous_source_association"
+            selected.append(attached)
+            remaining_stable.remove(attached)
+    else:
+        event = accepted[0]
+        selected = [event]
+
+    # Weak partial-glyph OCR at the beginning/end can extend a strong caption,
+    # but only when directly observed, text-compatible, spatially nearby and
+    # temporally continuous. Never extend using distant cue-ID matches.
+    remaining = [row for row in accepted if all(row is not part for part in selected)]
+    while True:
+        added = None
+        for candidate in remaining:
+            observed = candidate.get("observed_texts") or []
+            similarity = max((SequenceMatcher(None, _semantic(text), expected).ratio()
+                              for text in observed
+                              if len(_semantic(text).split()) <= len(expected.split())), default=0.0)
+            if (
+                expected and _semantic(candidate.get("text")) == expected
+                and similarity >= 0.62
+                and any(tag in (candidate.get("observation_provenance") or [])
+                        for tag in ("accepted_direct", "accepted_refined"))
+                and any(nearby(candidate, part) for part in selected)
+            ):
+                added = candidate
+                break
+        if added is None:
+            break
+        selected.append(added)
+        remaining.remove(added)
+
+    first = min(frame_range(row)[0] for row in selected)
+    last_exclusive = max(frame_range(row)[1] for row in selected)
     confidence = event.get("confidence") if isinstance(event.get("confidence"), Mapping) else {}
     observations = event.get("observations") if isinstance(event.get("observations"), list) else []
     return {
@@ -204,6 +280,7 @@ def _accepted_event_window_track(
             "left_proven": True,
             "right_proven": True,
             "source_event_id": str(event.get("event_id") or ""),
+            "continuous_source_event_ids": [str(row.get("event_id") or "") for row in selected],
         },
     }, None
 

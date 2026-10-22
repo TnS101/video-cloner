@@ -65,6 +65,7 @@ import html
 import hashlib
 import heapq
 import json
+import math
 import os
 import re
 import time
@@ -371,6 +372,11 @@ def extract_style_contract(style_data: Dict[str, Any], profile_id: str = "primar
     outline_px = safe_float(overrides.get("outline_px") or stroke.get("width_px_estimate") or resolved.get("outline_px"), 3.0)
     shadow_px = safe_float(overrides.get("shadow_px") or shadow.get("blur_px_estimate") or resolved.get("shadow_px"), 2.0)
     shadow_opacity = clamp(safe_float(overrides.get("shadow_opacity", shadow.get("opacity_estimate")), 0.85), 0.0, 1.0)
+    # An explicit negative detector observation must not become a default effect.
+    stroke_enabled = overrides.get("stroke_enabled", stroke.get("enabled")) is not False
+    shadow_enabled = overrides.get("shadow_enabled", shadow.get("enabled")) is not False
+    if not shadow_enabled:
+        shadow_opacity = 0.0
 
     anchor = placement.get("anchor") or resolved.get("anchor") or {}
     x = safe_float(anchor.get("x"), 0.5)
@@ -378,7 +384,8 @@ def extract_style_contract(style_data: Dict[str, Any], profile_id: str = "primar
 
     font_weight = str(typography.get("font_weight") or "").lower()
     bold = bool(overrides.get("bold", profile.get("bold", resolved.get("bold", font_weight == "bold"))))
-    italic = bool(overrides.get("italic", profile.get("italic", resolved.get("italic", False))))
+    font_style = str(typography.get("font_style") or "").strip().lower()
+    italic = bool(overrides.get("italic", profile.get("italic", resolved.get("italic", font_style in {"italic", "oblique"}))))
 
     return {
         "profile_id": profile.get("style_id") or resolved.get("primary_style_id") or profile_id,
@@ -391,10 +398,10 @@ def extract_style_contract(style_data: Dict[str, Any], profile_id: str = "primar
         "outline": outline,
         "shadow": shadow_color,
         "fill_fcpxml": rgb01_to_fcpxml(hex_to_rgb01(fill), 1.0),
-        "outline_fcpxml": rgb01_to_fcpxml(hex_to_rgb01(outline, (0.0, 0.0, 0.0)), 1.0),
+        "outline_fcpxml": rgb01_to_fcpxml(hex_to_rgb01(outline, (0.0, 0.0, 0.0)), 1.0 if stroke_enabled else 0.0),
         "shadow_fcpxml": rgb01_to_fcpxml(hex_to_rgb01(shadow_color, (0.0, 0.0, 0.0)), shadow_opacity),
-        "outline_px": round(max(0.0, outline_px * outline_scale), 3),
-        "shadow_px": round(max(0.0, shadow_px * shadow_scale), 3),
+        "outline_px": round(max(0.0, outline_px * outline_scale), 3) if stroke_enabled else 0.0,
+        "shadow_px": round(max(0.0, shadow_px * shadow_scale), 3) if shadow_enabled else 0.0,
         "shadow_opacity": round(shadow_opacity, 4),
         "anchor": {"x": round(clamp(x, 0.0, 1.0), 5), "y": round(clamp(y, 0.0, 1.0), 5)},
         "placement": placement,
@@ -415,6 +422,15 @@ def normalize_style_match_text(value: Any) -> str:
     text = re.sub(r"[^a-z0-9а-яё'’]+", " ", text, flags=re.IGNORECASE)
     text = text.replace("’", "'")
     return re.sub(r"\s+", " ", text).strip()
+
+
+def normalized_style_cue_id(value: Any) -> Optional[int]:
+    """Normalize transcript IDs only; group/event IDs are not individual cue authority."""
+    match = re.fullmatch(r"sub_0*(\d+)", str(value or "").strip(), re.IGNORECASE)
+    if not match:
+        return None
+    number = int(match.group(1))
+    return number if number > 0 else None
 
 
 def token_set(value: Any) -> set:
@@ -712,9 +728,9 @@ def score_style_event_for_cue(cue: Dict[str, Any], event: Dict[str, Any], window
     observed = event.get("observed_text") or event_text
     text_score = max(text_similarity_for_style(cue_text, event_text), text_similarity_for_style(cue_text, observed))
 
-    cue_id = str(cue.get("id") or cue.get("subtitle_id") or "")
-    event_cue_id = str(event.get("cue_id") or "")
-    cue_id_score = 1.0 if cue_id and event_cue_id and cue_id == event_cue_id else 0.0
+    cue_id = normalized_style_cue_id(cue.get("id") or cue.get("subtitle_id"))
+    event_cue_id = normalized_style_cue_id(event.get("cue_id"))
+    cue_id_score = 1.0 if cue_id is not None and cue_id == event_cue_id else 0.0
 
     # Timing is strongest because style events are generated from sampled frames.
     score = (0.42 * overlap_score) + (0.28 * proximity_score) + (0.22 * text_score) + (0.08 * cue_id_score)
@@ -766,10 +782,19 @@ def assign_style_events_to_cues(
 
     for cue in cues:
         cue_mid = (safe_float(cue.get("start"), 0.0) + safe_float(cue.get("end"), 0.0)) / 2.0
+        source_cue_id = normalized_style_cue_id(cue.get("id") or cue.get("subtitle_id"))
         nearby = [
             ev for ev in events
-            if abs(safe_float(ev.get("mid"), cue_mid) - cue_mid) <= max(0.001, match_window_sec)
-            or (safe_float(ev.get("start"), 0.0) <= safe_float(cue.get("end"), 0.0) and safe_float(ev.get("end"), 0.0) >= safe_float(cue.get("start"), 0.0))
+            # A visual event explicitly linked to another cue cannot authorize
+            # this cue's font or coordinates merely because their times overlap.
+            if (not ev.get("cue_id") or (
+                source_cue_id is not None
+                and normalized_style_cue_id(ev.get("cue_id")) == source_cue_id
+            ))
+            and (
+                abs(safe_float(ev.get("mid"), cue_mid) - cue_mid) <= max(0.001, match_window_sec)
+                or (safe_float(ev.get("start"), 0.0) <= safe_float(cue.get("end"), 0.0) and safe_float(ev.get("end"), 0.0) >= safe_float(cue.get("start"), 0.0))
+            )
         ]
         if not nearby:
             continue
@@ -1853,11 +1878,26 @@ def build_vfx_placeholders_xml(
 # -----------------------------------------------------------------------------
 
 
+# Resolve 21 Basic Title importer uses a different font-size unit from our
+# OCR/Editing-DNA pixel heights.  In an isolated 1080x1920 title-only render,
+# the two unobstructed Arial Bold samples gave consistent ratios:
+#   why:     326 rendered px / 190 nominal px = 1.716
+#   telling: 886 rendered px / 518 nominal px = 1.710
+# Calibrate the *output adapter*, never the detected source font-height data.
+# This value describes the current Resolve 21 Basic Title 1080x1920 profile;
+# other renderer profiles need their own native measurement before reuse.
+RESOLVE21_BASIC_TITLE_RENDER_PX_PER_FCPXML_FONT_UNIT = 1.71
+
+
 def fcpxml_text_style_attrs(style: Dict[str, Any]) -> str:
     alignment = str(style.get("alignment") or "").strip().lower()
+    font_height_px = float(style["font_size_px"])
+    if not math.isfinite(font_height_px) or font_height_px <= 0:
+        raise ValueError("Basic Title font height must be positive and finite")
+    calibrated_units = max(1, round(font_height_px / RESOLVE21_BASIC_TITLE_RENDER_PX_PER_FCPXML_FONT_UNIT))
     attrs = {
         "font": style["font_name"],
-        "fontSize": str(style["font_size_px"]),
+        "fontSize": str(calibrated_units),
         "fontColor": style["fill_fcpxml"],
         "bold": "1" if style.get("bold") else "0",
         "italic": "1" if style.get("italic") else "0",
@@ -1888,6 +1928,15 @@ def compute_position(style: Dict[str, Any], width: int, height: int, position_mo
     return 0.0, 0.0, "reset"
 
 
+def position_to_fcpxml_units(x: float, y: float, mode: str, height: int) -> Tuple[float, float]:
+    # Resolve's FCPXML importer scales position by frame_height / 100.
+    # Detected positions from compute_position are target Resolve pixels.
+    if mode in {"detected_fcpx", "detected_resolve"}:
+        scale = 100.0 / max(1, height)
+        return x * scale, y * scale
+    return x, y
+
+
 def build_title_xml(
     cue: Dict[str, Any],
     style: Dict[str, Any],
@@ -1915,6 +1964,7 @@ def build_title_xml(
     cue_position_mode = str(cue.get("position_mode") or "").strip().lower()
     effective_position_mode = "detected_fcpx" if cue_position_mode == "detected_fcpx" else position_mode
     pos_x, pos_y, mode = compute_position(style, width, height, effective_position_mode, position_x, position_y)
+    pos_x, pos_y = position_to_fcpxml_units(pos_x, pos_y, mode, height)
     if mode == "none":
         transform_line = ""
     else:
@@ -1933,6 +1983,161 @@ def build_title_xml(
 {indent}  </text-style-def>
 {indent}</title>'''
 
+
+
+def _native_title_advance(text: str, font: str, units: int, bold: bool) -> float:
+    """Measure the installed font, not OCR word-length or a guessed glyph width."""
+    if os.name == "nt":
+        import ctypes
+        from ctypes import wintypes
+
+        class Size(ctypes.Structure):
+            _fields_ = [("cx", ctypes.c_long), ("cy", ctypes.c_long)]
+
+        gdi = ctypes.WinDLL("gdi32", use_last_error=True)
+        user = ctypes.WinDLL("user32", use_last_error=True)
+        gdi.CreateFontW.restype = wintypes.HANDLE
+        gdi.CreateFontW.argtypes = [ctypes.c_int] * 13 + [wintypes.LPCWSTR]
+        gdi.SelectObject.restype = wintypes.HANDLE
+        gdi.SelectObject.argtypes = [wintypes.HDC, wintypes.HANDLE]
+        gdi.GetTextExtentPoint32W.restype = wintypes.BOOL
+        gdi.GetTextExtentPoint32W.argtypes = [wintypes.HDC, wintypes.LPCWSTR, ctypes.c_int, ctypes.POINTER(Size)]
+        gdi.DeleteObject.argtypes = [wintypes.HANDLE]
+        user.GetDC.restype = wintypes.HDC
+        user.GetDC.argtypes = [wintypes.HWND]
+        user.ReleaseDC.argtypes = [wintypes.HWND, wintypes.HDC]
+        dc = user.GetDC(None)
+        if not dc:
+            raise RuntimeError("Cannot measure Resolve title font: Windows DC unavailable")
+        handle = gdi.CreateFontW(-units, 0, 0, 0, 700 if bold else 400, 0, 0, 0, 1, 0, 0, 0, 0, font)
+        if not handle:
+            user.ReleaseDC(None, dc)
+            raise RuntimeError(f"Cannot measure Resolve title font: {font}")
+        previous = gdi.SelectObject(dc, handle)
+        size = Size()
+        try:
+            if not previous or not gdi.GetTextExtentPoint32W(dc, text, len(text), ctypes.byref(size)):
+                raise RuntimeError(f"Cannot measure Resolve title glyphs: {font}")
+            return float(size.cx)
+        finally:
+            gdi.SelectObject(dc, previous)
+            gdi.DeleteObject(handle)
+            user.ReleaseDC(None, dc)
+    # Offline non-Windows replay; production uses the installed Windows font.
+    try:
+        from PIL import ImageFont
+    except ImportError as error:
+        raise RuntimeError("Font measurement unavailable; cannot publish unbounded titles") from error
+    font_path = "LiberationSans-Bold.ttf" if bold else "LiberationSans-Regular.ttf"
+    try:
+        face = ImageFont.truetype(font_path, units)
+    except OSError as error:
+        raise RuntimeError("Offline Arial-compatible font unavailable for geometry check") from error
+    return float(face.getlength(text))
+
+
+def _layout_caption_titles(
+    cues: List[Dict[str, Any]], base_style: Dict[str, Any], cue_styles: Optional[Dict[int, Dict[str, Any]]],
+    width: int, height: int, position_mode: str,
+) -> Tuple[List[Dict[str, Any]], Dict[int, Dict[str, Any]]]:
+    """Constrain rendered Basic Titles in space AND time, preserving every cue interval.
+
+    OCR/source geometry stays authoritative for the initial placement. The output
+    adapter may minimally scale or shift individual glyph boxes when they collide.
+    No source IDs, caption text, timing, lanes, detection or animation DNA change.
+    """
+    padding = max(8.0, width * 0.012)
+    title_styles = {int(c['index']): dict(style_for_cue(c, base_style, cue_styles)) for c in cues}
+    placed: List[Tuple[int, int, float, float, float, float]] = []
+    adjusted = []
+    # Earlier appearing titles retain priority; source-backed visual titles win
+    # over transcript fallbacks at identical starts.
+    ordered = sorted(cues, key=lambda c: (
+        safe_int(c.get('start_frame'), 0),
+        1 if c.get('timing_authority') == 'transcript_fallback' else 0,
+        safe_int(c.get('index'), 0),
+    ))
+    for cue in ordered:
+        idx = int(cue['index'])
+        original = title_styles[idx]
+        mode = 'detected_fcpx' if cue.get('position_mode') == 'detected_fcpx' else position_mode
+        if mode not in {'reset', 'center', 'detected_fcpx', 'detected_resolve'}:
+            raise ValueError(f"Caption geometry requires a supported position mode: {mode}")
+        anchor = original.get('anchor') or {}
+        original_x = float(anchor.get('x', .5)) * width if mode.startswith('detected') else width / 2
+        original_y = float(anchor.get('y', .5)) * height if mode.startswith('detected') else height / 2
+        x0, y0 = original_x, original_y
+        # OCR placement may be left/right aligned, while Resolve Basic Title
+        # adjust-transform always positions its *center*. Use the observed box
+        # center, not an OCR paragraph edge, for the renderer's transform.
+        bbox = (original.get('placement') or {}).get('normalized_bbox')
+        if (mode.startswith('detected') and isinstance(bbox, (list, tuple)) and len(bbox) == 4
+                and all(isinstance(v, (int, float)) and math.isfinite(v) for v in bbox)
+                and 0 <= bbox[0] < bbox[2] <= 1 and 0 <= bbox[1] < bbox[3] <= 1):
+            x0 = (bbox[0] + bbox[2]) * width / 2
+            y0 = (bbox[1] + bbox[3]) * height / 2
+            # Sub-pixel OCR center variation is not an instruction to move
+            # previously-good titles; only correct meaningful anchor errors.
+            if abs(x0 - original_x) < 3.0:
+                x0 = original_x
+            if abs(y0 - original_y) < 3.0:
+                y0 = original_y
+        font_px = float(original['font_size_px'])
+        if not math.isfinite(font_px) or font_px <= 0:
+            raise ValueError(f"Caption {idx}: invalid font height")
+        text = str(cue.get('text') or '').strip()
+        lines = text.splitlines() or ['']
+        units = max(1, round(font_px / RESOLVE21_BASIC_TITLE_RENDER_PX_PER_FCPXML_FONT_UNIT))
+        advance = max(_native_title_advance(line, str(original['font_name']), units, bool(original.get('bold'))) for line in lines)
+        stroke = max(0.0, float(original.get('outline_px') or 0))
+        # Same native-renderer advance calibration as fontSize; add outline and
+        # modest glyph overhang so the measured rectangles are conservative.
+        glyph_width = advance * RESOLVE21_BASIC_TITLE_RENDER_PX_PER_FCPXML_FONT_UNIT * 1.04
+        glyph_height = font_px * 1.10 * len(lines)
+        start = safe_int(cue.get('start_frame'), 0)
+        end = start + max(1, safe_int(cue.get('duration_frames'), 1))
+        active = [other for other in placed if start < other[1] and other[0] < end]
+        # Preserve original positions if they are safe; select the smallest
+        # per-title correction otherwise. Never relocate an unrelated title.
+        solutions = []
+        for scale in (1., .96, .92, .87, .82, .76, .70, .63, .55, .46, .38):
+            w, h = glyph_width * scale + 2 * stroke + 4, glyph_height * scale + 2 * stroke + 4
+            if w > width - 2 * padding or h > height - 2 * padding:
+                continue
+            safe_x = min(max(x0, padding + w/2), width - padding - w/2)
+            safe_y = min(max(y0, padding + h/2), height - padding - h/2)
+            for dy in (0, -16, 16, -32, 32, -48, 48, -72, 72, -96, 96, -128, 128, -160, 160):
+                y = safe_y + dy
+                if y - h/2 < padding or y + h/2 > height-padding:
+                    continue
+                for dx in (0, -24, 24, -48, 48, -80, 80):
+                    x = safe_x + dx
+                    if x - w/2 < padding or x + w/2 > width-padding:
+                        continue
+                    if any(abs(x-px) < (w+pw)/2 + padding and abs(y-py) < (h+ph)/2 + padding
+                           for _,_,px,py,pw,ph in active):
+                        continue
+                    cost = (abs(x-x0) * 1.15 + abs(y-y0)
+                            + (1-scale) * 330 + (0 if dx==0 else 0.05))
+                    solutions.append((round(cost, 4), -scale, abs(dy), abs(dx), x, y, scale, w, h))
+            if solutions and scale <= .70:
+                break
+        if not solutions:
+            raise ValueError(f"Caption layout cannot fit all editable text at frame {start}: title {idx} ({text!r})")
+        _, _, _, _, x, y, scale, w, h = min(solutions)
+        if abs(x-original_x) > 0.001 or abs(y-original_y) > 0.001 or scale < .999:
+            st = dict(original)
+            st['font_size_px'] = max(1, round(font_px * scale))
+            st['anchor'] = {'x': x/width, 'y': y/height}
+            title_styles[idx] = st
+            changed = dict(cue)
+            changed['position_mode'] = 'detected_fcpx'
+            adjusted.append(changed)
+        else:
+            adjusted.append(cue)
+        placed.append((start,end,x,y,w,h))
+    by_id = {int(c['index']): c for c in adjusted}
+    return [by_id[int(c['index'])] for c in cues], title_styles
 
 def build_caption_only_fcpxml(
     cues: List[Dict[str, Any]],
@@ -1956,7 +2161,8 @@ def build_caption_only_fcpxml(
     effect_id = "r2"
     timeline_name_xml = xml_escape(timeline_name)
     format_name = f"FFVideoFormat{width}x{height}p{int(round(fps))}"
-    title_xml = "\n".join(build_title_xml(c, style_for_cue(c, style, cue_styles), fps, width, height, effect_id, lane, title_prefix, position_mode, position_x, position_y) for c in cues)
+    laid_out, layout_styles = _layout_caption_titles(cues, style, cue_styles, width, height, position_mode)
+    title_xml = "\n".join(build_title_xml(c, layout_styles[int(c["index"])], fps, width, height, effect_id, lane, title_prefix, position_mode, position_x, position_y) for c in laid_out)
 
     return f'''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE fcpxml>
@@ -2076,7 +2282,8 @@ def build_full_timeline_fcpxml(
         # Connected audio lane below the primary video storyline.
         audio_xml = f'\n        <asset-clip name="VC Source Audio" ref="{audio_asset_id}" lane="-1" offset="0s" start="0s" duration="{total_duration}"/>'
 
-    title_xml = "\n".join(build_title_xml(c, style_for_cue(c, style, cue_styles), fps, width, height, effect_id, title_lane, title_prefix, position_mode, position_x, position_y) for c in cues)
+    laid_out, layout_styles = _layout_caption_titles(cues, style, cue_styles, width, height, position_mode)
+    title_xml = "\n".join(build_title_xml(c, layout_styles[int(c["index"])], fps, width, height, effect_id, title_lane, title_prefix, position_mode, position_x, position_y) for c in laid_out)
     vfx_placeholder_xml = build_vfx_placeholders_xml(
         transitions or [],
         effect_ref=effect_id,
@@ -2358,6 +2565,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         durations = [safe_float(c.get("duration"), 0.0) for c in cues]
         words_per = [len(norm_text(c.get("text")).split()) for c in cues]
         pos_x, pos_y, pos_mode_written = compute_position(style, max(1, args.width), max(1, args.height), args.position_mode, args.position_x, args.position_y)
+        pos_x, pos_y = position_to_fcpxml_units(pos_x, pos_y, pos_mode_written, args.height)
         report.update({
             "success": True,
             "timing": {

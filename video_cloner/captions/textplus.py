@@ -299,6 +299,7 @@ def render_visual_compositions(
     token_ids: set[str] = set()
     cues: list[dict[str, object]] = []
     unresolved: list[str] = []
+    omitted_segment_echoes: list[str] = []
     for composition in compositions:
         composition_id = str(composition.get("composition_id") or "")
         window = composition.get("window")
@@ -337,6 +338,27 @@ def render_visual_compositions(
             if any(value not in expected_set for value in source_ids):
                 raise StandaloneTextplusError("visual composition semantic reference is unknown")
             start_frame, end_frame = [int(value) for value in token_window]
+            # Some accepted OCR tracklets are actually full transcript SEGMENTS
+            # attached to a few frames, not observed word-level captions. They
+            # have no word identity, repeat the segment verbatim, and must not
+            # become independently visible titles.
+            reference = token.get("semantic_reference")
+            if not source_ids and isinstance(reference, Mapping):
+                reference_text = canonical.norm_text(reference.get("cue_text"))
+                try:
+                    reference_frames = round(
+                        (float(reference["cue_end"]) - float(reference["cue_start"])) * fps
+                    )
+                except (KeyError, TypeError, ValueError):
+                    reference_frames = 0
+                if (
+                    reference.get("label_source") == "transcript_cue"
+                    and len(text.split()) >= 3
+                    and text.casefold() == reference_text.casefold()
+                    and reference_frames >= 2 * (end_frame - start_frame)
+                ):
+                    omitted_segment_echoes.append(token_id)
+                    continue
             cue = {
                 "id": token_id,
                 "index": len(cues) + 1,
@@ -376,11 +398,784 @@ def render_visual_compositions(
         "enabled": True,
         "composition_count": len(composition_ids),
         "render_token_count": len(cues),
+        "omitted_segment_echo_ids": omitted_segment_echoes,
         "semantic_reference_occurrence_count": sum(len(cue.get("semantic_reference_ids") or []) for cue in cues),
         "semantic_reference_distinct_count": len({value for cue in cues for value in cue.get("semantic_reference_ids") or []}),
         "semantic_coverage_exact": reference_ids == expected,
         "lane_allocation": lane_allocation,
     }
+
+
+def _prefer_source_visible_phrases(
+    cues: list[dict[str, object]], style_data: Mapping[str, object], fps: float,
+) -> tuple[list[dict[str, object]], list[str]]:
+    """Use an actually observed full-screen phrase over transcript-only words.
+
+    Only a direct OCR phrase with repeated exact source observations can own
+    the display. Source-backed independent words/compositions are never
+    replaced. A tracklet's OCR text switch is an exit, not persistence.
+    """
+    import re
+
+    def words(value: object) -> list[str]:
+        return re.findall(r"\w+(?:['’]\w+)*", str(value or "").casefold())
+
+    observations: dict[str, list[tuple[float, str]]] = {}
+    for group in style_data.get("caption_groups", []):
+        if not isinstance(group, Mapping):
+            continue
+        try:
+            timestamp = float(group["timestamp"])
+        except (KeyError, ValueError, TypeError):
+            continue
+        for identity in group.get("tracklet_ids") or []:
+            observations.setdefault(str(identity), []).append((timestamp, str(group.get("text") or "")))
+    for rows in observations.values():
+        rows.sort()
+
+    remaining = list(cues)
+    promoted: list[str] = []
+    for phrase in list(cues):
+        if (phrase.get("timing_authority") != "visual_primary"
+                or phrase.get("semantic_reference_ids") or phrase.get("source_cue_ids")
+                or not phrase.get("style_evidence_id")):
+            continue
+        target = words(phrase.get("text"))
+        if len(target) < 2:
+            continue
+        identity = str(phrase.get("visual_event_identity") or "")
+        samples = observations.get(identity, [])
+        # Require >=3 independent source-frame detections of the COMPLETE
+        # phrase. Partial OCR and transcript-cue aliases do not count.
+        positive = [(t, text) for t, text in samples if words(text) == target]
+        if len(positive) < 3:
+            continue
+        first, last = positive[0][0], positive[-1][0]
+        if last - first < 0.15:
+            continue
+        # First directly observed replacement text, if any, bounds exit.
+        changes = [t for t, text in samples if t > last and words(text) != target]
+        observed_end = min(changes) if changes else last + 0.1
+        first_frame = max(int(phrase["start_frame"]), int(round(first * fps)))
+        last_frame = min(int(phrase["end_frame"]), max(first_frame + 1, int(round(observed_end * fps))))
+        if last_frame <= first_frame:
+            continue
+
+        # Only consume the exact ordered transcript-only word sequence. If
+        # even one word has its own source identity, keep that composition.
+        near = sorted((cue for cue in remaining if cue is not phrase
+                       and cue.get("timing_authority") == "transcript_fallback"
+                       and len(cue.get("semantic_reference_ids") or cue.get("source_cue_ids") or []) == 1
+                       and first_frame - 3 <= int(cue["start_frame"]) < last_frame
+                       and int(cue["end_frame"]) <= last_frame + 3
+                       and len(words(cue.get("text"))) == 1),
+                      key=lambda row: (int(row["start_frame"]), int(row["end_frame"])))
+        matches: list[dict[str, object]] = []
+        for word_cue in near:
+            if len(matches) == len(target):
+                break
+            if words(word_cue.get("text"))[0] == target[len(matches)]:
+                if not matches and abs(int(word_cue["start_frame"]) - first_frame) > 4:
+                    continue
+                matches.append(word_cue)
+            elif matches:
+                break
+        if len(matches) != len(target):
+            continue
+        ids = [str((cue.get("semantic_reference_ids") or cue.get("source_cue_ids"))[0]) for cue in matches]
+        # The matched transcript IDs must not already be owned by independent
+        # source-backed objects elsewhere in the same visual composition.
+        if any(any(i in (other.get("semantic_reference_ids") or [])
+                   for other in remaining if other is not phrase and other not in matches)
+               for i in ids):
+            continue
+        phrase["start_frame"], phrase["end_frame"] = first_frame, last_frame
+        phrase["start"], phrase["end"] = first_frame / fps, last_frame / fps
+        phrase["duration_frames"] = last_frame - first_frame
+        phrase["duration"] = (last_frame - first_frame) / fps
+        phrase["raw"] = {"timeline_start_frame": first_frame, "timeline_end_frame": last_frame}
+        phrase["semantic_reference_ids"] = ids
+        phrase["source_cue_ids"] = list(ids)
+        for word_cue in matches:
+            remaining.remove(word_cue)
+        promoted.append(str(phrase["id"]))
+    return remaining, promoted
+
+
+def _project_observed_phrase_states(
+    cues: list[dict[str, object]],
+    style_data: Mapping[str, object],
+    generic: Mapping[str, object],
+    fps: float,
+) -> tuple[list[dict[str, object]], list[str]]:
+    """Use repeated source OCR text states, not a word's transcript length.
+
+    A tracked visual region can change from 'listen' to 'listen to'. Only
+    promote the longer state when independent frames show it and its words
+    match consecutive transcript semantics. Keep independently styled visual
+    regions separate.
+    """
+    import re
+
+    def words(value: object) -> list[str]:
+        return re.findall(r"\w+(?:['’]\w+)*", str(value or "").casefold())
+
+    transcript = [row for row in generic.get("subtitle_clips", []) if isinstance(row, Mapping)]
+    transcript_ids = [str(row.get("subtitle_id") or "") for row in transcript]
+    transcript_words = [words(row.get("text")) for row in transcript]
+    positions = {value: i for i, value in enumerate(transcript_ids)}
+    events = {
+        str(row.get("visual_event_identity") or ""): row
+        for row in style_data.get("caption_style_events", [])
+        if isinstance(row, Mapping) and row.get("visual_event_identity")
+    }
+    # Reconciliation may keep a short, literal OCR word and discard a
+    # simultaneous alias that later becomes a source-visible phrase. Its
+    # observations remain valid evidence for the same semantic cue.
+    events_by_cue: dict[str, list[Mapping[str, object]]] = {}
+    for row in events.values():
+        if (row.get("match") or {}).get("reason") == "accepted":
+            events_by_cue.setdefault(_source_cue_id(row.get("cue_id")), []).append(row)
+    groups: dict[str, list[tuple[float, list[str]]]] = {}
+    for group in style_data.get("caption_groups", []):
+        if not isinstance(group, Mapping) or group.get("observation_provenance") == ["transcript_only"]:
+            continue
+        try:
+            moment = float(group["timestamp"])
+        except (ValueError, TypeError, KeyError):
+            continue
+        for identity in group.get("tracklet_ids") or []:
+            groups.setdefault(str(identity), []).append((moment, words(group.get("text"))))
+
+    output = list(cues)
+    promoted: list[str] = []
+    for cue in list(cues):
+        if (cue.get("timing_authority") != "visual_primary"
+                or cue.get("accepted_motion_authority")
+                or not cue.get("style_evidence_id")
+                or len(cue.get("semantic_reference_ids") or []) != 1):
+            continue
+        identity = str(cue.get("visual_event_identity") or "")
+        event = events.get(identity)
+        if (not isinstance(event, Mapping)
+                or (event.get("match") or {}).get("reason") != "accepted"):
+            continue
+        # A confirmed scale-pop is a distinct animated object, not a safe
+        # static phrase state to replace with another text geometry.
+        motion = event.get("animation") if isinstance(event.get("animation"), Mapping) else {}
+        if motion.get("detected") and motion.get("type") == "scale_pop":
+            continue
+        cue_text = words(cue.get("text"))
+        if len(cue_text) != 1:
+            continue
+        own_id = str(cue["semantic_reference_ids"][0])
+        if own_id not in positions:
+            continue
+        choice = None
+        # Prefer this tracklet; a discarded OCR alias is eligible only when
+        # its own frames prove the longer source state for the same word.
+        candidates = [event] + [
+            other for other in events_by_cue.get(own_id, [])
+            if other is not event
+            and float(other.get("start") or -1) < float(cue["end"])
+            and float(other.get("end") or -1) > float(cue["start"])
+            and not ((other.get("animation") or {}).get("detected")
+                     and (other.get("animation") or {}).get("type") == "scale_pop")
+        ]
+        for source_event in candidates:
+            source_identity = str(source_event.get("visual_event_identity") or "")
+            for candidate in sorted(
+                {str(value) for value in source_event.get("observed_texts") or []},
+                key=lambda value: (-len(words(value)), value),
+            ):
+                phrase = words(candidate)
+                if not (2 <= len(phrase) <= 6 and cue_text[0] in phrase):
+                    continue
+                owner_index = phrase.index(cue_text[0])
+                start_index = positions[own_id] - owner_index
+                if start_index < 0 or start_index + len(phrase) > len(transcript):
+                    continue
+                selected = transcript[start_index:start_index + len(phrase)]
+                ids = transcript_ids[start_index:start_index + len(phrase)]
+                if any(len(entry) != 1 or entry[0] != expected
+                       for entry, expected in zip(transcript_words[start_index:start_index + len(phrase)], phrase)):
+                    continue
+                # No source-backed word in the phrase can already occupy the
+                # proposed state; those words may be independently styled.
+                observations = sorted(moment for moment, observed in groups.get(source_identity, [])
+                                      if observed[:len(phrase)] == phrase)
+                if len(observations) < 3 or observations[-1] - observations[0] < 0.15:
+                    continue
+                state_start = max(int(cue["start_frame"]), round(observations[0] * fps))
+                state_end = int(cue["end_frame"])
+                if state_end - state_start < 2:
+                    continue
+                if any(other is not cue
+                       and other.get("timing_authority") == "visual_primary"
+                       and any(value in (other.get("semantic_reference_ids") or []) for value in ids)
+                       and int(other["start_frame"]) < state_end
+                       and int(other["end_frame"]) > state_start
+                       for other in output):
+                    continue
+                fallback = [other for other in output if other is not cue
+                            and other.get("timing_authority") == "transcript_fallback"
+                            and any(value in (other.get("source_cue_ids") or []) for value in ids)]
+                if any(len(other.get("source_cue_ids") or []) != 1 for other in fallback):
+                    continue
+                choice = (candidate, ids, state_start, fallback, source_event)
+                break
+            if choice is not None:
+                break
+        if choice is None:
+            continue
+        candidate, ids, state_start, fallback, source_event = choice
+        old_start = int(cue["start_frame"])
+        if state_start - old_start >= max(5, round(0.20 * fps)):
+            initial = dict(cue)
+            initial["id"] = str(cue["id"]) + "_source_lead"
+            initial["end_frame"] = state_start
+            initial["end"] = state_start / fps
+            initial["duration_frames"] = state_start - old_start
+            initial["duration"] = (state_start - old_start) / fps
+            initial["raw"] = {**(cue.get("raw") or {}), "timeline_end_frame": state_start}
+            initial["animation_application_skip_reason"] = "source_phrase_state_changed"
+            output.append(initial)
+        cue["animation_application_skip_reason"] = "source_phrase_state_changed"
+        if source_event is not event:
+            # Bind both style and geometry to the observed phrase tracklet;
+            # the original word tracklet is not evidence for its full bbox.
+            cue["visual_event_identity"] = str(source_event["visual_event_identity"])
+            cue["style_evidence_id"] = str(source_event["event_id"])
+        cue["text"] = candidate
+        cue["start_frame"] = state_start
+        cue["start"] = state_start / fps
+        cue["duration_frames"] = int(cue["end_frame"]) - state_start
+        cue["duration"] = cue["duration_frames"] / fps
+        cue["semantic_reference_ids"] = list(ids)
+        cue["source_cue_ids"] = list(ids)
+        cue["raw"] = {**(cue.get("raw") or {}), "timeline_start_frame": state_start}
+        for word_cue in fallback:
+            output.remove(word_cue)
+        promoted.append(str(cue["id"]))
+    output.sort(key=lambda cue: (int(cue["start_frame"]), int(cue["end_frame"]), str(cue["id"])))
+    return output, promoted
+
+def _apply_observed_phrase_geometry(
+    cues: Sequence[dict[str, object]],
+    styles: Mapping[int, dict[str, object]],
+    style_data: Mapping[str, object],
+    promoted_ids: Sequence[str],
+) -> int:
+    """Place confirmed phrase states using their own OCR boxes, not word boxes.
+
+    Do not infer geometry from combined composition boxes or from transcript
+    timing. Other visual titles and unverified phrase states are unchanged.
+    """
+    from statistics import median
+
+    identities = {str(value) for value in promoted_ids}
+    if not identities:
+        return 0
+    info = style_data.get("video_info") or {}
+    width, height = info.get("width"), info.get("height")
+    if not (isinstance(width, (int, float)) and width > 0
+            and isinstance(height, (int, float)) and height > 0):
+        return 0
+
+    event_by_identity = {
+        str(event.get("visual_event_identity")): event
+        for event in style_data.get("caption_style_events", [])
+        if isinstance(event, Mapping) and event.get("visual_event_identity")
+    }
+    changed = 0
+    for cue in cues:
+        if str(cue.get("id")) not in identities:
+            continue
+        identity = str(cue.get("visual_event_identity") or "")
+        event = event_by_identity.get(identity)
+        style = styles.get(int(cue["index"]))
+        if not isinstance(event, Mapping) or not isinstance(style, dict):
+            continue
+        phrase = canonical.normalize_semantic_caption_text(cue.get("text"))
+        boxes: list[list[float]] = []
+        times: list[float] = []
+        for observation in event.get("observations") or []:
+            if not isinstance(observation, Mapping):
+                continue
+            if canonical.normalize_semantic_caption_text(observation.get("text")) != phrase:
+                continue
+            if str(observation.get("tracklet_id") or "") != identity:
+                continue
+            composition = observation.get("composition") or {}
+            if (isinstance(composition, Mapping)
+                    and composition.get("tracklet_ids") != [identity]):
+                continue  # A merged OCR group is not this phrase's own bbox.
+            bbox = observation.get("bbox")
+            moment = observation.get("timestamp")
+            if (not isinstance(bbox, list) or len(bbox) != 4
+                    or not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in bbox)
+                    or not isinstance(moment, (int, float))):
+                continue
+            x1, y1, x2, y2 = map(float, bbox)
+            if not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height):
+                continue
+            if not (float(cue["start"]) - 0.20 <= moment <= float(cue["end"]) + 0.20):
+                continue
+            boxes.append([x1, y1, x2, y2])
+            times.append(float(moment))
+        if len(boxes) < 3 or max(times) - min(times) < 0.15:
+            continue
+
+        x1, y1, x2, y2 = [median(row[i] for row in boxes) for i in range(4)]
+        if x2 <= x1 or y2 <= y1:
+            continue
+        # Basic Title paragraph alignment does not change the position
+        # anchor of its FCPXML adjust-transform. OCR provides a glyph bbox;
+        # place the title object at its center regardless of text alignment.
+        x = (x1 + x2) / 2
+        y = (y1 + y2) / 2
+        anchor = {"x": round(x / width, 5), "y": round(y / height, 5)}
+        bounded_size = min(int(style["font_size_px"]), max(1, round((y2 - y1) * 1.15)))
+        current_anchor = style.get("anchor") or {}
+        # Reuse already-good placement: avoid visual drift on accepted phrase
+        # states just because OCR median differs by a few pixels.
+        if (abs(float(current_anchor.get("x", 0.5)) - anchor["x"]) < 0.025
+                and abs(float(current_anchor.get("y", 0.5)) - anchor["y"]) < 0.01
+                and bounded_size >= int(style["font_size_px"])):
+            continue
+        placement = dict(style.get("placement") or {})
+        placement["normalized_bbox"] = [round(x1 / width, 5), round(y1 / height, 5),
+                                        round(x2 / width, 5), round(y2 / height, 5)]
+        placement["anchor"] = {**anchor, "coordinate_space": "normalized_frame"}
+        style["placement"] = placement
+        style["anchor"] = anchor
+        # Bounding-box height is direct source evidence; never enlarge the
+        # inherited word font to fill it. No global size adjustment.
+        size = bounded_size
+        if size < int(style["font_size_px"]):
+            style["font_size_px"] = size
+            style.pop("textplus_size", None)
+            _ensure_textplus_size(style, width)
+        cue["position_mode"] = "detected_fcpx"
+        changed += 1
+    return changed
+
+
+
+def _center_adjacent_observed_phrase_titles(
+    cues: Sequence[Mapping[str, object]],
+    styles: Mapping[int, dict[str, object]],
+    promoted_ids: Sequence[str],
+) -> int:
+    """Keep source-neighboring phrase glyphs centered on their OCR bbox.
+
+    The OCR horizontal_align classifies the bbox's location in the frame.
+    It does NOT describe the text paragraph alignment expected by Basic Title.
+    In a simultaneous multi-title composition, treating it as left/right
+    paragraph alignment moves glyphs off their observed bbox into neighbors.
+    Preserve OCR geometry and typography; correct only this output adapter.
+    """
+    promoted = set(promoted_ids)
+    adjusted = 0
+    for cue in cues:
+        if cue.get("id") not in promoted or cue.get("timing_authority") != "visual_primary":
+            continue
+        style = styles.get(int(cue["index"]))
+        if not isinstance(style, dict) or style.get("alignment") not in {"left", "right"}:
+            continue
+        bbox = (style.get("placement") or {}).get("normalized_bbox")
+        if not isinstance(bbox, (list, tuple)) or len(bbox) != 4:
+            continue
+        if not all(isinstance(x, (int, float)) for x in bbox):
+            continue
+        if not (0 <= bbox[0] < bbox[2] <= 1 and 0 <= bbox[1] < bbox[3] <= 1):
+            continue
+        if bbox[2] - bbox[0] < .12:
+            continue
+        midpoint = (bbox[1] + bbox[3]) / 2
+        for other in cues:
+            if other is cue or other.get("timing_authority") != "visual_primary":
+                continue
+            if (other.get("visual_event_identity") == cue.get("visual_event_identity")
+                    or int(other["start_frame"]) >= int(cue["end_frame"])
+                    or int(other["end_frame"]) <= int(cue["start_frame"])):
+                continue
+            neighbor_style = styles.get(int(other["index"]))
+            other_bbox = ((neighbor_style or {}).get("placement") or {}).get("normalized_bbox")
+            if not isinstance(other_bbox, (list, tuple)) or len(other_bbox) != 4:
+                continue
+            if not all(isinstance(x, (int, float)) for x in other_bbox):
+                continue
+            neighbor_midpoint = (other_bbox[1] + other_bbox[3]) / 2
+            vertical_gap = max(0, other_bbox[1] - bbox[3], bbox[1] - other_bbox[3])
+            if abs(midpoint - neighbor_midpoint) > .025 and vertical_gap <= .02:
+                # Do not rewrite source detection's horizontal_align field.
+                # Only Resolve's paragraph layout is corrected.
+                style["alignment"] = "center"
+                adjusted += 1
+                break
+    return adjusted
+
+
+def _suppress_unanchored_phrase_echoes(
+    cues: list[dict[str, object]],
+) -> tuple[list[dict[str, object]], list[str], dict[str, dict[str, object]]]:
+    """Suppress only unsupported sentence echoes already represented by timed words.
+
+    An unanchored OCR phrase is not an extra title when its constituent words
+    already have independent semantic caption authority. Preserve all tokens
+    (including legitimate co-visible words) in source analysis; omit only the
+    duplicate from the executable caption projection.
+    """
+    import re
+
+    def words(value: object) -> list[str]:
+        return re.findall(r"\w+(?:['’]\w+)*", str(value or "").casefold())
+
+    anchored = sorted(
+        (
+            cue for cue in cues
+            if cue.get("semantic_reference_ids") or cue.get("source_cue_ids")
+        ),
+        key=lambda cue: (int(cue["start_frame"]), int(cue["end_frame"])),
+    )
+    omitted: list[str] = []
+    style_donors: dict[str, dict[str, object]] = {}
+    for cue in cues:
+        if cue.get("semantic_reference_ids") or cue.get("source_cue_ids"):
+            continue
+        phrase = words(cue.get("text"))
+        if len(phrase) < 3:
+            continue
+        begin, end = int(cue["start_frame"]), int(cue["end_frame"])
+        matched, cursor = 0, 0
+        word_matches: list[dict[str, object]] = []
+        for word_cue in anchored:
+            if int(word_cue["start_frame"]) >= end + 1:
+                break
+            if int(word_cue["end_frame"]) < begin:
+                continue
+            candidate = words(word_cue.get("text"))
+            if len(candidate) != 1:
+                continue
+            try:
+                cursor = phrase.index(candidate[0], cursor) + 1
+            except ValueError:
+                continue
+            matched += 1
+            word_matches.append(word_cue)
+        # A phrase is redundant only when >=80% of its words are already
+        # independently executable in source order (at least three matches).
+        if matched >= 3 and 5 * matched >= 4 * len(phrase):
+            phrase_id = str(cue["id"])
+            omitted.append(phrase_id)
+            # The deleted phrase may carry real OCR style evidence. Retain it
+            # solely as a source of typography for unsupported transcript words;
+            # never keep its executable title or change word timings.
+            if cue.get("style_evidence_id") and cue.get("visual_event_identity"):
+                style_donors[phrase_id] = cue
+                for word_cue in word_matches:
+                    if (word_cue.get("timing_authority") == "transcript_fallback"
+                            and not word_cue.get("style_evidence_id")):
+                        word_cue.setdefault("_suppressed_phrase_style_donor", phrase_id)
+    removed = set(omitted)
+    return [cue for cue in cues if str(cue["id"]) not in removed], omitted, style_donors
+
+
+
+def _group_rapid_transcript_fallbacks(
+    cues: list[dict[str, object]], fps: float,
+) -> tuple[list[dict[str, object]], int]:
+    """Render short, unobserved consecutive speech as a readable static phrase.
+
+    Source-visible captions keep their exact observed windows. Do not invent
+    persistence or join across a transcript segment/visual composition.
+    """
+    min_frames = max(1, round(0.35 * fps))
+    target_frames = max(min_frames, round(0.45 * fps))
+    max_frames = max(target_frames, round(0.95 * fps))
+    visual = [cue for cue in cues if cue.get("timing_authority") == "visual_primary"]
+
+    def transcript_word(cue: Mapping[str, object]) -> tuple[int, int] | None:
+        raw = cue.get("raw")
+        if (cue.get("timing_authority") != "transcript_fallback"
+                or not isinstance(raw, Mapping)
+                or not isinstance(raw.get("segment_index"), int)
+                or not isinstance(raw.get("word_index"), int)
+                or len(cue.get("source_cue_ids") or []) != 1):
+            return None
+        return int(raw["segment_index"]), int(raw["word_index"])
+
+    def visually_clear(start: int, end: int) -> bool:
+        return not any(
+            int(cue["start_frame"]) < end and int(cue["end_frame"]) > start
+            for cue in visual
+        )
+
+    def can_add(group: list[dict[str, object]], next_cue: dict[str, object]) -> bool:
+        prior, initial = group[-1], group[0]
+        previous_word, next_word = transcript_word(prior), transcript_word(next_cue)
+        if (previous_word is None or next_word is None
+                or next_word != (previous_word[0], previous_word[1] + 1)
+                or int(next_cue["start_frame"]) - int(prior["end_frame"]) not in (0, 1)
+                or len(group) >= 4
+                or int(next_cue["end_frame"]) - int(initial["start_frame"]) > max_frames
+                or len(" ".join(str(c["text"]) for c in [*group, next_cue])) > 28
+                or str(prior["text"]).rstrip().endswith((".", "?", "!"))):
+            return False
+        start, end = int(initial["start_frame"]), int(next_cue["end_frame"])
+        return visually_clear(start, end)
+
+    output: list[dict[str, object]] = []
+    grouped = 0
+    index = 0
+    while index < len(cues):
+        cue = cues[index]
+        duration = int(cue["end_frame"]) - int(cue["start_frame"])
+        if transcript_word(cue) is None or duration >= min_frames:
+            output.append(cue)
+            index += 1
+            continue
+        group = [cue]
+        for next_cue in cues[index + 1:index + 4]:
+            if not can_add(group, next_cue):
+                break
+            group.append(next_cue)
+            span = int(group[-1]["end_frame"]) - int(group[0]["start_frame"])
+            if span >= target_frames:
+                # Keep a short terminal word with its phrase when it fits,
+                # instead of leaving another blink immediately afterwards.
+                if (index + len(group) < len(cues)
+                        and str(cues[index + len(group)]["text"]).rstrip().endswith((".", "?", "!"))
+                        and int(cues[index + len(group)]["end_frame"]) - int(cues[index + len(group)]["start_frame"]) < min_frames
+                        and can_add(group, cues[index + len(group)])):
+                    group.append(cues[index + len(group)])
+                break
+        if (len(group) < 3 or int(group[-1]["end_frame"]) - int(cue["start_frame"]) < min_frames):
+            output.append(cue)
+            index += 1
+            continue
+        # Never change timings of observed visual titles; replace N fallback
+        # words by one editable static title spanning their *existing* window.
+        merged = dict(group[0])
+        merged["text"] = " ".join(str(item["text"]) for item in group)
+        merged["end_frame"] = int(group[-1]["end_frame"])
+        merged["end"] = merged["end_frame"] / fps
+        merged["duration_frames"] = merged["end_frame"] - int(merged["start_frame"])
+        merged["duration"] = merged["duration_frames"] / fps
+        merged["source_cue_ids"] = [sid for item in group for sid in item["source_cue_ids"]]
+        merged["semantic_source_cue_ids"] = list(merged["source_cue_ids"])
+        merged["transcript_text"] = merged["text"]
+        merged["transcript_window"] = [int(merged["start_frame"]), merged["end_frame"]]
+        raw = dict(group[0]["raw"])
+        raw["timeline_end_frame"] = merged["end_frame"]
+        merged["raw"] = raw
+        merged["fallback_phrase_member_ids"] = [str(item["id"]) for item in group]
+        donors = {str(item.get("_suppressed_phrase_style_donor") or "") for item in group}
+        if len(donors) != 1:
+            merged.pop("_suppressed_phrase_style_donor", None)
+        output.append(merged)
+        grouped += len(group) - 1
+        index += len(group)
+    return output, grouped
+
+
+def _source_word_agreement(text: str, observed: str) -> float:
+    """How strongly source OCR actually supports this semantic label (not its cue ID)."""
+    import re
+
+    target = re.sub(r"[^\w]", "", text.casefold())
+    sample = re.sub(r"[^\w]", "", observed.casefold())
+    if not target or not sample:
+        return 0.0
+    if target == sample:
+        return 1.0
+    if len(target) >= 4 and target in sample:
+        return 1.0
+    if len(sample) >= 4 and sample in target and len(sample) >= 0.75 * len(target):
+        return len(sample) / len(target)
+    return SequenceMatcher(None, target, sample).ratio()
+
+
+def _reconcile_source_visual_instances(
+    cues: list[dict[str, object]], style_data: Mapping[str, object], fps: float
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    """Keep OCR aliases from becoming simultaneous copies of one spoken caption.
+
+    This is an execution projection: raw visual identities/observations remain intact
+    in the source intelligence and no unrelated co-visible semantic IDs are merged.
+    """
+    events = {
+        str(row.get("event_id") or ""): row
+        for row in style_data.get("caption_style_events", [])
+        if isinstance(row, Mapping) and row.get("event_id")
+    }
+    if not events:
+        return cues, {"removed_alias_ids": [], "trimmed_windows": []}
+    evidence: dict[str, tuple[int, float, list[tuple[float, float]]]] = {}
+    for cue in cues:
+        event = events.get(str(cue.get("style_evidence_id") or ""))
+        if not event:
+            continue
+        observations = event.get("observations")
+        if not isinstance(observations, list):
+            continue
+        samples = [
+            (float(o["timestamp"]), _source_word_agreement(str(cue["text"]), str(o.get("text") or "")))
+            for o in observations
+            if isinstance(o, Mapping) and isinstance(o.get("timestamp"), (int, float))
+        ]
+        evidence[str(cue["id"])] = (
+            sum(score >= 0.80 for _, score in samples),
+            max((score for _, score in samples), default=0.0),
+            samples,
+        )
+
+    # A semantic word may have many OCR aliases, but each source-backed word
+    # should be emitted once at a given instant unless distinct same-word
+    # instances are proved by their independent source observations.
+    by_semantic: dict[tuple[tuple[str, ...], str], list[dict[str, object]]] = {}
+    for cue in cues:
+        ids = cue.get("semantic_reference_ids") or []
+        if ids and cue.get("style_evidence_id") in events:
+            by_semantic.setdefault((tuple(str(x) for x in ids), canonical.normalize_semantic_caption_text(cue["text"])), []).append(cue)
+
+    def separately_observed(left: Mapping[str, object], right: Mapping[str, object], word: str) -> bool:
+        """Two same-word titles are allowed only with separate same-frame OCR boxes."""
+        def positives(event: Mapping[str, object]) -> dict[int, list[float]]:
+            found = {}
+            for observation in event.get("observations") or []:
+                if not isinstance(observation, Mapping):
+                    continue
+                if _source_word_agreement(word, str(observation.get("text") or "")) < 0.80:
+                    continue
+                box = observation.get("bbox")
+                frame = observation.get("frame_index")
+                if (isinstance(frame, int) and isinstance(box, list) and len(box) == 4
+                        and all(isinstance(v, (int, float)) for v in box)):
+                    found[frame] = [float(v) for v in box]
+            return found
+
+        a, b = positives(left), positives(right)
+        separate = 0
+        for frame in a.keys() & b.keys():
+            ax1, ay1, ax2, ay2 = a[frame]
+            bx1, by1, bx2, by2 = b[frame]
+            ix = max(0.0, min(ax2, bx2) - max(ax1, bx1))
+            iy = max(0.0, min(ay2, by2) - max(ay1, by1))
+            area = min(max(1.0, (ax2-ax1)*(ay2-ay1)), max(1.0, (bx2-bx1)*(by2-by1)))
+            if ix * iy / area <= 0.05:
+                separate += 1
+        return separate >= 2
+
+    omitted: set[str] = set()
+    for candidates in by_semantic.values():
+        candidates.sort(key=lambda c: (int(c["start_frame"]), int(c["end_frame"])))
+        clusters: list[list[dict[str, object]]] = []
+        boundary = -1
+        for cue in candidates:
+            if not clusters or int(cue["start_frame"]) > boundary + 1:
+                clusters.append([])
+                boundary = -1
+            clusters[-1].append(cue)
+            boundary = max(boundary, int(cue["end_frame"]))
+        for cluster in clusters:
+            if len(cluster) == 1:
+                continue
+            ids = [str(cue["id"]) for cue in cluster]
+            if any(identifier not in evidence for identifier in ids):
+                continue  # Older data without source OCR evidence must not be guessed away.
+            # Several tracklets with no recognizable instance and wholly
+            # unrelated OCR text must not masquerade as semantic caption words.
+            if all(evidence[identifier][1] < 0.50 for identifier in ids):
+                omitted.update(ids)
+                continue
+            winner = max(
+                cluster,
+                key=lambda cue: (
+                    evidence[str(cue["id"])][0],
+                    int(cue["end_frame"]) - int(cue["start_frame"]),
+                    evidence[str(cue["id"])][1],
+                    -int(cue["start_frame"]),
+                ),
+            )
+            winner_id = str(winner["id"])
+            for cue in cluster:
+                if str(cue["id"]) == winner_id:
+                    continue
+                if separately_observed(
+                    events[str(winner.get("style_evidence_id"))],
+                    events[str(cue.get("style_evidence_id"))],
+                    str(winner["text"]),
+                ):
+                    continue  # Two distinct same-word captions are proven in source frames.
+                omitted.add(str(cue["id"]))
+            # A full-word detection may be followed by adjacent complementary
+            # OCR fragments of that same word. Their observed intervals support
+            # continuity, but each fragment is not another full caption.
+            if evidence[winner_id][0] > 0:
+                fragments = [
+                    cue for cue in cluster if str(cue["id"]) in omitted
+                    and evidence[str(cue["id"])][1] >= 0.55
+                ]
+                if fragments and all(
+                    int(cue["start_frame"]) <= int(winner["end_frame"]) + 1
+                    or int(winner["start_frame"]) <= int(cue["end_frame"]) + 1
+                    for cue in fragments
+                ):
+                    winner["end_frame"] = max([int(winner["end_frame"])] + [int(c["end_frame"]) for c in fragments])
+                    winner["start_frame"] = min([int(winner["start_frame"])] + [int(c["start_frame"]) for c in fragments])
+                    winner["start"] = winner["start_frame"] / fps
+                    winner["end"] = winner["end_frame"] / fps
+                    winner["duration_frames"] = winner["end_frame"] - winner["start_frame"]
+                    winner["duration"] = winner["duration_frames"] / fps
+
+    kept = [cue for cue in cues if str(cue["id"]) not in omitted]
+    trimmed: list[dict[str, object]] = []
+    for cue in kept:
+        cid = str(cue["id"])
+        if cid not in evidence:
+            continue
+        samples = evidence[cid][2]
+        positives = sorted(time for time, score in samples if score >= 0.80)
+        # A single OCR match cannot establish the duration of a visual word.
+        if len(positives) < 2:
+            continue
+        first, last = positives[0], positives[-1]
+        early_other = sorted(time for time, score in samples if time < first and score < 0.45)
+        later_other = sorted(time for time, score in samples if time > last and score < 0.45)
+        old_start, old_end = int(cue["start_frame"]), int(cue["end_frame"])
+        new_start, new_end = old_start, old_end
+        # Do not guess a fade. These bounds only follow a tracklet that
+        # subsequently (or previously) recognized a *different* source word.
+        if len(early_other) >= 2 and early_other[-1] - early_other[0] >= 0.07:
+            bound = int((early_other[-1] + first) / 2 * fps)
+            if old_start < bound < old_end:
+                new_start = bound
+        if len(later_other) >= 2 and later_other[-1] - later_other[0] >= 0.07:
+            bound = int(round((last + later_other[0]) / 2 * fps)) + 1
+            if old_start < bound < old_end:
+                new_end = bound
+        if new_end <= new_start or (new_start, new_end) == (old_start, old_end):
+            continue
+        cue.update({
+            "start_frame": new_start, "end_frame": new_end,
+            "start": new_start / fps, "end": new_end / fps,
+            "duration_frames": new_end - new_start,
+            "duration": (new_end - new_start) / fps,
+            # Keep source animation evidence in intelligence. The compiler must
+            # not retarget old keyframes onto this corrected visibility window.
+            "animation_application_skip_reason": "source_visibility_window_changed",
+        })
+        trimmed.append({
+            "token_id": cid,
+            "previous_start": old_start, "previous_end": old_end,
+            "new_start": new_start, "new_end": new_end,
+            "animation_disposition": "static_fallback",
+        })
+    for index, cue in enumerate(kept, 1):
+        cue["index"] = index
+    return kept, {"removed_alias_ids": sorted(omitted), "trimmed_windows": trimmed}
 
 
 def resolve_visual_style_authority(
@@ -411,8 +1206,7 @@ def resolve_visual_style_authority(
         }
         event_raw = event.get("raw") if isinstance(event, Mapping) and isinstance(event.get("raw"), Mapping) else {}
         identity_matches = bool(
-            not source_ids
-            and cue.get("visual_event_identity")
+            cue.get("visual_event_identity")
             and str(event.get("visual_event_identity") or event_raw.get("visual_event_identity") or "")
             == str(cue.get("visual_event_identity"))
         )
@@ -566,6 +1360,10 @@ def attach_visual_animation_authority(
     explicit_only = any(isinstance(cue.get("accepted_motion_authority"), Mapping) for cue in cues)
     attached = 0
     for cue in cues:
+        # Visibility authority outranks animation: do not attach the original
+        # keyframes to a source-corrected time window.
+        if cue.get("animation_application_skip_reason"):
+            continue
         accepted = cue.get("accepted_motion_authority")
         if explicit_only and not isinstance(accepted, Mapping):
             continue
@@ -718,6 +1516,7 @@ def prepare_textplus_authority(
     cues = canonical.enforce_timing_rules(authority_cues, fps=fps, min_duration_frames=1, prevent_overlap=True)
 
     lifecycle_info: dict[str, object] = {"enabled": False}
+    phrase_style_donors: dict[str, dict[str, object]] = {}
     overlap_pair_count = 0
     if lifecycle is not None:
         try:
@@ -731,15 +1530,27 @@ def prepare_textplus_authority(
                 raise StandaloneTextplusError("visual composition authority must be a list")
             semantic_cues = list(cues)
             visual_cues, visual_info = render_visual_compositions(compositions, generic_ids, fps)
+            visual_cues, source_reconciliation = _reconcile_source_visual_instances(visual_cues, style_data, fps)
+            visual_info["source_reconciliation"] = source_reconciliation
+            visual_info["render_token_count"] = len(visual_cues)
+            visual_info["semantic_reference_occurrence_count"] = sum(
+                len(cue.get("semantic_reference_ids") or []) for cue in visual_cues
+            )
+            visual_info["semantic_reference_distinct_count"] = len({
+                semantic_id for cue in visual_cues
+                for semantic_id in cue.get("semantic_reference_ids") or []
+            })
             referenced = {
                 semantic_id
                 for cue in visual_cues
                 for semantic_id in cue.get("semantic_reference_ids") or []
             }
             absent_ids: list[str] = []
+            fallback_cues: list[dict[str, object]] = []
             for semantic_cue in semantic_cues:
                 source_ids = [str(value) for value in semantic_cue.get("source_cue_ids") or []]
                 timing_authority = str(semantic_cue.get("timing_authority") or "")
+                absent_source_ids = [semantic_id for semantic_id in source_ids if semantic_id not in referenced]
                 for semantic_id in source_ids:
                     if semantic_id in referenced:
                         continue
@@ -748,21 +1559,60 @@ def prepare_textplus_authority(
                         raise StandaloneTextplusError(
                             "semantic fallback disposition is unresolved: " + semantic_id
                         )
+                if absent_source_ids:
+                    if len(absent_source_ids) != len(source_ids):
+                        raise StandaloneTextplusError("semantic cue is only partially represented visually")
+                    fallback_cues.append(dict(semantic_cue))
             for cue in visual_cues:
                 cue["source_cue_ids"] = []
             cues = sorted(
-                visual_cues,
+                [*visual_cues, *fallback_cues],
                 key=lambda cue: (
                     int(cue.get("start_frame") or 0),
                     int(cue.get("end_frame") or 0),
                     str(cue.get("id") or ""),
                 ),
             )
+            # Direct source observations take priority over a transcript-only
+            # word sequence when the whole phrase was visibly persistent.
+            cues, visual_phrase_ids = _prefer_source_visible_phrases(cues, style_data, fps)
+            visual_info["source_visual_phrase_promoted_ids"] = visual_phrase_ids
+            cues, expanded_states = _project_observed_phrase_states(cues, style_data, generic, fps)
+            visual_info["source_observed_phrase_state_ids"] = expanded_states
+            # Otherwise suppress unanchored OCR segment echoes.
+            cues, phrase_echo_ids, phrase_style_donors = _suppress_unanchored_phrase_echoes(cues)
+            visual_info["omitted_segment_echo_ids"].extend(phrase_echo_ids)
+            cues, grouped_fallback_words = _group_rapid_transcript_fallbacks(cues, fps)
+            visual_info["grouped_rapid_fallback_word_count"] = grouped_fallback_words
+            visual_info["render_token_count"] = sum(
+                cue.get("timing_authority") == "visual_primary" for cue in cues
+            )
+            visual_info["semantic_reference_occurrence_count"] = sum(
+                len(cue.get("semantic_reference_ids") or []) for cue in cues
+                if cue.get("timing_authority") == "visual_primary"
+            )
+            visual_info["semantic_reference_distinct_count"] = len({
+                semantic_id for cue in cues if cue.get("timing_authority") == "visual_primary"
+                for semantic_id in cue.get("semantic_reference_ids") or []
+            })
+            referenced = {
+                semantic_id for cue in cues if cue.get("timing_authority") == "visual_primary"
+                for semantic_id in cue.get("semantic_reference_ids") or []
+            }
+            absent_ids = [
+                str(semantic_id) for cue in cues if cue.get("timing_authority") == "transcript_fallback"
+                for semantic_id in cue.get("source_cue_ids") or []
+            ]
+            # Visual and transcript fallback cues originally carry *different*
+            # index namespaces; they must be unique before style/placement lookup.
+            for index, cue in enumerate(cues, 1):
+                cue["index"] = index
             semantic_execution_ids = [
                 semantic_id for semantic_id in generic_ids if semantic_id in referenced or semantic_id in absent_ids
             ]
             if semantic_execution_ids != generic_ids:
                 raise StandaloneTextplusError("semantic ledger order/cardinality changed")
+            visual_info["semantic_coverage_exact"] = True
             canonical.allocate_caption_lanes(cues, base_lane=1)
             lifecycle_info = {
                 **lifecycle_info,
@@ -828,8 +1678,63 @@ def prepare_textplus_authority(
         effective_style_data, style, {}, fps, enabled=True, match_window_sec=1.25, min_match_score=0.12
     )
     cue_styles = {**heuristic_styles, **direct_styles}
+    # Grouped transcript-only phrases have no source-backed bounding box.
+    # The source profile describes *individual* words, so avoid reusing its
+    # enormous single-word font size for a multiword fallback composition.
     video_info = style_data.get("video_info") if isinstance(style_data.get("video_info"), Mapping) else {}
+    frame_width = video_info.get("width")
+    if isinstance(frame_width, (int, float)) and frame_width > 0:
+        for cue in cues:
+            if not cue.get("fallback_phrase_member_ids"):
+                continue
+            idx = int(cue["index"])
+            contract = dict(cue_styles.get(idx, style))
+            text_chars = len(str(cue["text"]))
+            safe_px = min(round(frame_width * 0.09), round(0.82 * frame_width / (0.58 * max(1, text_chars))))
+            contract["font_size_px"] = min(int(contract["font_size_px"]), max(1, safe_px))
+            contract.pop("textplus_size", None)
+            contract["style_authority"] = "safe_transcript_fallback_phrase"
+            cue_styles[idx] = contract
+            cue["position_mode"] = "fallback_center"
+    # When a redundant source OCR phrase is suppressed, its *accepted* style
+    # can still inform transcript words it represented. This is generic for
+    # any Reel: no text, timestamps, identities or source video are altered.
+    if phrase_style_donors:
+        donor_styles: dict[str, dict[str, object]] = {}
+        for donor_id, donor_cue in phrase_style_donors.items():
+            # A donor is unanchored: resolve by its unique visual-event identity.
+            probe = {**donor_cue, "index": 1}
+            try:
+                recovered, _ = resolve_visual_style_authority([probe], effective_style_data, fps)
+            except StandaloneTextplusError:
+                continue  # Unverified OCR style is not grounds for guessing.
+            if 1 in recovered:
+                donor_styles[donor_id] = recovered[1]
+        for cue in cues:
+            donor_id = str(cue.pop("_suppressed_phrase_style_donor", ""))
+            idx = int(cue.get("index") or 0)
+            if (donor_id in donor_styles and idx not in direct_styles
+                    and cue.get("timing_authority") == "transcript_fallback"
+                    and not cue.get("fallback_phrase_member_ids")):
+                contract = dict(donor_styles[donor_id])
+                contract["style_authority"] = "accepted_source_phrase_fallback"
+                cue_styles[idx] = contract
+                cue["position_mode"] = "detected_fcpx"
+    metrics["accepted_source_phrase_fallback_style_count"] = sum(
+        style.get("style_authority") == "accepted_source_phrase_fallback"
+        for style in cue_styles.values()
+    )
+    video_info = style_data.get("video_info") if isinstance(style_data.get("video_info"), Mapping) else {}
+    phrase_geometry_count = _apply_observed_phrase_geometry(
+        cues, cue_styles, effective_style_data,
+        (lifecycle_info.get("visual_compositions") or {}).get("source_observed_phrase_state_ids") or [],
+    )
+    metrics["source_observed_phrase_geometry_count"] = phrase_geometry_count
     static_style_count = apply_static_style_authority(cues, cue_styles, video_info.get("width"))
+    metrics["adjacent_observed_phrase_alignment_count"] = _center_adjacent_observed_phrase_titles(
+        cues, cue_styles,
+        (lifecycle_info.get("visual_compositions") or {}).get("source_observed_phrase_state_ids") or [],
+    )
     attach_independent_style_evidence_contract(cues, cue_styles)
     for contract in [style, *cue_styles.values()]:
         _ensure_textplus_size(contract, video_info.get("width"))

@@ -37,6 +37,12 @@ def test_run_identity_is_explicit_without_changing_legacy_context(tmp_path):
     assert canonical.public_contract()["run_id"] == run_id
 
 
+def test_config_automatically_loads_ignored_project_local_file(tmp_path):
+    (tmp_path / "video_cloner.local.json").write_text(json.dumps({"python_default": "local-python"}), encoding="utf-8")
+    config = RuntimeConfig.load(tmp_path, environ={})
+    assert config.python_default == "local-python"
+
+
 def test_artifact_and_stage_contracts_capture_provenance(tmp_path):
     artifact = tmp_path / "artifact.json"
     artifact.write_text(json.dumps({"ok": True}), encoding="utf-8")

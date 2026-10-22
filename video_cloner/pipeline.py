@@ -91,10 +91,27 @@ def compile(
     options: Mapping[str, Any] | None = None,
 ) -> int:
     """Compile FCPXML through the proven compiler without importing Resolve."""
+    selected = dict(options or {})
+    lifecycle = selected.get("caption_lifecycle_plan")
+    if lifecycle is not None:
+        from .captions.fcpxml import compile_fcpxml
+
+        compile_fcpxml(
+            generic_path=generic,
+            output_fcpxml=output_fcpxml,
+            report_path=report,
+            video_path=selected.get("video"),
+            timeline_name=selected.get("timeline_name"),
+            caption_style_path=caption_style,
+            caption_lifecycle_path=lifecycle,
+            audio_path=selected.get("audio"),
+        )
+        return 0
+
     from .resolve.fcpxml import main
 
     argv = ["--generic", str(generic), "--caption-style", str(caption_style), "--output-fcpxml", str(output_fcpxml), "--report", str(report)]
-    for name, value in (options or {}).items():
+    for name, value in selected.items():
         if value is None:
             continue
         argv.extend((f"--{name.replace('_', '-')}", str(value).lower() if isinstance(value, bool) else str(value)))

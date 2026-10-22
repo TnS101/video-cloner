@@ -509,6 +509,9 @@ def compile_transition_hint(shot: Dict[str, Any], ctx: Dict[str, Any], next_ctx:
         return None
     if not transition_type or "candidate" in str(transition_type).lower():
         return None
+    # Source analysis/Editing DNA retains the detected family; only Flash has MVP executable authority.
+    if transition_type != "flash_cut":
+        return None
 
     fps = ctx["fps"]
     duration = transition_duration_frames(

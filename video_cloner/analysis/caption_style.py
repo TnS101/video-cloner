@@ -1358,6 +1358,28 @@ def _compatible_continuation(left: Dict[str, Any], right: Dict[str, Any]) -> boo
     )
 
 
+def _same_visible_caption_text(previous: Any, current: Any) -> bool:
+    """OCR-tolerant identity, not a transcript/geometry-based caption identity.
+
+    Text may sharpen or reveal additional words in-place. An unrelated
+    replacement at the same coordinates must start a new visual tracklet.
+    """
+    left, right = normalize_match_text(previous), normalize_match_text(current)
+    if not left or not right:
+        return False
+    if left == right:
+        return True
+    similarity = difflib.SequenceMatcher(None, left, right).ratio()
+    if similarity >= 0.62:
+        return True
+    left_tokens, right_tokens = left.split(), right.split()
+    shorter, longer = (left_tokens, right_tokens) if len(left_tokens) <= len(right_tokens) else (right_tokens, left_tokens)
+    return bool(
+        shorter and len(shorter[0]) >= 3
+        and (longer[:len(shorter)] == shorter or longer[-len(shorter):] == shorter)
+    )
+
+
 def apply_short_caption_continuations(
     frame_results: List[Dict[str, Any]],
     observation_period_sec: float,
@@ -1384,6 +1406,10 @@ def apply_short_caption_continuations(
             matches = []
             for identity, state in active.items():
                 if identity in claimed or not _compatible_continuation(state, det):
+                    continue
+                # Weak OCR tails may bridge one missed observation, but an
+                # accepted, different phrase is never the same caption.
+                if accepted and not _same_visible_caption_text(state.get("accepted_text"), det.get("text")):
                     continue
                 iou, center_distance, _, _ = _continuation_geometry(state, det)
                 matches.append((-iou, center_distance, identity))
@@ -1418,6 +1444,7 @@ def apply_short_caption_continuations(
                 "timestamp": timestamp,
                 "normalized_bbox": det.get("normalized_bbox"),
                 "role": role,
+                "accepted_text": det.get("text") if accepted else active.get(identity, {}).get("accepted_text"),
             }
             claimed.add(identity)
         frame_result["caption_candidates"] = [det for det in detections if det.get("is_caption_candidate")]

@@ -3,6 +3,7 @@ from video_cloner.captions.textplus import (
     apply_static_style_authority,
     attach_independent_style_evidence_contract,
 )
+from video_cloner.resolve.fcpxml import style_for_cue
 
 
 def test_textplus_size_contract_fills_heuristic_style_and_preserves_static_size():
@@ -75,3 +76,21 @@ def test_style_evidence_is_identity_owned_even_inside_a_composition_or_fragment_
     assert all(styles[index]["style_sharing_authority"] == "independent_by_default" for index in styles)
     assert cues[0]["physical_word_group_id"] == cues[1]["physical_word_group_id"] == "buyers"
     assert "physical_word_group_id" not in cues[2]
+
+
+def test_unmatched_cue_99_keeps_global_style_fallback_without_visual_ownership():
+    cues = [
+        {"index": 1, "id": "observed", "visual_event_identity": "tracklet_1"},
+        {"index": 99, "id": "sub_099", "text": "room"},
+    ]
+    styles = {1: {"style_authority": "visual_observed"}}
+    fallback = {"profile_id": "primary"}
+
+    attach_independent_style_evidence_contract(cues, styles)
+
+    assert [cue["index"] for cue in cues] == [1, 99]
+    assert styles[1]["style_evidence_owner"] == "tracklet_1"
+    assert 99 not in styles
+    assert "style_evidence_owner" not in cues[1]
+    assert style_for_cue(cues[1], fallback, styles) is fallback
+    assert "style_authority" not in fallback

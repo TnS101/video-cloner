@@ -478,6 +478,19 @@ def compile_fcpxml(
             "lifecycle": prepared["caption_lifecycle"],
             "metrics": prepared["caption_metrics"],
             "style_event_matches": prepared["style_event_matches"],
+            "execution": [
+                {
+                    "id": cue["id"],
+                    "text": cue["text"],
+                    "start_frame": cue["start_frame"],
+                    "end_frame": cue["end_frame"],
+                    "lane": cue["lane"],
+                    "semantic_reference_ids": cue.get("semantic_reference_ids") or cue.get("source_cue_ids") or [],
+                    "visual_event_identity": cue.get("visual_event_identity"),
+                    "animation_application_skip_reason": cue.get("animation_application_skip_reason"),
+                }
+                for cue in cues
+            ],
         }
 
     video_id = str(generic["video_id"])

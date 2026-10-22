@@ -71,7 +71,16 @@ def compile_caption_animation_recipes(
     style: Mapping[str, Any], captions: Sequence[Mapping[str, Any]], fps: float,
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Translate unambiguous source-observed motion into the accepted generic recipe contract."""
-    targets = {_caption_ordinal(row.get("subtitle_id")): (index, row) for index, row in enumerate(captions, start=1)}
+    targets = {
+        _caption_ordinal(row.get("subtitle_id")): (index, row)
+        for index, row in enumerate(captions, start=1)
+        if str(row.get("subtitle_id") or "").lower().startswith("sub_")
+    }
+    identity_targets = {
+        str(row["visual_event_identity"]): (index, row)
+        for index, row in enumerate(captions, start=1)
+        if row.get("visual_event_identity")
+    }
     grouped: dict[int, list[Mapping[str, Any]]] = {}
     for event in style.get("style_events") or []:
         if not isinstance(event, Mapping) or event.get("role") != "spoken_caption":
@@ -81,7 +90,7 @@ def compile_caption_animation_recipes(
             grouped.setdefault(ordinal, []).append(event)
 
     recipes: list[dict[str, Any]] = []
-    unresolved = {"ambiguous_title_mapping": 0, "missing_target_title": 0, "insufficient_in_target_samples": 0, "unsupported_channel": 0}
+    unresolved = {"ambiguous_title_mapping": 0, "missing_target_title": 0, "insufficient_in_target_samples": 0, "unsupported_channel": 0, "source_visibility_conflict": 0}
     for ordinal, events in sorted(grouped.items()):
         detected = [event for event in events if (event.get("animation") or {}).get("detected") is True]
         if not detected:
@@ -89,21 +98,37 @@ def compile_caption_animation_recipes(
         if len(events) != 1:
             unresolved["ambiguous_title_mapping"] += len(detected)
             continue
-        target = targets.get(ordinal)
+        event = detected[0]
+        visual_identity = str(event.get("visual_event_identity") or "")
+        # A source-linked animation may never silently retarget another
+        # semantic caption when its visual identity is no longer emitted.
+        target = identity_targets.get(visual_identity) if visual_identity else targets.get(ordinal)
         if target is None:
             unresolved["missing_target_title"] += 1
             continue
         title_index, caption = target
-        event = detected[0]
+        # An animation is a permitted presentation of a visual identity, never
+        # authority to extend its source-backed visibility. Keep the recipe in
+        # the intelligence input, but use the unchanged static title in Resolve.
+        if caption.get("animation_application_skip_reason"):
+            unresolved["source_visibility_conflict"] += 1
+            continue
         animation = event.get("animation") or {}
         duration = int(caption["timeline_end_frame"]) - int(caption["timeline_start_frame"])
         measured: dict[int, Mapping[str, Any]] = {}
+        out_of_window = False
         for key in animation.get("keyframes") or []:
             if not isinstance(key, Mapping) or key.get("timestamp") is None:
                 continue
             frame = int(round(float(key["timestamp"]) * fps)) - int(caption["timeline_start_frame"])
             if 0 <= frame < duration:
                 measured[frame] = key
+            else:
+                out_of_window = True
+        if out_of_window:
+            # Do not build a partial motion from incompatible keyframes.
+            unresolved["source_visibility_conflict"] += 1
+            continue
         if len(measured) < 2:
             unresolved["insufficient_in_target_samples"] += 1
             continue
@@ -164,7 +189,11 @@ def application_plan(
         if isinstance(member, Mapping) and isinstance(member.get("accepted_animation"), Mapping)
     ]
     linked_animations = [row for row in animations if row.get("status") == "linked"]
-    fps = float((compiler_report.get("timing") or {}).get("fps") or 24.0)
+    fps = float(
+        (compiler_report.get("timing") or {}).get("fps")
+        or (compiler_report.get("output") or {}).get("fps")
+        or 24.0
+    )
     animation_recipes, animation_unresolved = compile_caption_animation_recipes(style or {}, caption_contract, fps)
     transitions = dna.get("transitions") if isinstance(dna.get("transitions"), Mapping) else {}
     transition_rows = transitions.get("transitions") if isinstance(transitions.get("transitions"), list) else []
@@ -208,12 +237,23 @@ def application_plan(
         and row["occlusion"].get("ready_for_editor_compositing") is True
         and isinstance(row.get("mask_asset"), Mapping)
     ]
-    style_report = compiler_report.get("style") if isinstance(compiler_report.get("style"), Mapping) else {}
-    style_events = style_report.get("per_cue_style_events") if isinstance(style_report.get("per_cue_style_events"), Mapping) else {}
-    lifecycle = compiler_report.get("caption_lifecycle") if isinstance(compiler_report.get("caption_lifecycle"), Mapping) else {}
-    fcpxml_report = compiler_report.get("fcpxml") if isinstance(compiler_report.get("fcpxml"), Mapping) else {}
-    matched_styles = int(style_events.get("matched_cue_count") or 0)
-    style_geometry_ready = matched_styles > 0 and fcpxml_report.get("position_mode") == "detected_fcpx"
+    if compiler_report.get("schema") == "video_cloner.standalone_fcpxml.v1":
+        caption_authority = compiler_report.get("caption_authority") if isinstance(compiler_report.get("caption_authority"), Mapping) else {}
+        lifecycle = caption_authority.get("lifecycle") if isinstance(caption_authority.get("lifecycle"), Mapping) else {}
+        metrics = caption_authority.get("metrics") if isinstance(caption_authority.get("metrics"), Mapping) else {}
+        matched_styles = int(caption_authority.get("style_event_matches") or 0)
+        fallback_styles = max(0, len(xml["titles"]) - matched_styles)
+        position_mode = "source_visual_composition" if metrics.get("composition_count") else None
+        style_geometry_ready = matched_styles > 0 and position_mode is not None
+    else:
+        style_report = compiler_report.get("style") if isinstance(compiler_report.get("style"), Mapping) else {}
+        style_events = style_report.get("per_cue_style_events") if isinstance(style_report.get("per_cue_style_events"), Mapping) else {}
+        lifecycle = compiler_report.get("caption_lifecycle") if isinstance(compiler_report.get("caption_lifecycle"), Mapping) else {}
+        fcpxml_report = compiler_report.get("fcpxml") if isinstance(compiler_report.get("fcpxml"), Mapping) else {}
+        matched_styles = int(style_events.get("matched_cue_count") or 0)
+        fallback_styles = int(style_events.get("fallback_cue_count") or 0)
+        position_mode = fcpxml_report.get("position_mode")
+        style_geometry_ready = matched_styles > 0 and position_mode == "detected_fcpx"
     return {
         "cuts_shot_structure_audio": {"disposition": "apply", "video_clip_count": len(xml["cuts"]), "audio_clip_count": len(xml["audio_rows"])},
         "caption_timing_lifecycle": {
@@ -224,8 +264,8 @@ def application_plan(
         "caption_font_style_geometry": {
             "disposition": "apply" if style_geometry_ready else "unresolved",
             "matched_style_event_count": matched_styles,
-            "fallback_style_count": int(style_events.get("fallback_cue_count") or 0),
-            "position_mode": fcpxml_report.get("position_mode"),
+            "fallback_style_count": fallback_styles,
+            "position_mode": position_mode,
             "font_authority": "candidate_or_fallback; exact Resolve font authority is absent",
             "reason": None if style_geometry_ready else "verified per-cue style and detected geometry are both required",
         },
@@ -314,6 +354,7 @@ def build_package(
         authority = compiler_report.get("caption_authority")
         metrics = authority.get("metrics") if isinstance(authority, Mapping) else None
         semantic = authority.get("semantic") if isinstance(authority, Mapping) else None
+        execution = authority.get("execution") if isinstance(authority, Mapping) else None
         summary = semantic.get("summary") if isinstance(semantic, Mapping) else None
         structure = compiler_report.get("structure")
         if (
@@ -325,6 +366,7 @@ def build_package(
             or report_output.get("sha256") != sha256(fcpxml)
             or report_output.get("timeline_name") != target
             or not isinstance(metrics, Mapping) or not isinstance(summary, Mapping) or not isinstance(structure, Mapping)
+            or not isinstance(execution, list) or len(execution) != len(xml["titles"])
             or metrics.get("semantic_ledger_count") != len(subtitles)
             or metrics.get("semantic_ledger_exactly_once") is not True
             or summary.get("source_cue_count") != len(subtitles)
@@ -332,7 +374,17 @@ def build_package(
             or structure.get("caption_count") != len(xml["titles"])
         ):
             raise ValueError("caption_semantic_authority")
-        caption_pairs = [(f"render_{index:04d}", title) for index, title in enumerate(xml["titles"], start=1)]
+        caption_pairs = []
+        for cue, title in zip(execution, xml["titles"]):
+            if (
+                not isinstance(cue, Mapping) or not cue.get("id")
+                or cue.get("text") != title["text"]
+                or int(cue.get("start_frame") or -1) != title["timeline_start"]
+                or int(cue.get("end_frame") or -1) != title["timeline_start"] + title["duration"]
+                or int(cue.get("lane") or 0) != title["lane"]
+            ):
+                raise ValueError("caption_execution_authority")
+            caption_pairs.append((str(cue["id"]), title, cue))
     else:
         caption_pairs = []
         lifecycle = compiler_report.get("caption_lifecycle") if isinstance(compiler_report.get("caption_lifecycle"), Mapping) else {}
@@ -345,20 +397,23 @@ def build_package(
                 subtitle = subtitles[index] if 0 <= index < len(subtitles) else None
                 if not isinstance(subtitle, Mapping) or not subtitle.get("subtitle_id"):
                     raise ValueError("caption_identity")
-                caption_pairs.append((str(subtitle["subtitle_id"]), title))
+                caption_pairs.append((str(subtitle["subtitle_id"]), title, {}))
         else:
             if len(subtitles) != len(xml["titles"]):
                 raise ValueError("caption_count")
             for subtitle, title in zip(subtitles, xml["titles"]):
                 if not isinstance(subtitle, Mapping) or not subtitle.get("subtitle_id") or subtitle.get("text") != title["text"]:
                     raise ValueError("caption_identity")
-                caption_pairs.append((str(subtitle["subtitle_id"]), title))
-    for caption_id, title in caption_pairs:
+                caption_pairs.append((str(subtitle["subtitle_id"]), title, {}))
+    for caption_id, title, execution_cue in caption_pairs:
         caption_contract.append({
             "subtitle_id": caption_id, "text": title["text"],
             "timeline_start_frame": title["timeline_start"],
             "timeline_end_frame": title["timeline_start"] + title["duration"],
             "lane": title["lane"],
+            "semantic_reference_ids": list(execution_cue.get("semantic_reference_ids") or []),
+            "visual_event_identity": execution_cue.get("visual_event_identity"),
+            "animation_application_skip_reason": execution_cue.get("animation_application_skip_reason"),
         })
 
     report_path = fcpxml.with_name(fcpxml.stem + "_import_report.json")

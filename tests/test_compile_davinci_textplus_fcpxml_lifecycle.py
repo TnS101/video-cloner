@@ -111,6 +111,30 @@ def test_transcript_fallback_must_remain_on_transcript_window():
         raise AssertionError("expected fallback window validation failure")
 
 
+def test_missing_visual_authority_row_uses_transcript_fallback():
+    cues = [cue(1, "visual", 10, 14), cue(2, "plain", 14, 18)]
+    applied, info = compiler.apply_caption_lifecycle_plan(
+        cues, plan([layer(1, "VISUAL", [10, 14], [10, 20], "visual_primary")]), fps=24
+    )
+    assert [(row["text"], row["start_frame"], row["end_frame"], row["timing_authority"]) for row in applied] == [
+        ("VISUAL", 10, 20, "visual_primary"),
+        ("plain", 14, 18, "transcript_fallback"),
+    ]
+    assert info["missing_authority_fallback_cue_ids"] == ["sub_002"]
+
+
+def test_missing_row_merged_into_authoritative_caption_is_consumed_once():
+    cues = [cue(1, "for", 10, 14), cue(2, "the", 14, 18), cue(3, "people", 18, 22)]
+    data = plan([
+        layer(1, "for the", [10, 18], [10, 18], "transcript_fallback"),
+        layer(3, "people", [18, 22], [18, 24], "visual_primary"),
+    ])
+    applied, info = compiler.apply_caption_lifecycle_plan(cues, data, fps=24)
+    assert [row["text"] for row in applied] == ["for the", "people"]
+    assert applied[0]["semantic_source_cue_ids"] == ["sub_001", "sub_002"]
+    assert info["merged_source_cue_count"] == 1
+
+
 def test_title_xml_uses_assigned_lane():
     item = cue(1, "COME", 10, 22)
     item["lane"] = 4
