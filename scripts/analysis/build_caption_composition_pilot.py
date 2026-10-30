@@ -701,7 +701,7 @@ def main() -> int:
     if args.output.is_file():
         existing = _load(args.output)
         provenance = existing.get("provenance") if isinstance(existing.get("provenance"), Mapping) else {}
-        expected = {"style": args.style, **({"lifecycle": args.lifecycle} if args.lifecycle else {}), **({"recipes": args.recipes} if args.recipes else {}), **({"review_evidence": args.review_evidence} if args.review_evidence else {})}
+        expected = {"implementation": Path(__file__), "style": args.style, **({"lifecycle": args.lifecycle} if args.lifecycle else {}), **({"recipes": args.recipes} if args.recipes else {}), **({"review_evidence": args.review_evidence} if args.review_evidence else {})}
         timeline = existing.get("coordinate_spaces", {}).get("timeline", {})
         if existing.get("schema") == "video_cloner.caption_compositions" and float(timeline.get("fps") or 0.0) == args.timeline_fps and all(
             isinstance(provenance.get(name), Mapping) and provenance[name].get("sha256") == _sha256(path)
@@ -718,6 +718,7 @@ def main() -> int:
         review=_load(args.review_evidence) if args.review_evidence else {},
     )
     result["provenance"] = {
+        "implementation": {"path": str(Path(__file__)), "sha256": _sha256(Path(__file__))},
         "style": {"path": str(args.style), "sha256": _sha256(args.style)},
         **({"lifecycle": {"path": str(args.lifecycle), "sha256": _sha256(args.lifecycle)}} if args.lifecycle else {}),
         **({"recipes": {"path": str(args.recipes), "sha256": _sha256(args.recipes)}} if args.recipes else {}),
