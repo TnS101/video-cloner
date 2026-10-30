@@ -70,8 +70,74 @@ def _recipe_index(recipes: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]
     return result
 
 
+def _slide_references(style: Mapping[str, Any], recipes: Mapping[str, Any], style_path: Path) -> list[dict[str, Any]]:
+    sources = recipes.get("sources") or {}
+    video = sources.get("video") or {}
+    video_path = Path(str(video.get("path") or ""))
+    if not video_path.is_absolute():
+        video_path = ROOT / video_path
+    if not recipes.get("decision") or not video_path.is_file() or _sha256(video_path) != video.get("sha256"):
+        return []
+    localization_hash_matches = (sources.get("localization") or {}).get("sha256") == _sha256(style_path)
+    info = style.get("video_info") or {}
+    width, height = float(info.get("width") or 0), float(info.get("height") or 0)
+    if width <= 0 or height <= 0:
+        return []
+    events = {event.get("event_id"): event for event in _event_index(style).values()}
+    result = []
+    for recipe in recipes.get("recipes") or []:
+        provenance = recipe.get("provenance") or {}
+        event_id = provenance.get("localization_event_id")
+        event = events.get(event_id)
+        positions = (recipe.get("channels") or {}).get("position") or []
+        timestamps = provenance.get("sample_timestamps") or []
+        if not event or len(positions) < 2 or len(timestamps) < 3:
+            continue
+        observations = sorted((row for row in event.get("observations") or []
+                               if isinstance(row, Mapping) and isinstance(row.get("bbox"), list)
+                               and len(row["bbox"]) == 4 and isinstance(row.get("timestamp"), (int, float))),
+                              key=lambda row: row["timestamp"])
+        sampled = [row for row in observations if any(abs(row["timestamp"] - t) <= 0.035 for t in timestamps)]
+        texts = ["".join(ch for ch in str(row.get("text") or "").casefold() if ch.isalnum()) for row in sampled]
+        dominant = Counter(texts).most_common(1)
+        if not dominant or not dominant[0][0] or dominant[0][1] < max(3, 0.7 * len(timestamps)):
+            continue
+        stable = [row for row in sampled if "".join(ch for ch in str(row.get("text") or "").casefold() if ch.isalnum()) == dominant[0][0]]
+        first, last = stable[0], stable[-1]
+        if last["timestamp"] <= first["timestamp"]:
+            continue
+        a, b = first["bbox"], last["bbox"]
+        edges = [(b[i] - a[i]) / (width if i % 2 == 0 else height) for i in range(4)]
+        motion = ((edges[0] + edges[2]) / 2, (edges[1] + edges[3]) / 2)
+        measured = [float(positions[-1]["value"][i]) - float(positions[0]["value"][i]) for i in (0, 1)]
+        length, recipe_length = math.hypot(*motion), math.hypot(*measured)
+        if length < 0.02 or recipe_length <= 0 or not 0.4 <= length / recipe_length <= 2.5:
+            continue
+        direction = sum(x * y for x, y in zip(motion, measured)) / (length * recipe_length)
+        axis = (edges[0], edges[2]) if abs(motion[0]) >= abs(motion[1]) else (edges[1], edges[3])
+        parallel = max(0.0, 1 - abs(axis[0] - axis[1]) / (abs(axis[0]) + abs(axis[1]) + 1e-9))
+        if direction < 0.8 or parallel < 0.65:
+            continue
+        centers = [((row["bbox"][0] + row["bbox"][2]) / (2 * width),
+                    (row["bbox"][1] + row["bbox"][3]) / (2 * height)) for row in stable]
+        middle = min(range(len(stable)), key=lambda i: abs((stable[i]["timestamp"] - first["timestamp"]) /
+                                                           (last["timestamp"] - first["timestamp"]) - 0.5))
+        midpoint = sum((centers[middle][i] - centers[0][i]) * motion[i] for i in (0, 1)) / length**2
+        result.append({
+            "reel": recipes.get("reel"), "visual_identity": event.get("visual_event_identity"),
+            "event_id": event_id, "recipe_id": recipe.get("caption_id"), "motion": motion,
+            "parallel": parallel, "midpoint": midpoint,
+            "provenance": {"decision": recipes["decision"], "route": provenance.get("route"),
+                           "source_video_sha256": video["sha256"],
+                           "localization_sha256_matches_current_style": localization_hash_matches,
+                           "sample_timestamps": timestamps},
+        })
+    return result
+
+
 def _animation_candidates(event: Mapping[str, Any], width: float, height: float,
-                          recipe_matches: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+                          recipe_matches: Sequence[Mapping[str, Any]],
+                          references: Sequence[Mapping[str, Any]] = (), reel: str = "") -> dict[str, Any]:
     rows = sorted((row for row in event.get("observations") or []
                    if isinstance(row, Mapping)
                    and isinstance(row.get("bbox"), list) and len(row["bbox"]) == 4
@@ -117,6 +183,10 @@ def _animation_candidates(event: Mapping[str, Any], width: float, height: float,
     height_stable = max(0.0, 1 - abs(height_change) / 0.10)
     right_growth = min(1.0, max(0.0, edges[2] - edges[0]) / 0.12)
     full_stable = max(0.0, 1 - max(abs(value) for value in edges) / 0.02)
+    middle = min(range(len(rows)), key=lambda i: abs((rows[i]["timestamp"] - rows[0]["timestamp"]) /
+                                                  (rows[-1]["timestamp"] - rows[0]["timestamp"]) - 0.5))
+    midpoint = (sum((centers[middle][i] - centers[0][i]) * center[i] for i in (0, 1)) /
+                math.hypot(*center)**2 if math.hypot(*center) else 0.0)
 
     facts = {
         "edge_displacement_normalized": [round(value, 5) for value in edges],
@@ -172,6 +242,34 @@ def _animation_candidates(event: Mapping[str, Any], width: float, height: float,
             "reference_id": direct.get("caption_id") if direct else None,
             "actionable": False,
         })
+        if family == "translation_slide" and references:
+            options = []
+            length = math.hypot(*center)
+            for reference in references:
+                if reference["reel"] == reel and reference["event_id"] == event.get("event_id"):
+                    continue
+                other = reference["motion"]
+                other_length = math.hypot(*other)
+                if not length or not other_length:
+                    continue
+                direction = max(0.0, sum(x * y for x, y in zip(center, other)) / (length * other_length))
+                magnitude = math.sqrt(min(length, other_length) / max(length, other_length))
+                timing = max(0.0, 1 - min(1.0, abs(midpoint - reference["midpoint"])))
+                similarity = (direction * magnitude * (0.5 + 0.5 * timing) *
+                              min(1.0, parallel / reference["parallel"]) * (0.35 if progression else 1.0))
+                options.append((similarity, reference))
+            if options and max(score for score, _ in options) > 0:
+                similarity, reference = max(options, key=lambda row: (row[0], str(row[1]["recipe_id"])))
+                candidates[-1].update(
+                    reference_similarity=round(similarity, 3), reference_kind="source_backed_recipe",
+                    reference_id=reference["recipe_id"], reference_reel=reference["reel"],
+                    reference_visual_identity=reference["visual_identity"],
+                    reference_recipe_id=reference["recipe_id"],
+                    reference_provenance=reference["provenance"],
+                )
+                candidates[-1]["supporting_evidence"].append("source_observed_reference_motion_compared")
+                if progression or parallel < 0.5:
+                    candidates[-1]["contradicting_evidence"].append("reference_translation_conflicts_with_text_growth")
     result.update(status="ranked_hypotheses" if candidates else "insufficient_discriminating_evidence",
                   observed_features=facts,
                   candidates=sorted(candidates, key=lambda row: (-row["similarity"], row["family"]))[:3])
@@ -326,6 +424,8 @@ def _member(
     timeline_fps: float,
     source_width: float,
     source_height: float,
+    references: Sequence[Mapping[str, Any]],
+    reel: str,
 ) -> dict[str, Any]:
     observations = [dict(row) for row in event.get("observations") or []]
     if not observations:
@@ -414,7 +514,7 @@ def _member(
             },
         },
         "accepted_animation": animation_link,
-        "animation_candidates": _animation_candidates(event, source_width, source_height, recipe_matches),
+        "animation_candidates": _animation_candidates(event, source_width, source_height, recipe_matches, references, reel),
     }
 
 
@@ -489,6 +589,8 @@ def _composition_window(
 def build(
     style: Mapping[str, Any], lifecycle: Mapping[str, Any], recipes: Mapping[str, Any], *, timeline_fps: float,
     video_id: str = "", review: Mapping[str, Any] | None = None,
+    reference_style: Mapping[str, Any] | None = None, reference_recipes: Mapping[str, Any] | None = None,
+    reference_style_path: Path | None = None,
 ) -> dict[str, Any]:
     source_fps = float((style.get("video_info") or {}).get("fps") or 0.0)
     source_width = float((style.get("video_info") or {}).get("width") or 0.0)
@@ -507,6 +609,8 @@ def build(
         }
     review = review or {}
     recipe_matches = _recipe_index(recipes)
+    references = (_slide_references(reference_style, reference_recipes, reference_style_path)
+                  if reference_style is not None and reference_recipes is not None and reference_style_path is not None else [])
     frame_results = style.get("frame_results") or []
     valid_identities = set(events) & set(lifecycle_tokens)
     direct_memberships = _direct_memberships(events, valid_identities)
@@ -605,6 +709,8 @@ def build(
                 timeline_fps,
                 source_width,
                 source_height,
+                references,
+                video_id,
             )
             for identity in identities
         ]
@@ -695,13 +801,17 @@ def main() -> int:
     parser.add_argument("--recipes", type=Path)
     parser.add_argument("--video-id", default="")
     parser.add_argument("--review-evidence", type=Path)
+    parser.add_argument("--reference-style", type=Path)
+    parser.add_argument("--reference-recipes", type=Path)
     parser.add_argument("--timeline-fps", type=float, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    if (args.reference_style is None) != (args.reference_recipes is None):
+        parser.error("reference style and recipes must be supplied together")
     if args.output.is_file():
         existing = _load(args.output)
         provenance = existing.get("provenance") if isinstance(existing.get("provenance"), Mapping) else {}
-        expected = {"implementation": Path(__file__), "style": args.style, **({"lifecycle": args.lifecycle} if args.lifecycle else {}), **({"recipes": args.recipes} if args.recipes else {}), **({"review_evidence": args.review_evidence} if args.review_evidence else {})}
+        expected = {"implementation": Path(__file__), "style": args.style, **({"lifecycle": args.lifecycle} if args.lifecycle else {}), **({"recipes": args.recipes} if args.recipes else {}), **({"review_evidence": args.review_evidence} if args.review_evidence else {}), **({"reference_style": args.reference_style, "reference_recipes": args.reference_recipes} if args.reference_style else {})}
         timeline = existing.get("coordinate_spaces", {}).get("timeline", {})
         if existing.get("schema") == "video_cloner.caption_compositions" and float(timeline.get("fps") or 0.0) == args.timeline_fps and all(
             isinstance(provenance.get(name), Mapping) and provenance[name].get("sha256") == _sha256(path)
@@ -716,6 +826,9 @@ def main() -> int:
         timeline_fps=args.timeline_fps,
         video_id=args.video_id,
         review=_load(args.review_evidence) if args.review_evidence else {},
+        reference_style=_load(args.reference_style) if args.reference_style else None,
+        reference_recipes=_load(args.reference_recipes) if args.reference_recipes else None,
+        reference_style_path=args.reference_style,
     )
     result["provenance"] = {
         "implementation": {"path": str(Path(__file__)), "sha256": _sha256(Path(__file__))},
@@ -723,6 +836,8 @@ def main() -> int:
         **({"lifecycle": {"path": str(args.lifecycle), "sha256": _sha256(args.lifecycle)}} if args.lifecycle else {}),
         **({"recipes": {"path": str(args.recipes), "sha256": _sha256(args.recipes)}} if args.recipes else {}),
         **({"review_evidence": {"path": str(args.review_evidence), "sha256": _sha256(args.review_evidence)}} if args.review_evidence else {}),
+        **({"reference_style": {"path": str(args.reference_style), "sha256": _sha256(args.reference_style)},
+            "reference_recipes": {"path": str(args.reference_recipes), "sha256": _sha256(args.reference_recipes)}} if args.reference_style else {}),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
