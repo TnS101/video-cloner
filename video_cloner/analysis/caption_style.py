@@ -2145,6 +2145,14 @@ def choose_best_cue_for_group(
         if cue:
             candidate_cues.append(cue)
 
+    # A truncated nearby-ID list must not hide an exact, concurrent word cue.
+    if not any(normalize_match_text(cue["text"]) == normalize_match_text(group_text) for cue in candidate_cues):
+        candidate_cues.extend(cue for cue in transcript_cues
+                              if cue.get("source") in {"subtitle_candidates", "subtitle_clips", "words"}
+                              and normalize_match_text(cue["text"]) == normalize_match_text(group_text)
+                              and cue["start"] <= timestamp <= cue["end"]
+                              and cue not in candidate_cues)
+
     if not candidate_cues:
         for cue in transcript_cues:
             start = safe_float(cue.get("start"), 0.0)

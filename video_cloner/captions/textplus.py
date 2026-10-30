@@ -666,6 +666,61 @@ def _project_observed_phrase_states(
         own_id = str(cue["semantic_reference_ids"][0])
         if own_id not in positions:
             continue
+        # A single source word can visibly persist across two adjacent spoken words.
+        if positions[own_id] > 0:
+            previous_id = transcript_ids[positions[own_id] - 1]
+            previous = next((other for other in output if other is not cue
+                             and previous_id in (other.get("semantic_reference_ids") or [])
+                             and len(other.get("semantic_reference_ids") or []) == 1), None)
+            if previous and previous.get("timing_authority") == "visual_primary":
+                joined = (canonical.normalize_semantic_caption_text(previous["text"])
+                          + canonical.normalize_semantic_caption_text(cue["text"]))
+                previous_event = events.get(str(previous.get("visual_event_identity") or ""))
+                for candidate in sorted(set(event.get("observed_texts") or [])):
+                    if canonical.normalize_semantic_caption_text(candidate) != joined:
+                        continue
+                    positives = sorted(float(row["timestamp"]) for row in event.get("observations") or []
+                                       if isinstance(row, Mapping) and row.get("text") == candidate
+                                       and row.get("tracklet_id") == identity
+                                       and isinstance(row.get("timestamp"), (int, float)))
+                    if len(positives) < 3 or positives[-1] - positives[0] < 0.15:
+                        continue
+                    state_start = max(int(cue["start_frame"]), round(positives[0] * fps))
+                    state_end = min(int(cue["end_frame"]), round(float(event["end"]) * fps))
+                    if (state_end - state_start < 2
+                            or not previous_event
+                            or not any(isinstance(row, Mapping)
+                                       and canonical.normalize_semantic_caption_text(row.get("text")) == joined
+                                       and isinstance(row.get("timestamp"), (int, float))
+                                       and 0 <= state_start / fps - float(row["timestamp"]) <= 3 / fps
+                                       for row in previous_event.get("observations") or [])
+                            or not int(previous["start_frame"]) < state_start
+                            or int(previous["end_frame"]) > state_start + 1
+                            or any(other is not previous and other is not cue
+                                   and previous_id in (other.get("semantic_reference_ids") or [])
+                                   and int(other["start_frame"]) < state_end
+                                   and int(other["end_frame"]) > state_start
+                                   for other in output)):
+                        continue
+                    if int(previous["end_frame"]) > state_start:
+                        previous["end_frame"] = state_start
+                        previous["end"] = state_start / fps
+                        previous["duration_frames"] = state_start - int(previous["start_frame"])
+                        previous["duration"] = previous["duration_frames"] / fps
+                        previous["raw"] = {**(previous.get("raw") or {}), "timeline_end_frame": state_start}
+                    cue.update(text=candidate, start_frame=state_start, end_frame=state_end,
+                               start=state_start / fps, end=state_end / fps,
+                               duration_frames=state_end - state_start,
+                               duration=(state_end - state_start) / fps,
+                               semantic_reference_ids=[previous_id, own_id],
+                               source_cue_ids=[previous_id, own_id],
+                               raw={"timeline_start_frame": state_start, "timeline_end_frame": state_end},
+                               animation_application_skip_reason="source_phrase_state_changed",
+                               source_observed_phrase_state=True)
+                    promoted.append(str(cue["id"]))
+                    break
+                if str(cue["id"]) in promoted:
+                    continue
         choice = None
         # Prefer this tracklet; a discarded OCR alias is eligible only when
         # its own frames prove the longer source state for the same word.

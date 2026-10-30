@@ -2171,8 +2171,31 @@ def _layout_caption_titles(
                     solutions.append((round(cost, 4), -scale, abs(dy), abs(dx), x, y, scale, w, h))
             if solutions and scale <= .70:
                 break
+        fallback = not solutions
+        if fallback:
+            # Search the edges of occupied boxes when nearby offsets are exhausted.
+            for scale in (1., .92, .82, .70, .55, .46, .38):
+                w, h = glyph_width * scale + 2 * stroke + 4, glyph_height * scale + 2 * stroke + 4
+                if w > width - 2 * padding or h > height - 2 * padding:
+                    continue
+                xs = [x0, padding + w/2, width - padding - w/2]
+                ys = [y0, padding + h/2, height - padding - h/2]
+                for _, _, px, py, pw, ph, _ in active:
+                    xs.extend((px - (w+pw)/2 - padding, px + (w+pw)/2 + padding))
+                    ys.extend((py - (h+ph)/2 - padding, py + (h+ph)/2 + padding))
+                for y in ys:
+                    if y - h/2 < padding or y + h/2 > height-padding:
+                        continue
+                    for x in xs:
+                        if x - w/2 < padding or x + w/2 > width-padding:
+                            continue
+                        if any(abs(x-px) < (w+pw)/2 + padding and abs(y-py) < (h+ph)/2 + padding
+                               for _,_,px,py,pw,ph,_ in active):
+                            continue
+                        cost = abs(x-x0) * 1.15 + abs(y-y0) + (1-scale) * 330
+                        solutions.append((round(cost, 4), -scale, abs(y-y0), abs(x-x0), x, y, scale, w, h))
         if not solutions:
-            raise ValueError(f"Caption layout cannot fit all editable text at frame {start}: title {idx} ({text!r})")
+            raise ValueError(f"Caption layout has no non-overlapping visible placement at frame {start}: title {idx} ({text!r})")
         _, _, _, _, x, y, scale, w, h = min(solutions)
         if abs(x-original_x) > 0.001 or abs(y-original_y) > 0.001 or scale < .999:
             st = dict(original)
@@ -2181,6 +2204,9 @@ def _layout_caption_titles(
             title_styles[idx] = st
             changed = dict(cue)
             changed['position_mode'] = 'detected_fcpx'
+            if fallback:
+                changed['layout_fallback'] = {'reason': 'nearby_positions_occupied', 'scale': scale,
+                                              'shift_px': [round(x-x0, 2), round(y-y0, 2)]}
             adjusted.append(changed)
         else:
             adjusted.append(cue)
@@ -2302,6 +2328,7 @@ def build_full_timeline_fcpxml(
     vfx_placeholder_lane: int = 2,
     vfx_placeholder_visible: bool = False,
     vfx_placeholder_prefix: str = "VC VFX Transition",
+    layout_fallbacks: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     max_cue_frame = max([safe_int(c.get("end_frame"), 0) for c in cues] or [1])
     max_video_frame = max([safe_int(c.get("timeline_end_frame"), 0) for c in video_clips] or [1])
@@ -2332,6 +2359,9 @@ def build_full_timeline_fcpxml(
         audio_xml = f'\n        <asset-clip name="VC Source Audio" ref="{audio_asset_id}" lane="-1" offset="0s" start="0s" duration="{total_duration}"/>'
 
     laid_out, layout_styles = _layout_caption_titles(cues, style, cue_styles, width, height, position_mode)
+    if layout_fallbacks is not None:
+        layout_fallbacks.extend({'id': c['id'], 'start_frame': c['start_frame'], **c['layout_fallback']}
+                                for c in laid_out if c.get('layout_fallback'))
     title_xml = "\n".join(build_title_xml(c, layout_styles[int(c["index"])], fps, width, height, effect_id, title_lane, title_prefix, position_mode, position_x, position_y) for c in laid_out)
     vfx_placeholder_xml = build_vfx_placeholders_xml(
         transitions or [],

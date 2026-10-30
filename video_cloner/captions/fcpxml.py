@@ -62,6 +62,8 @@ def _integer(value: object, label: str) -> int:
 def _operation_authority(generic: Mapping[str, object]) -> dict[str, int]:
     counts = {
         "cut": 0,
+        "hold": 0,
+        "beat_cut": 0,
         "transition_hint_observations": 0,
         "speed": 0,
         "animated_zoom": 0,
@@ -77,8 +79,9 @@ def _operation_authority(generic: Mapping[str, object]) -> dict[str, int]:
         if not isinstance(command, dict):
             raise FcpxmlCompilationError(f"timeline command {index} is malformed")
         action = command.get("action")
-        if not isinstance(action, dict) or action.get("type") != "cut":
-            raise FcpxmlCompilationError(f"timeline command {index} is not a cut-only action")
+        action_type = action.get("type") if isinstance(action, dict) else None
+        if action_type not in {"cut", "hold", "beat_cut"}:
+            raise FcpxmlCompilationError(f"timeline command {index} is not a source-preserving clip action")
         timeline_start = _integer(command.get("timeline_start_frame"), f"timeline command {index} start")
         timeline_end = _integer(command.get("timeline_end_frame"), f"timeline command {index} end")
         timeline_duration = _integer(command.get("timeline_duration_frames"), f"timeline command {index} duration")
@@ -106,7 +109,7 @@ def _operation_authority(generic: Mapping[str, object]) -> dict[str, int]:
         operations = command.get("operations")
         if not isinstance(operations, list) or not operations:
             raise FcpxmlCompilationError(f"timeline command {index} has no operations")
-        command_cut_count = 0
+        command_clip_count = 0
         for operation in operations:
             if not isinstance(operation, dict):
                 raise FcpxmlCompilationError(f"timeline command {index} contains a malformed operation")
@@ -114,9 +117,9 @@ def _operation_authority(generic: Mapping[str, object]) -> dict[str, int]:
             parameters = operation.get("parameters") or {}
             if not isinstance(parameters, dict):
                 raise FcpxmlCompilationError(f"timeline command {index} operation parameters are malformed")
-            if name == "cut":
-                counts["cut"] += 1
-                command_cut_count += 1
+            if name == action_type:
+                counts[name] += 1
+                command_clip_count += 1
                 continue
             if name == "transition_hint":
                 transition_type = str(parameters.get("transition_type") or "").strip().lower()
@@ -145,10 +148,10 @@ def _operation_authority(generic: Mapping[str, object]) -> dict[str, int]:
             else:
                 counts["other"] += 1
             raise FcpxmlCompilationError(f"unsupported executable generic operation: {name or 'unknown'}")
-        if command_cut_count != 1:
-            raise FcpxmlCompilationError(f"timeline command {index} must contain exactly one cut operation")
-    if counts["cut"] != len(timeline):
-        raise FcpxmlCompilationError("each timeline command must contain exactly one cut operation")
+        if command_clip_count != 1:
+            raise FcpxmlCompilationError(f"timeline command {index} must contain exactly one matching clip operation")
+    if sum(counts[name] for name in ("cut", "hold", "beat_cut")) != len(timeline):
+        raise FcpxmlCompilationError("each timeline command must contain exactly one matching clip operation")
     summary = generic.get("summary")
     if not isinstance(summary, dict) or summary.get("commands_count") != len(timeline):
         raise FcpxmlCompilationError("generic summary command count does not match timeline")
@@ -604,6 +607,7 @@ def compile_fcpxml(
     if output.suffix.lower() != ".fcpxml":
         raise FcpxmlCompilationError("output path must use the .fcpxml extension")
     name = timeline_name or f"{video_id}_standalone_timeline"
+    layout_fallbacks: list[dict[str, object]] = []
     xml_text = canonical.build_full_timeline_fcpxml(
         cues=cues,
         video_clips=clips,
@@ -627,7 +631,9 @@ def compile_fcpxml(
         transition_mode="hybrid" if transitions else "none",
         vfx_placeholder_lane=max([int(cue.get("lane") or 1) for cue in cues] or [1]) + 1,
         vfx_placeholder_visible=False,
+        layout_fallbacks=layout_fallbacks,
     )
+    caption_info["layout_fallbacks"] = layout_fallbacks
     structure = _validate_xml(xml_text, clips, source_video, fps, EXPECTED_FCPXML_VERSION, transitions, cues, source_audio)
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_suffix(output.suffix + ".tmp")
