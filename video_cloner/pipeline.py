@@ -104,6 +104,7 @@ def compile(
             timeline_name=selected.get("timeline_name"),
             caption_style_path=caption_style,
             caption_lifecycle_path=lifecycle,
+            editing_dna_path=selected.get("editing_dna"),
             audio_path=selected.get("audio"),
         )
         return 0
@@ -221,6 +222,7 @@ def run_offline(
                 "transition_mode": "none",
                 "position_mode": "detected_fcpx",
                 "caption_lifecycle_plan": run.analysis_dir / f"{reel}_caption_lifecycle_authority.json",
+                "editing_dna": run.analysis_dir / f"{reel}_editing_dna.json",
             },
         )
         if code:

@@ -5,6 +5,8 @@ import hashlib
 import importlib.util
 import json
 import os
+import struct
+import zlib
 import xml.etree.ElementTree as ET
 from collections import Counter
 from fractions import Fraction
@@ -764,6 +766,52 @@ def apply_native_blur_transitions(resolve: Any, project: Any, pool: Any, target:
         raise
 
 
+def _neutral_flash_carrier(pool: Any, target: Any, frame_count: int) -> dict[str, Any]:
+    """Use a transparent image sequence, never source-video pixels, beneath Fusion flashes.
+
+    Reuses the proven transparent-RGBA carrier approach from the existing
+    advanced_transition_flash_neutral_rgba_v4 adapter. The frames remain on
+    disk because Resolve references this media after the import completes.
+    """
+    fps = int(round(float(_safe(target, "GetSetting", "timelineFrameRate", default=24) or 24)))
+    width = int(_safe(target, "GetSetting", "timelineResolutionWidth", default=1080) or 1080)
+    height = int(_safe(target, "GetSetting", "timelineResolutionHeight", default=1920) or 1920)
+    if not (1 <= frame_count <= 240 and 1 <= fps <= 120 and 16 <= width <= 8192 and 16 <= height <= 8192):
+        raise ValueError("flash_neutral_carrier_dimensions")
+    root = Path(__file__).resolve().parents[2]
+    folder = root / "data" / "_shared" / f"flash_neutral_rgba_{fps}fps_{width}x{height}_{frame_count}f"
+    folder.mkdir(parents=True, exist_ok=True)
+
+    # Valid, entirely transparent RGBA8 PNG (one zero-alpha scanline per row).
+    def chunk(kind: bytes, payload: bytes) -> bytes:
+        return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", zlib.crc32(kind + payload) & 0xFFFFFFFF)
+
+    raw = (b"\x00" + b"\x00" * (width * 4)) * height
+    png = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)) + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b"")
+    for index in range(frame_count):
+        path = folder / f"rgba_{index:06d}.png"
+        if path.exists():
+            if path.read_bytes() != png:
+                raise ValueError(f"flash_neutral_carrier_mismatch:{path}")
+        else:
+            path.write_bytes(png)
+
+    pattern = str(folder / "rgba_%06d.png")
+    # This is the proven image-sequence import API, NOT a frame from V1.
+    imported = _safe(pool, "ImportMedia", [{"FilePath": pattern, "StartIndex": 0, "EndIndex": frame_count - 1}])
+    items = list(imported) if isinstance(imported, (tuple, list)) else ([imported] if imported is not None else [])
+    if len(items) != 1:
+        raise ValueError(f"flash_neutral_carrier_import:{len(items)}")
+    item = items[0]
+    _safe(item, "SetClipProperty", "Video Frame Rate", str(fps))
+    _safe(item, "SetClipProperty", "Alpha mode", "Straight")
+    properties = _safe(item, "GetClipProperty", default={}) or {}
+    source_path = str(next((properties.get(key) for key in ("File Path", "FilePath", "Path") if properties.get(key)), ""))
+    if not source_path or str(folder).lower().replace("\\", "/") not in source_path.lower().replace("\\", "/"):
+        raise ValueError(f"flash_neutral_carrier_source_unverified:{source_path}")
+    return {"ok": True, "media_pool_item": item, "source_start": 0, "kind": "transparent_rgba_sequence", "source_video_pixels_possible": False}
+
+
 def apply_flash_transitions(pool: Any, target: Any, contract: Mapping[str, Any]) -> dict[str, Any]:
     layer = (contract.get("application_plan") or {}).get("native_transitions") or {}
     rows = layer.get("flash_recipes") if isinstance(layer, Mapping) else None
@@ -779,6 +827,15 @@ def apply_flash_transitions(pool: Any, target: Any, contract: Mapping[str, Any])
     } for index, row in enumerate(rows, start=1)]
     existing = [(track, item) for track, item in flash.all_video_items(target) if flash.item_name(item).startswith("VC_FLASH_")]
     if existing:
+        # Old runs used the first frames of V1 as flash media. Never silently
+        # reuse those clips just because their timing and Fusion graph match.
+        for _, item in existing:
+            media = flash.safe_call(item, "GetMediaPoolItem", default=None)
+            properties = flash.safe_call(media, "GetClipProperty", default={}) if media is not None else {}
+            properties = properties if isinstance(properties, Mapping) else {}
+            path = str(next((properties[key] for key in ("File Path", "FilePath", "Path") if properties.get(key)), ""))
+            if "flash_neutral_rgba_" not in path.lower():
+                raise ValueError("legacy_source_video_flash_carrier: create a fresh review timeline")
         tracks = {track for track, _ in existing}
         if len(tracks) != 1:
             raise ValueError("flash_owned_track_identity")
@@ -791,8 +848,8 @@ def apply_flash_transitions(pool: Any, target: Any, contract: Mapping[str, Any])
     if track_info.get("ok") is not True:
         raise ValueError(f"flash_track:{track_info!r}")
     target_track = int(track_info["target_track"])
-    carrier = flash.choose_carrier_source(target, max(int(row["duration_frames"]) for row in specs))
-    if carrier.get("ok") is not True:
+    carrier = _neutral_flash_carrier(pool, target, max(int(row["duration_frames"]) for row in specs))
+    if carrier.get("ok") is not True or carrier.get("source_video_pixels_possible") is not False:
         raise ValueError(f"flash_carrier:{carrier!r}")
     appended = flash.append_flash_carriers(pool, target, carrier, specs, target_track)
     try:

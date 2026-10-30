@@ -2048,7 +2048,16 @@ def _layout_caption_titles(
     """
     padding = max(8.0, width * 0.012)
     title_styles = {int(c['index']): dict(style_for_cue(c, base_style, cue_styles)) for c in cues}
-    placed: List[Tuple[int, int, float, float, float, float]] = []
+    # Preserve OCR boxes only for confirmed multiword phrase-state compositions.
+    # Other source-backed words retain the established collision layout (Reel #4).
+    phrase_compositions = {
+        str(c['visual_composition_id'])
+        for c in cues
+        if c.get('source_observed_phrase_state')
+        and c.get('visual_composition_id')
+        and len(str(c.get('text') or '').split()) >= 2
+    }
+    placed: List[Tuple[int, int, float, float, float, float, bool]] = []
     adjusted = []
     # Earlier appearing titles retain priority; source-backed visual titles win
     # over transcript fallbacks at identical starts.
@@ -2082,6 +2091,18 @@ def _layout_caption_titles(
                 x0 = original_x
             if abs(y0 - original_y) < 3.0:
                 y0 = original_y
+        # Accepted OCR geometry is source authority, not a suggestion to move
+        # independently observed titles when the selected font has new metrics.
+        source_box = (
+            cue.get('timing_authority') == 'visual_primary'
+            and bool(cue.get('style_evidence_id'))
+            and (bool(cue.get('source_observed_phrase_state'))
+                 or bool(cue.get('visual_composition_id') in phrase_compositions))
+            and mode.startswith('detected')
+            and isinstance(bbox, (list, tuple)) and len(bbox) == 4
+            and all(isinstance(v, (int, float)) and math.isfinite(v) for v in bbox)
+            and 0 <= bbox[0] < bbox[2] <= 1 and 0 <= bbox[1] < bbox[3] <= 1
+        )
         font_px = float(original['font_size_px'])
         if not math.isfinite(font_px) or font_px <= 0:
             raise ValueError(f"Caption {idx}: invalid font height")
@@ -2094,9 +2115,37 @@ def _layout_caption_titles(
         # modest glyph overhang so the measured rectangles are conservative.
         glyph_width = advance * RESOLVE21_BASIC_TITLE_RENDER_PX_PER_FCPXML_FONT_UNIT * 1.04
         glyph_height = font_px * 1.10 * len(lines)
+        if source_box:
+            # A different installed font can be wider than the source glyphs.
+            # Fit within the directly observed source box; do not relocate the
+            # title into an unrelated visual composition or across baked text.
+            allowed_w = (bbox[2] - bbox[0]) * width * 1.12
+            allowed_h = (bbox[3] - bbox[1]) * height * 1.12
+            scale = min(1., max(0.01, (allowed_w - 2 * stroke) / max(1., glyph_width)),
+                        max(0.01, (allowed_h - 2 * stroke) / max(1., glyph_height)))
+            if scale < 0.999 or abs(x0 - original_x) > 0.001 or abs(y0 - original_y) > 0.001:
+                st = dict(original)
+                st['font_size_px'] = max(1, round(font_px * scale))
+                st['anchor'] = {'x': x0 / width, 'y': y0 / height}
+                title_styles[idx] = st
+                changed = dict(cue)
+                changed['position_mode'] = 'detected_fcpx'
+                adjusted.append(changed)
+            else:
+                adjusted.append(cue)
+            # Keep source-anchored titles as obstacles for transcript-only
+            # fallbacks, but never move another directly observed source title.
+            start = safe_int(cue.get('start_frame'), 0)
+            end = start + max(1, safe_int(cue.get('duration_frames'), 1))
+            placed.append((start, end, x0, y0,
+                           glyph_width * scale + 2 * stroke + 4,
+                           glyph_height * scale + 2 * stroke + 4, True))
+            continue
         start = safe_int(cue.get('start_frame'), 0)
         end = start + max(1, safe_int(cue.get('duration_frames'), 1))
-        active = [other for other in placed if start < other[1] and other[0] < end]
+        active = [other for other in placed if start < other[1] and other[0] < end
+                  and not (other[6] and cue.get('timing_authority') == 'visual_primary'
+                           and cue.get('visual_event_identity'))]
         # Preserve original positions if they are safe; select the smallest
         # per-title correction otherwise. Never relocate an unrelated title.
         solutions = []
@@ -2115,7 +2164,7 @@ def _layout_caption_titles(
                     if x - w/2 < padding or x + w/2 > width-padding:
                         continue
                     if any(abs(x-px) < (w+pw)/2 + padding and abs(y-py) < (h+ph)/2 + padding
-                           for _,_,px,py,pw,ph in active):
+                   for _,_,px,py,pw,ph,_ in active):
                         continue
                     cost = (abs(x-x0) * 1.15 + abs(y-y0)
                             + (1-scale) * 330 + (0 if dx==0 else 0.05))
@@ -2135,7 +2184,7 @@ def _layout_caption_titles(
             adjusted.append(changed)
         else:
             adjusted.append(cue)
-        placed.append((start,end,x,y,w,h))
+        placed.append((start,end,x,y,w,h,bool(cue.get('source_observed_phrase_state'))))
     by_id = {int(c['index']): c for c in adjusted}
     return [by_id[int(c['index'])] for c in cues], title_styles
 

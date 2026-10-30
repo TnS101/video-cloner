@@ -196,6 +196,105 @@ def _read_json(path: str | Path, label: str) -> tuple[Path, dict[str, object]]:
     return resolved, value
 
 
+def _promote_verified_fonts(
+    generic: Mapping[str, object], style_file: Path, dna_path: str | Path,
+    cues: list[dict[str, object]], base_style: dict[str, object],
+    cue_styles: dict[int, dict[str, object]],
+) -> list[dict[str, object]]:
+    """Request a supported strong DNA font; never use a renderer test as authority.
+
+    Source font identification remains a visual candidate, not verified renderer
+    readback. A stale DNA/style pair must not alter executable typography.
+    """
+    _, dna = _read_json(dna_path, "editing DNA")
+    if dna.get("schema") != "video_cloner.editing_dna" or dna.get("video_id") != generic.get("video_id"):
+        raise FcpxmlCompilationError("editing DNA identity mismatch")
+    provenance = dna.get("provenance") or {}
+    source = dna.get("source") or {}
+    source_path = Path(str(source.get("path") or ""))
+    source_sha = str(source.get("sha256") or "")
+    # DNA is derived from the analyzed original video, while FCPXML can render
+    # a different proxy. Never compare the DNA source SHA to the proxy SHA.
+    provenance_valid = (
+        (provenance.get("caption_style") or {}).get("sha256") == _sha256(style_file)
+        and bool(source_sha)
+        and (provenance.get("source_video") or {}).get("sha256") == source_sha
+        and source_path.is_file()
+        and _sha256(source_path) == source_sha
+    )
+    candidates = ((dna.get("captions") or {}).get("font_candidates") or {}) if provenance_valid else {}
+    by_profile = {str(row.get("style_profile_id")): row for row in candidates.get("profiles") or []}
+    decisions: list[dict[str, object]] = []
+    for cue in cues:
+        index = int(cue["index"])
+        contract = cue_styles.get(index) or dict(base_style)
+        profile_id = str(contract.get("matched_style_profile_id") or contract.get("profile_id") or "")
+        profile = by_profile.get(profile_id) or {}
+        # Detection ranks visual similarity, even when the two best faces are
+        # too close to claim an exact source identity. Use that ranking for
+        # best-effort *rendering*, without turning it into an identity claim.
+        ranked = profile.get("candidates") or []
+        if not isinstance(ranked, list):
+            ranked = []
+        if not ranked:
+            ranked = [profile.get("visual_best_candidate"), profile.get("best_installed_candidate")]
+        eligible_faces = []
+        for rank, face in enumerate(ranked, start=1):
+            if not isinstance(face, Mapping):
+                continue
+            if (face.get("installed_on_windows") is not True
+                    or not str(face.get("family") or "").strip()
+                    or not str(face.get("face") or "").strip()
+                    or not Path(str(face.get("path") or "")).is_file()
+                    or float(face.get("visual_score") or 0) <= 0
+                    or int(face.get("samples_scored") or 0) < 1):
+                continue
+            eligible_faces.append((float(face["visual_score"]), rank, face))
+        eligible_faces.sort(key=lambda entry: (-entry[0], entry[1]))
+        chosen = eligible_faces[0] if eligible_faces else None
+        best_visual = profile.get("visual_best_candidate") or {}
+        candidate = chosen[2] if chosen else best_visual
+        family = str(candidate.get("family") or "")
+        face = str(candidate.get("face") or "")
+        source_family = str((contract.get("typography") or {}).get("font_family") or "").lower()
+        source_unresolved = source_family in {"", "unknown", "normal_or_unknown", "unknown_or_static_from_sampling"}
+        # A separately authored source/custom font remains higher authority.
+        renderer_is_default = (str(contract.get("font_name") or "Arial").casefold() == "arial"
+                               or contract.get("renderer_font_fallback") == "Arial")
+        apply_candidate = bool(chosen and source_unresolved and renderer_is_default)
+        if apply_candidate:
+            contract["font_name"] = family
+            contract["font_family_authority"] = (
+                "strong_visual_candidate_installed_font_requested"
+                if profile.get("selection_status") == "strong_visual_candidate"
+                else "best_effort_visual_candidate_installed_font_requested"
+            )
+            contract.pop("renderer_font_fallback", None)
+            cue_styles[index] = contract
+        elif source_unresolved and contract.get("font_name") == "Arial":
+            contract["font_family_authority"] = "unresolved"
+            contract["renderer_font_fallback"] = "Arial"
+        decisions.append({"cue_id": cue["id"], "style_profile_id": profile_id,
+                          "selection_status": profile.get("selection_status") or ("missing" if provenance_valid else "stale_dna_provenance"),
+                          "source_font_authority": contract.get("font_family_authority") or "source_visual_style",
+                          "source_font_identity": "UNKNOWN" if source_unresolved else source_family,
+                          "font_selection_mode": ("best_effort_nearest_installed"
+                                                  if apply_candidate and profile.get("selection_status") != "strong_visual_candidate"
+                                                  else "strong_visual_candidate" if apply_candidate else "unchanged_or_fallback"),
+                          "candidate_family": family or None, "candidate_face_label": face or None,
+                          "candidate_score": candidate.get("visual_score"),
+                          "candidate_rank": chosen[1] if chosen else None,
+                          "candidate_margin": profile.get("top_two_margin"),
+                          "candidate_weight_class": candidate.get("weight_class"),
+                          "candidate_variable_axes": candidate.get("variable_axes") or [],
+                          "face_label_weight_asserted": False,
+                          "renderer_font_requested": contract["font_name"],
+                          "renderer_fallback": contract.get("renderer_font_fallback"),
+                          "renderer_fallback_authority": "Basic Title Arial fallback" if contract.get("renderer_font_fallback") == "Arial" else None,
+                          "native_family_face_readback": "UNKNOWN"})
+    return decisions
+
+
 def _transition_authority(
     path: str | Path | None,
     run_id: str | None,
@@ -418,6 +517,7 @@ def compile_fcpxml(
     transition_run_id: str | None = None,
     caption_style_path: str | Path | None = None,
     caption_lifecycle_path: str | Path | None = None,
+    editing_dna_path: str | Path | None = None,
     audio_path: str | Path | None = None,
     parity_video_id: str | None = None,
 ) -> dict[str, object]:
@@ -471,6 +571,9 @@ def compile_fcpxml(
         cues = prepared["cues"]
         style = prepared["style"]
         cue_styles = prepared["cue_styles"]
+        font_decisions = _promote_verified_fonts(
+            generic, caption_style_file, editing_dna_path, cues, style, cue_styles
+        ) if editing_dna_path is not None else []
         caption_info = {
             "enabled": True,
             "source": prepared["caption_source"],
@@ -478,6 +581,7 @@ def compile_fcpxml(
             "lifecycle": prepared["caption_lifecycle"],
             "metrics": prepared["caption_metrics"],
             "style_event_matches": prepared["style_event_matches"],
+            "font_decisions": font_decisions,
             "execution": [
                 {
                     "id": cue["id"],
@@ -550,6 +654,7 @@ def compile_fcpxml(
             "caption_style_sha256": _sha256(caption_style_file) if caption_style_file else None,
             "caption_lifecycle": str(lifecycle_file) if lifecycle_file else None,
             "caption_lifecycle_sha256": _sha256(lifecycle_file) if lifecycle_file else None,
+            "editing_dna": str(editing_dna_path) if editing_dna_path else None,
             "source_audio": str(source_audio) if source_audio else None,
             "source_audio_sha256": _sha256(source_audio) if source_audio else None,
             "parity_video_id": parity_video_id,
@@ -607,6 +712,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--transition-run-id")
     parser.add_argument("--caption-style")
     parser.add_argument("--caption-lifecycle")
+    parser.add_argument("--editing-dna")
     parser.add_argument("--audio")
     parser.add_argument("--parity-video-id")
     return parser
@@ -627,6 +733,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             transition_run_id=args.transition_run_id,
             caption_style_path=args.caption_style,
             caption_lifecycle_path=args.caption_lifecycle,
+            editing_dna_path=args.editing_dna,
             audio_path=args.audio,
             parity_video_id=args.parity_video_id,
         )

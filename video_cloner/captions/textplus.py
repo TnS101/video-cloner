@@ -290,7 +290,8 @@ def validate_caption_cues(cues: Sequence[Mapping[str, object]], expected_ids: Se
 
 
 def render_visual_compositions(
-    compositions: Sequence[Mapping[str, object]], semantic_ids: Sequence[str], fps: float
+    compositions: Sequence[Mapping[str, object]], semantic_ids: Sequence[str], fps: float,
+    style_data: Mapping[str, object] | None = None,
 ) -> tuple[list[dict[str, object]], dict[str, object]]:
     """Adapt canonical visual tokens one-for-one into compiler cues."""
     expected = list(semantic_ids)
@@ -300,6 +301,11 @@ def render_visual_compositions(
     cues: list[dict[str, object]] = []
     unresolved: list[str] = []
     omitted_segment_echoes: list[str] = []
+    events = {
+        str(event.get("event_id")): event
+        for event in (style_data or {}).get("caption_style_events", [])
+        if isinstance(event, Mapping) and event.get("event_id")
+    }
     for composition in compositions:
         composition_id = str(composition.get("composition_id") or "")
         window = composition.get("window")
@@ -344,6 +350,15 @@ def render_visual_compositions(
             # become independently visible titles.
             reference = token.get("semantic_reference")
             if not source_ids and isinstance(reference, Mapping):
+                event = events.get(str(token.get("style_evidence_id") or ""), {})
+                observed = [canonical.norm_text(row.get("text")) for row in event.get("observations") or []
+                            if isinstance(row, Mapping)]
+                phrase = canonical.norm_text(event.get("observed_text"))
+                phrase_words = phrase.casefold().split()
+                if (len(phrase_words) >= 2 and len(phrase_words) < len(text.split())
+                        and phrase_words == text.casefold().split()[:len(phrase_words)]
+                        and sum(value.casefold() == phrase.casefold() for value in observed) >= 3):
+                    text = phrase
                 reference_text = canonical.norm_text(reference.get("cue_text"))
                 try:
                     reference_frames = round(
@@ -549,6 +564,86 @@ def _project_observed_phrase_states(
 
     output = list(cues)
     promoted: list[str] = []
+    for cue in list(cues):
+        if (cue.get("timing_authority") != "visual_primary"
+                or cue.get("semantic_reference_ids") or not cue.get("style_evidence_id")
+                or cue.get("accepted_motion_authority")):
+            continue
+        identity = str(cue.get("visual_event_identity") or "")
+        event = events.get(identity)
+        phrase = words(cue.get("text"))
+        if (not isinstance(event, Mapping) or (event.get("match") or {}).get("reason") != "accepted"
+                or not 2 <= len(phrase) <= 6
+                or (event.get("animation") or {}).get("detected")):
+            continue
+        observations = sorted(float(row["timestamp"]) for row in event.get("observations") or []
+                              if isinstance(row, Mapping) and isinstance(row.get("timestamp"), (int, float))
+                              and row.get("tracklet_id") == identity and words(row.get("text")) == phrase
+                              and (row.get("composition") or {}).get("tracklet_ids") == [identity])
+        if len(observations) < 3 or observations[-1] - observations[0] < 0.15:
+            continue
+        state_start = max(int(cue["start_frame"]), round(observations[0] * fps))
+        state_end = min(int(cue["end_frame"]), round(min(float(event["end"]), observations[-1] + 0.1) * fps))
+        if state_end - state_start < 2:
+            continue
+        matches = []
+        for start in range(len(transcript) - len(phrase) + 1):
+            if transcript_words[start:start + len(phrase)] != [[word] for word in phrase]:
+                continue
+            rows = transcript[start:start + len(phrase)]
+            if (not 0 <= state_start - int(rows[0]["timeline_start_frame"]) <= round(2 * fps)
+                    or int(rows[-1]["timeline_start_frame"]) >= state_end):
+                continue
+            ids = transcript_ids[start:start + len(phrase)]
+            owners = [next((other for other in output if other is not cue
+                            and value in (other.get("semantic_reference_ids") or other.get("source_cue_ids") or [])
+                            and words(other.get("text")) == [word]), None)
+                      for value, word in zip(ids, phrase)]
+            if all(owners):
+                matches.append((abs(state_start - int(rows[0]["timeline_start_frame"])), ids, owners))
+        if not matches:
+            continue
+        _, ids, owners = min(matches, key=lambda row: row[0])
+        cue.update(text=canonical.norm_text(event.get("observed_text")), start_frame=state_start,
+                   end_frame=state_end, start=state_start / fps, end=state_end / fps,
+                   duration_frames=state_end - state_start, duration=(state_end - state_start) / fps,
+                   semantic_reference_ids=list(ids), source_cue_ids=list(ids),
+                   raw={"timeline_start_frame": state_start, "timeline_end_frame": state_end},
+                   animation_application_skip_reason="source_phrase_state_changed",
+                   source_observed_phrase_state=True)
+        for owner in owners:
+            if (owner.get("timing_authority") == "transcript_fallback"
+                    and len(owner.get("source_cue_ids") or []) == 1
+                    and not owner.get("visual_event_identity") and not owner.get("style_evidence_id")
+                    and int(owner["start_frame"]) < state_start
+                    and 0 <= state_start - int(owner["end_frame"]) <= 1
+                    and not any(
+                        other is not event and (other.get("match") or {}).get("reason") == "accepted"
+                        and any(isinstance(sample, Mapping)
+                                and sample.get("tracklet_id") == other.get("visual_event_identity")
+                                and isinstance(sample.get("timestamp"), (int, float))
+                                and float(owner["start"]) <= sample["timestamp"] < state_start / fps
+                                and words(sample.get("text")) == words(owner.get("text"))
+                                for sample in other.get("observations") or [])
+                        for other in events.values())):
+                output.remove(owner)
+                continue
+            if int(owner["start_frame"]) >= state_end or int(owner["end_frame"]) <= state_start:
+                continue
+            if (owner.get("timing_authority") == "transcript_fallback"
+                    or (owner.get("timing_authority") == "visual_primary"
+                        and int(owner["start_frame"]) < state_start
+                        and int(owner["end_frame"]) <= state_start + 2
+                        and not owner.get("accepted_motion_authority"))):
+                if int(owner["start_frame"]) >= state_start or state_start - int(owner["start_frame"]) < 2:
+                    output.remove(owner)
+                else:
+                    owner["end_frame"] = state_start
+                    owner["end"] = state_start / fps
+                    owner["duration_frames"] = state_start - int(owner["start_frame"])
+                    owner["duration"] = owner["duration_frames"] / fps
+                    owner["raw"] = {**(owner.get("raw") or {}), "timeline_end_frame": state_start}
+        promoted.append(str(cue["id"]))
     for cue in list(cues):
         if (cue.get("timing_authority") != "visual_primary"
                 or cue.get("accepted_motion_authority")
@@ -883,6 +978,67 @@ def _suppress_unanchored_phrase_echoes(
 
 
 
+def _trim_exclusive_phrase_handoffs(
+    cues: list[dict[str, object]], style_data: Mapping[str, object], fps: float,
+) -> int:
+    """Remove frame-quantization overlap between successive OCR phrase states.
+
+    Require distinct, accepted, overlapping source boxes and *no* source frame
+    observing both tracklets together. Genuine simultaneous source captions
+    remain unchanged; only an earlier phrase's last frame can be trimmed.
+    """
+    events = {
+        str(row.get("visual_event_identity")): row
+        for row in style_data.get("caption_style_events", [])
+        if isinstance(row, Mapping) and row.get("visual_event_identity")
+        and (row.get("match") or {}).get("reason") == "accepted"
+    }
+    simultaneous = {
+        frozenset(str(i) for i in group.get("tracklet_ids") or [])
+        for group in style_data.get("caption_groups", [])
+        if isinstance(group, Mapping) and len(group.get("tracklet_ids") or []) > 1
+    }
+    changed = 0
+    for left in cues:
+        if (left.get("timing_authority") != "visual_primary"
+                or len(str(left.get("text") or "").split()) < 2):
+            continue
+        left_id = str(left.get("visual_event_identity") or "")
+        first = events.get(left_id)
+        if not first:
+            continue
+        box_a = (first.get("placement") or {}).get("normalized_bbox")
+        if not isinstance(box_a, list) or len(box_a) != 4:
+            continue
+        for right in cues:
+            if (right is left or right.get("timing_authority") != "visual_primary"
+                    or len(str(right.get("text") or "").split()) < 2
+                    or not (int(left["start_frame"]) < int(right["start_frame"])
+                            < int(left["end_frame"]) <= int(right["start_frame"]) + 1)):
+                continue
+            right_id = str(right.get("visual_event_identity") or "")
+            second = events.get(right_id)
+            if (not second or right_id == left_id
+                    or any({left_id, right_id}.issubset(group) for group in simultaneous)):
+                continue
+            box_b = (second.get("placement") or {}).get("normalized_bbox")
+            if not isinstance(box_b, list) or len(box_b) != 4:
+                continue
+            overlap = max(0., min(box_a[2], box_b[2]) - max(box_a[0], box_b[0])) * max(
+                0., min(box_a[3], box_b[3]) - max(box_a[1], box_b[1]))
+            area_b = max(0., box_b[2] - box_b[0]) * max(0., box_b[3] - box_b[1])
+            if not area_b or overlap / area_b < 0.75:
+                continue
+            left["end_frame"] = int(right["start_frame"])
+            left["end"] = left["end_frame"] / fps
+            left["duration_frames"] = left["end_frame"] - int(left["start_frame"])
+            left["duration"] = left["duration_frames"] / fps
+            left["raw"] = {**(left.get("raw") or {}), "timeline_end_frame": left["end_frame"]}
+            changed += 1
+            break
+    return changed
+
+
 def _group_rapid_transcript_fallbacks(
     cues: list[dict[str, object]], fps: float,
 ) -> tuple[list[dict[str, object]], int]:
@@ -1129,6 +1285,66 @@ def _reconcile_source_visual_instances(
                     winner["end"] = winner["end_frame"] / fps
                     winner["duration_frames"] = winner["end_frame"] - winner["start_frame"]
                     winner["duration"] = winner["duration_frames"] / fps
+
+    # A missed OCR read can reappear a few frames after a confirmed word,
+    # under the same transcript ID but inside a DIFFERENT source text region.
+    # Only discard it if source boxes demonstrate that it belongs to that
+    # other caption. Strongly observed repeats and independent compositions
+    # must survive even when they share a transcript cue ID.
+    for candidates in by_semantic.values():
+        anchors = [
+            cue for cue in candidates
+            if str(cue["id"]) not in omitted
+            and evidence.get(str(cue["id"]), (0, 0.0, []))[0] >= 2
+        ]
+        for cue in candidates:
+            cid = str(cue["id"])
+            event = events.get(str(cue.get("style_evidence_id") or ""))
+            observations = event.get("observations") if event else None
+            if (cid in omitted or cid not in evidence or evidence[cid][0] != 0
+                    or not isinstance(observations, list) or len(observations) != 1):
+                continue
+            sample = observations[0]
+            if not isinstance(sample, Mapping):
+                continue
+            box, timestamp = sample.get("bbox"), sample.get("timestamp")
+            if (not isinstance(timestamp, (int, float)) or not isinstance(box, list)
+                    or len(box) != 4 or not all(isinstance(v, (int, float)) for v in box)):
+                continue
+            # Use the confirmed caption's own duration to bound a near miss;
+            # never merge arbitrarily distant repeats of the same word.
+            if not any(
+                anchor is not cue
+                and 0 <= int(cue["start_frame"]) - int(anchor["end_frame"])
+                <= int(anchor["end_frame"]) - int(anchor["start_frame"])
+                for anchor in anchors
+            ):
+                continue
+            area = (box[2] - box[0]) * (box[3] - box[1])
+            if area <= 0:
+                continue
+            semantic_ids = set(cue.get("semantic_reference_ids") or [])
+            for other in events.values():
+                if (other is event or _source_cue_id((other.get("semantic_reference") or {}).get("cue_id")) in semantic_ids
+                        or not float(other.get("start") or 0) <= timestamp <= float(other.get("end") or 0)):
+                    continue
+                for observed in other.get("observations") or []:
+                    if not isinstance(observed, Mapping):
+                        continue
+                    other_box, other_time = observed.get("bbox"), observed.get("timestamp")
+                    if (not isinstance(other_time, (int, float))
+                            or abs(other_time - timestamp) > 2 / fps
+                            or not isinstance(other_box, list) or len(other_box) != 4
+                            or not all(isinstance(v, (int, float)) for v in other_box)
+                            or _source_word_agreement(str(other.get("text") or ""), str(observed.get("text") or "")) < 0.80):
+                        continue
+                    ix = max(0.0, min(box[2], other_box[2]) - max(box[0], other_box[0]))
+                    iy = max(0.0, min(box[3], other_box[3]) - max(box[1], other_box[1]))
+                    if ix * iy / area >= 0.80:
+                        omitted.add(cid)
+                        break
+                if cid in omitted:
+                    break
 
     kept = [cue for cue in cues if str(cue["id"]) not in omitted]
     trimmed: list[dict[str, object]] = []
@@ -1529,7 +1745,7 @@ def prepare_textplus_authority(
             if not isinstance(compositions, list):
                 raise StandaloneTextplusError("visual composition authority must be a list")
             semantic_cues = list(cues)
-            visual_cues, visual_info = render_visual_compositions(compositions, generic_ids, fps)
+            visual_cues, visual_info = render_visual_compositions(compositions, generic_ids, fps, style_data)
             visual_cues, source_reconciliation = _reconcile_source_visual_instances(visual_cues, style_data, fps)
             visual_info["source_reconciliation"] = source_reconciliation
             visual_info["render_token_count"] = len(visual_cues)
@@ -1584,6 +1800,9 @@ def prepare_textplus_authority(
             visual_info["omitted_segment_echo_ids"].extend(phrase_echo_ids)
             cues, grouped_fallback_words = _group_rapid_transcript_fallbacks(cues, fps)
             visual_info["grouped_rapid_fallback_word_count"] = grouped_fallback_words
+            visual_info["exclusive_phrase_handoffs_trimmed"] = _trim_exclusive_phrase_handoffs(
+                cues, style_data, fps
+            )
             visual_info["render_token_count"] = sum(
                 cue.get("timing_authority") == "visual_primary" for cue in cues
             )
