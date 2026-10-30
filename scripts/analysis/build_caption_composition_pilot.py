@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import sys
 from collections import Counter, defaultdict
 from itertools import combinations
@@ -66,6 +67,114 @@ def _recipe_index(recipes: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]
         event_id = str(provenance.get("localization_event_id") or "")
         if event_id:
             result.setdefault(event_id, []).append(dict(recipe))
+    return result
+
+
+def _animation_candidates(event: Mapping[str, Any], width: float, height: float,
+                          recipe_matches: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    rows = sorted((row for row in event.get("observations") or []
+                   if isinstance(row, Mapping)
+                   and isinstance(row.get("bbox"), list) and len(row["bbox"]) == 4
+                   and all(isinstance(value, (int, float)) and math.isfinite(value) for value in row["bbox"])
+                   and row["bbox"][2] > row["bbox"][0] and row["bbox"][3] > row["bbox"][1]
+                   and isinstance(row.get("timestamp"), (int, float)) and math.isfinite(row["timestamp"])),
+                  key=lambda row: row["timestamp"])
+    result: dict[str, Any] = {
+        "score_type": "relative_similarity_not_probability",
+        "observation_count": len(rows),
+        "candidates": [],
+    }
+    if width <= 0 or height <= 0 or len(rows) < 3 or rows[-1]["timestamp"] <= rows[0]["timestamp"]:
+        result.update(status="insufficient_source_observations")
+        return result
+
+    first, last = rows[0]["bbox"], rows[-1]["bbox"]
+    if first[2] <= first[0] or first[3] <= first[1] or last[2] <= last[0] or last[3] <= last[1]:
+        result.update(status="insufficient_source_observations")
+        return result
+    edges = [(last[i] - first[i]) / (width if i % 2 == 0 else height) for i in range(4)]
+    center = ((edges[0] + edges[2]) / 2, (edges[1] + edges[3]) / 2)
+    centers = [((row["bbox"][0] + row["bbox"][2]) / (2 * width),
+                (row["bbox"][1] + row["bbox"][3]) / (2 * height)) for row in rows]
+    path = sum(math.dist(a, b) for a, b in zip(centers, centers[1:]))
+    temporal_consistency = math.dist(centers[0], centers[-1]) / path if path else 0.0
+    width_change = ((last[2] - last[0]) / (first[2] - first[0])) - 1
+    height_change = ((last[3] - last[1]) / (first[3] - first[1])) - 1
+    states = list(dict.fromkeys("".join(ch for ch in str(row.get("text") or "").casefold() if ch.isalnum()) for row in rows))
+    progression = len(states) > 1 and bool(states[0]) and len(states[-1]) > len(states[0]) and all(
+        right.startswith(left) for left, right in zip(states, states[1:]))
+    tail = rows[-3:]
+    settled = len({str(row.get("text") or "").casefold() for row in tail}) == 1 and all(
+        max(abs(row["bbox"][i] - last[i]) / (width if i % 2 == 0 else height) for i in range(4)) <= 0.005
+        for row in tail)
+    axis = (edges[0], edges[2]) if abs(center[0]) >= abs(center[1]) else (edges[1], edges[3])
+    parallel = max(0.0, 1 - abs(axis[0] - axis[1]) / (abs(axis[0]) + abs(axis[1]) + 1e-9))
+    movement = min(1.0, math.hypot(*center) / 0.08)
+    size_change = min(1.0, max(abs(width_change), abs(height_change)) / 0.30)
+    proportional = (max(0.0, 1 - abs(width_change - height_change) /
+                        max(abs(width_change), abs(height_change), 0.01)) if size_change > 0.05 else 0.0)
+    left_anchor = max(0.0, 1 - abs(edges[0]) / 0.01)
+    height_stable = max(0.0, 1 - abs(height_change) / 0.10)
+    right_growth = min(1.0, max(0.0, edges[2] - edges[0]) / 0.12)
+    full_stable = max(0.0, 1 - max(abs(value) for value in edges) / 0.02)
+
+    facts = {
+        "edge_displacement_normalized": [round(value, 5) for value in edges],
+        "center_displacement_normalized": [round(value, 5) for value in center],
+        "width_change_ratio": round(width_change, 5),
+        "height_change_ratio": round(height_change, 5),
+        "ocr_text_states": states,
+        "settled_last_three_observations": settled,
+        "temporal_direction_consistency": round(temporal_consistency, 5),
+        "opacity": "not_measured",
+    }
+    scores = {
+        "text_state_progression_or_reveal": (0.30 * progression + 0.20 * right_growth +
+            0.20 * left_anchor + 0.15 * height_stable + 0.15 * settled) if progression else 0.0,
+        "translation_slide": movement * max(0.0, 0.55 * parallel + 0.25 * movement +
+            0.20 * temporal_consistency - 0.10 * progression),
+        "scale_pop": max(0.0, 0.70 * proportional + 0.30 * size_change - 0.20 * progression),
+        "static": max(0.0, 0.65 * full_stable + 0.25 * settled - 0.25 * progression),
+    }
+    evidence = {
+        "text_state_progression_or_reveal": (
+            ["ocr_prefix_progression"] +
+            (["right_edge_growth_with_stable_left_edge"] if right_growth > 0.5 and left_anchor > 0.5 else []) +
+            (["stable_final_text_state"] if settled else []),
+            ["ocr_state_changes_do_not_prove_animated_reveal"]),
+        "translation_slide": (
+            (["center_displacement"] if movement > 0.25 else []) +
+            (["temporally_consistent_direction"] if temporal_consistency > 0.5 else []),
+            (["edge_displacements_do_not_match"] if parallel < 0.5 else []) +
+            (["center_shift_can_follow_text_growth"] if progression else [])),
+        "scale_pop": (
+            ["bounding_box_size_changes"],
+            (["width_and_height_do_not_scale_proportionally"] if proportional < 0.5 else []) +
+            (["text_state_changes_affect_box_size"] if progression else [])),
+        "static": (
+            ["stable_final_observations"] if settled else ["small_full_window_displacement"],
+            (["full_window_geometry_changes"] if full_stable < 0.5 else []) +
+            (["ocr_text_states_change"] if progression else [])),
+    }
+    candidates = []
+    for family, score in scores.items():
+        if score <= 0:
+            continue
+        channels = {"translation_slide": "position", "scale_pop": "scale"}
+        direct = next((recipe for recipe in recipe_matches
+                       if (keys := (recipe.get("channels") or {}).get(channels.get(family)))
+                       and len({str(key.get("value")) for key in keys}) > 1), None)
+        support, contradiction = evidence[family]
+        candidates.append({
+            "family": family, "similarity": round(min(1.0, score), 3),
+            "supporting_evidence": support, "contradicting_evidence": contradiction,
+            "reference_kind": "direct_source_recipe" if direct else "generic_motion_signature",
+            "reference_id": direct.get("caption_id") if direct else None,
+            "actionable": False,
+        })
+    result.update(status="ranked_hypotheses" if candidates else "insufficient_discriminating_evidence",
+                  observed_features=facts,
+                  candidates=sorted(candidates, key=lambda row: (-row["similarity"], row["family"]))[:3])
     return result
 
 
@@ -215,6 +324,8 @@ def _member(
     recipe_decision: str,
     source_fps: float,
     timeline_fps: float,
+    source_width: float,
+    source_height: float,
 ) -> dict[str, Any]:
     observations = [dict(row) for row in event.get("observations") or []]
     if not observations:
@@ -303,6 +414,7 @@ def _member(
             },
         },
         "accepted_animation": animation_link,
+        "animation_candidates": _animation_candidates(event, source_width, source_height, recipe_matches),
     }
 
 
@@ -379,6 +491,8 @@ def build(
     video_id: str = "", review: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     source_fps = float((style.get("video_info") or {}).get("fps") or 0.0)
+    source_width = float((style.get("video_info") or {}).get("width") or 0.0)
+    source_height = float((style.get("video_info") or {}).get("height") or 0.0)
     if source_fps <= 0 or timeline_fps <= 0:
         raise ValueError("positive_source_and_timeline_fps_required")
     events = _event_index(style)
@@ -489,6 +603,8 @@ def build(
                 str(recipes.get("decision") or "UNSPECIFIED"),
                 source_fps,
                 timeline_fps,
+                source_width,
+                source_height,
             )
             for identity in identities
         ]
