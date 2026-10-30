@@ -813,10 +813,12 @@ def main() -> int:
         provenance = existing.get("provenance") if isinstance(existing.get("provenance"), Mapping) else {}
         expected = {"implementation": Path(__file__), "style": args.style, **({"lifecycle": args.lifecycle} if args.lifecycle else {}), **({"recipes": args.recipes} if args.recipes else {}), **({"review_evidence": args.review_evidence} if args.review_evidence else {}), **({"reference_style": args.reference_style, "reference_recipes": args.reference_recipes} if args.reference_style else {})}
         timeline = existing.get("coordinate_spaces", {}).get("timeline", {})
-        if existing.get("schema") == "video_cloner.caption_compositions" and float(timeline.get("fps") or 0.0) == args.timeline_fps and all(
-            isinstance(provenance.get(name), Mapping) and provenance[name].get("sha256") == _sha256(path)
-            for name, path in expected.items()
-        ):
+        if (existing.get("schema") == "video_cloner.caption_compositions"
+                and float(timeline.get("fps") or 0.0) == args.timeline_fps
+                and set(provenance) == set(expected)
+                and all(isinstance(provenance.get(name), Mapping)
+                        and provenance[name].get("sha256") == _sha256(path)
+                        for name, path in expected.items())):
             print(json.dumps({"output": str(args.output), "status": "reused_hash_matched_authority"}, sort_keys=True))
             return 0
     result = build(
